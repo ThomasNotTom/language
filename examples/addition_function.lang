@@ -1,0 +1,3 @@
+uint8 add(uint8 a, uint8 b) {
+  return a + b;
+}

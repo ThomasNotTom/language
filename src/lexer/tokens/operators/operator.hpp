@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../token.hpp"
 
 #include "./operator_type.hpp"
@@ -7,6 +9,5 @@ private:
   OperatorType operatorType;
 
 public:
-  Operator(const OperatorType type)
-      : Token(TokenType::OPERATOR), operatorType(type) {}
+  Operator(const OperatorType type);
 };

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "./number.hpp"
 
 NumberToken::NumberToken(const int value)

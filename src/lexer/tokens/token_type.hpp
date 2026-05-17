@@ -1,3 +1,9 @@
 #pragma once
 
-enum TokenType { PRIMITIVE = 1, OPERATOR = 2, IDENTIFIER = 3 };
+enum TokenType {
+  END_OF_LINE = 1,
+  PRIMITIVE = 2,
+  OPERATOR = 3,
+  IDENTIFIER = 4,
+  NUMBER = 5
+};

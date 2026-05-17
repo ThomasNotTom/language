@@ -3,8 +3,8 @@
 #include "../token.hpp"
 #include "./primitive_type.hpp"
 
-class Primitive : public Token {
+class PrimitiveToken : public Token {
 public:
   const PrimitiveType primitiveType;
-  Primitive(const PrimitiveType type);
+  PrimitiveToken(const PrimitiveType type);
 };

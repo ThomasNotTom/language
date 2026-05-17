@@ -1,11 +1,11 @@
 #include <iostream>
 
 #include "../tokens/identifier/identifier.hpp"
-#include "../tokens/operators/operator.hpp"
 #include "../tokens/token_type.hpp"
 #include "./token_container.hpp"
 
 #include "../tokens/number/number.hpp"
+#include "../tokens/operators/operator.hpp"
 #include "../tokens/primitives/primitive.hpp"
 
 TokenContainer::TokenContainer() {};
@@ -17,6 +17,9 @@ Token* TokenContainer::get(size_t index) const {
 size_t TokenContainer::getCount() const { return this->tokens.size(); }
 
 void TokenContainer::print() const {
+  std::cout << "-- Token Container --\n";
+  std::cout << "count: " << this->getCount() << "\n";
+  std::cout << "tokens: " << "\n";
   for (size_t i = 0; i < this->getCount(); i++) {
     Token* token = this->get(i);
 
@@ -27,10 +30,10 @@ void TokenContainer::print() const {
       }
 
       case PRIMITIVE: {
-        Primitive* primitive = (Primitive*)token;
+        PrimitiveToken* primitive = (PrimitiveToken*)token;
 
         switch (primitive->primitiveType) {
-          case UINT8: {
+          case PrimitiveType::UINT8: {
             std::cout << "PRIMITIVE(UINT8)\n";
             break;
           }
@@ -39,7 +42,7 @@ void TokenContainer::print() const {
       }
 
       case OPERATOR: {
-        Operator* op = (Operator*)token;
+        OperatorToken* op = (OperatorToken*)token;
 
         switch (op->operatorType) {
           case ASSIGNMENT: {
@@ -56,14 +59,14 @@ void TokenContainer::print() const {
       }
 
       case IDENTIFIER: {
-        Identifier* identifier = (Identifier*)token;
+        IdentifierToken* identifier = (IdentifierToken*)token;
 
         std::cout << "IDENTIFIER(\"" << identifier->name << "\")\n";
         break;
       }
 
       case NUMBER: {
-        Number* number = (Number*)token;
+        NumberToken* number = (NumberToken*)token;
 
         std::cout << "NUMBER(" << number->value << ")\n";
         break;

@@ -2,8 +2,8 @@
 
 #include "../primitive.hpp"
 
-class Uint8 : public Primitive {
+class Uint8Token : public PrimitiveToken {
 
 public:
-  Uint8();
+  Uint8Token();
 };

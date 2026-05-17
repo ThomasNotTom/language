@@ -3,11 +3,7 @@
 #include "./token_type.hpp"
 
 class Token {
-private:
-  const TokenType tokenType;
-
 public:
+  const TokenType tokenType;
   Token(const TokenType tokenType);
-
-  TokenType getType() const;
 };

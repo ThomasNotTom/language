@@ -13,6 +13,7 @@ private:
 public:
   FileReader(const std::string filepath);
 
+  std::string readAll();
   char readCharacter();
   void increment();
 };

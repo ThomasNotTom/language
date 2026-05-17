@@ -1,5 +1,3 @@
-#pragma once
-
 #include "./identifier.hpp"
 
 IdentifierToken::IdentifierToken(const std::string name)

@@ -38,22 +38,22 @@ public:
 
       if (c == ' ' || c == ';') {
         if (buffer == "uint8") {
-          tokens.addToken(std::make_unique<Uint8>());
+          tokens.addUint8(Uint8Token());
         } else if (buffer == "=") {
-          tokens.addToken(std::make_unique<Assignment>());
+          tokens.addAssignment(AssignmentToken());
         } else if (std::regex_match(buffer, std::regex("^-?[0-9]+$"))) {
-          tokens.addToken(std::make_unique<Number>(std::stoi(buffer)));
+          tokens.addNumber(std::stoi(buffer));
         } else if (buffer == "+") {
-          tokens.addToken(std::make_unique<Addition>());
+          tokens.addAddition(AdditionToken());
         } else {
-          tokens.addToken(std::make_unique<Identifier>(buffer));
+          tokens.addIdentifier(IdentifierToken(buffer));
         }
 
         buffer = "";
       }
 
       if (c == ';') {
-        tokens.addToken(std::make_unique<EndOfLine>());
+        tokens.addEndOfLine(EndOfLineToken());
       }
     }
 

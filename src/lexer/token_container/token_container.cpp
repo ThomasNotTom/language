@@ -20,7 +20,7 @@ void TokenContainer::print() const {
   for (size_t i = 0; i < this->getCount(); i++) {
     Token* token = this->get(i);
 
-    switch (token->getType()) {
+    switch (token->tokenType) {
       case END_OF_LINE: {
         std::cout << "END_OF_LINE\n";
         break;

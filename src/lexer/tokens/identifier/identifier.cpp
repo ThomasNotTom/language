@@ -2,5 +2,5 @@
 
 #include "./identifier.hpp"
 
-Identifier::Identifier(const std::string name)
+IdentifierToken::IdentifierToken(const std::string name)
     : Token(TokenType::IDENTIFIER), name(name) {};

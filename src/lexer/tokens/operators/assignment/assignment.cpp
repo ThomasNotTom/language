@@ -2,4 +2,4 @@
 
 #include "./assignment.hpp"
 
-Assignment::Assignment() : Operator(OperatorType::ASSIGNMENT) {};
+AssignmentToken::AssignmentToken() : OperatorToken(OperatorType::ASSIGNMENT) {};

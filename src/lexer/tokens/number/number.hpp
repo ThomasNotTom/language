@@ -2,8 +2,8 @@
 
 #include "../token.hpp"
 
-class Number : public Token {
+class NumberToken : public Token {
 public:
   const int value;
-  Number(const int value);
+  NumberToken(const int value);
 };

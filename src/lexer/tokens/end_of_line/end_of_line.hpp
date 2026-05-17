@@ -2,8 +2,8 @@
 
 #include "../token.hpp"
 
-class EndOfLine : public Token {
+class EndOfLineToken : public Token {
 
 public:
-  EndOfLine();
+  EndOfLineToken();
 };

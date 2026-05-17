@@ -2,4 +2,4 @@
 
 #include "./addition.hpp"
 
-Addition::Addition() : Operator(OperatorType::ADDITION) {}
+AdditionToken::AdditionToken() : OperatorToken(OperatorType::ADDITION) {}

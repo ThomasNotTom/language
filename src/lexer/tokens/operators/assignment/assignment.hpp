@@ -2,7 +2,7 @@
 
 #include "../operator.hpp"
 
-class Assignment : public Operator {
+class AssignmentToken : public OperatorToken {
 public:
-  Assignment();
+  AssignmentToken();
 };

@@ -4,8 +4,8 @@
 
 #include "../token.hpp"
 
-class Identifier : public Token {
+class IdentifierToken : public Token {
 public:
   const std::string name;
-  Identifier(const std::string name);
+  IdentifierToken(const std::string name);
 };

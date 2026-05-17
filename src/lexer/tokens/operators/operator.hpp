@@ -4,10 +4,8 @@
 
 #include "./operator_type.hpp"
 
-class Operator : Token {
-private:
-  OperatorType operatorType;
-
+class Operator : public Token {
 public:
+  const OperatorType operatorType;
   Operator(const OperatorType type);
 };

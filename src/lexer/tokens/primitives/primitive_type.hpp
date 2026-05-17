@@ -1,3 +1,3 @@
 #pragma once
 
-enum PrimitiveType { UINT8 = 1 };
+enum class PrimitiveType { UINT8 = 1 };

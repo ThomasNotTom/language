@@ -1,3 +1,3 @@
 #pragma once
 
-enum OperatorType { ASSIGNMENT = 1 };
+enum OperatorType { ASSIGNMENT = 1, ADDITION = 2 };

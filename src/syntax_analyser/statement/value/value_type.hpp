@@ -1,0 +1,1 @@
+enum class StatementValueType { IDENTIFIER = 1, NUMBER = 2 };

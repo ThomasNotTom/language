@@ -12,4 +12,8 @@ uint8 a = 10;
 uint8 b = 10;
 ```
 
+## Examples
+
+Examples can be found in the `/examples` folder.
+
 # Compilation Structure

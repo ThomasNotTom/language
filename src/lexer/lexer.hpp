@@ -1,8 +1,5 @@
 #pragma once
 
-#include <regex>
-
-#include <memory>
 #include <string>
 
 #include "./token_container/token_container.hpp"
@@ -13,6 +10,7 @@
 #include "./tokens/primitives/uint8/uint8.hpp"
 
 #include "./tokens/operators/addition/addition.hpp"
+#include "matcher.hpp"
 
 class Lexer {
 private:
@@ -41,7 +39,7 @@ public:
           tokens.addUint8(Uint8Token());
         } else if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
-        } else if (std::regex_match(buffer, std::regex("^-?[0-9]+$"))) {
+        } else if (Matcher::isNumber(buffer)) {
           tokens.addNumber(std::stoi(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());

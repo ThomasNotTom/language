@@ -39,7 +39,7 @@ public:
           tokens.addUint8(Uint8Token());
         } else if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
-        } else if (Matcher::isNumber(buffer)) {
+        } else if (Matcher::isInt(buffer)) {
           tokens.addNumber(std::stoi(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());

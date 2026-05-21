@@ -1,5 +1,9 @@
 # Language (`.lang`)
 
+# Background
+
+The goal of this langauge is to allow for the build up highly nested types, and to enforce relationships between. This is particularly useful for serialising data, handling complicated `HTTP` response data, and highly interconnected data.
+
 # Syntax
 
 ## Variable Declaration

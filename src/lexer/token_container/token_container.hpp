@@ -9,6 +9,7 @@
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/assignment/assignment.hpp"
 #include "lexer/tokens/primitives/uint8/uint8.hpp"
+#include "lexer/tokens/return/return.hpp"
 #include "lexer/tokens/token.hpp"
 
 class TokenContainer {
@@ -40,6 +41,10 @@ public:
 
   void addUint8(const Uint8Token& token) {
     tokens.push_back(std::make_unique<Uint8Token>(token));
+  }
+
+  void addReturn(const ReturnToken& token) {
+    tokens.push_back(std::make_unique<ReturnToken>(token));
   }
 
   Token* get(size_t index) const;

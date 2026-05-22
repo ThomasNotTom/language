@@ -3,6 +3,7 @@
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
+#include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Type.h"
@@ -27,6 +28,7 @@
 #include <llvm/TargetParser/Host.h>
 #include <map>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 
 class Generator {
@@ -47,6 +49,7 @@ public:
       llvm::Type* type;
       llvm::AllocaInst* alloc;
     };
+
     std::map<std::string, Variable> values;
 
     llvm::LLVMContext context;
@@ -65,6 +68,8 @@ public:
     llvm::BasicBlock* mainEntry =
         llvm::BasicBlock::Create(context, "entry", mainFunc);
     builder.SetInsertPoint(mainEntry);
+
+    bool hasMainReturn = false;
 
     for (size_t i = 0; i < this->program.size(); i++) {
       const Statement& statement = program.get(i);
@@ -107,14 +112,27 @@ public:
           llvm::Value* value = llvm::ConstantInt::get(
               variable.type, assignmentStatement->value.value);
           builder.CreateStore(value, variable.alloc);
+          break;
+        }
+
+        case StatementType::RETURN: {
+          ReturnStatement* returnStatement = (ReturnStatement*)&statement;
+          Variable returnValue = values[returnStatement->identifier->name];
+
+          llvm::Value* loadedValue =
+              builder.CreateLoad(returnValue.type, returnValue.alloc,
+                                 returnStatement->identifier->name + "_read");
+          builder.CreateRet(loadedValue);
+          hasMainReturn = true;
         }
       }
     }
+    if (!hasMainReturn) {
+      llvm::Value* returnValue =
+          llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
 
-    llvm::Value* returnValue =
-        llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
-
-    builder.CreateRet(returnValue);
+      builder.CreateRet(returnValue);
+    }
 
     std::cout << "-- LLVM IR --" << std::endl;
     module->print(llvm::outs(), nullptr);

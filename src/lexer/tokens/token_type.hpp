@@ -5,5 +5,6 @@ enum TokenType {
   PRIMITIVE = 2,
   OPERATOR = 3,
   IDENTIFIER = 4,
-  NUMBER = 5
+  NUMBER = 5,
+  RETURN = 6
 };

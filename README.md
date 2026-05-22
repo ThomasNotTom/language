@@ -16,6 +16,16 @@ uint8 a = 10;
 uint8 b = 10;
 ```
 
+## Returning
+
+Values can be returned with the `return` keyword.
+For example:
+
+```
+uint8 a = 1;
+return a;
+```
+
 ## Examples
 
 Examples can be found in the `/examples` folder.

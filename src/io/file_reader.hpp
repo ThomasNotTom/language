@@ -12,6 +12,7 @@ private:
 
 public:
   FileReader(const std::string filepath);
+  bool isOpen() const;
 
   std::string readAll();
   char readCharacter();

@@ -3,14 +3,12 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <stdexcept>
 
 FileReader::FileReader(const std::string filepath) : filepath(filepath) {
   this->inputStream = std::ifstream(filepath);
-  if (!this->inputStream) {
-    throw std::runtime_error("Failed to open file");
-  }
 };
+
+bool FileReader::isOpen() const { return this->inputStream.is_open(); };
 
 std::string FileReader::readAll() {
   std::stringstream out;

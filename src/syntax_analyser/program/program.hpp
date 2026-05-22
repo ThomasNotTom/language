@@ -1,10 +1,10 @@
+#pragma once
+
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
-#include "syntax_analyser/statement/primitives/primitive.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
-#include "syntax_analyser/statement/value/value.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -22,6 +22,9 @@ public:
   void addInitialisation(std::unique_ptr<InitialisationStatement> statement) {
     this->statements.push_back(std::move(statement));
   }
+
+  size_t size() const { return this->statements.size(); }
+  const Statement& get(size_t i) const { return *this->statements[i].get(); }
 
   void print() const {
     std::cout << "-- Program --\n";

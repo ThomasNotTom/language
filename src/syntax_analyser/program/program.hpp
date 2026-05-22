@@ -3,6 +3,7 @@
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
+#include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include <iostream>
@@ -20,6 +21,10 @@ public:
   }
 
   void addInitialisation(std::unique_ptr<InitialisationStatement> statement) {
+    this->statements.push_back(std::move(statement));
+  }
+
+  void addReturn(std::unique_ptr<ReturnStatement> statement) {
     this->statements.push_back(std::move(statement));
   }
 
@@ -56,6 +61,14 @@ public:
           }
 
           std::cout << initialisationStatement->identifier->name << ";\n";
+          break;
+        }
+
+        case StatementType::RETURN: {
+          ReturnStatement* returnStatement = (ReturnStatement*)statement;
+
+          std::cout << "RETURN " << returnStatement->identifier->name << ";\n";
+          break;
         }
       }
     }

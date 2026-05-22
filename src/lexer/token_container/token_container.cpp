@@ -71,6 +71,10 @@ void TokenContainer::print() const {
         std::cout << "NUMBER(" << number->value << ")\n";
         break;
       }
+
+      case RETURN: {
+        std::cout << "RETURN\n";
+      }
     }
   }
 }

@@ -4,6 +4,14 @@
 
 The goal of this langauge is to allow for the build up highly nested types, and to enforce relationships between. This is particularly useful for serialising data, handling complicated `HTTP` response data, and highly interconnected data.
 
+# Primitives
+
+The primitves aim to be informative to ensure that there is no ambiguity on how the primitive will function.
+
+| Keyword | Full Name               | Size     |
+| ------- | ----------------------- | -------- |
+| `uint8` | Unsigned Integer 8-bits | `1 byte` |
+
 # Syntax
 
 ## Variable Declaration

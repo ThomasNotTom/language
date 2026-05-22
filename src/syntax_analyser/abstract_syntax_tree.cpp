@@ -9,9 +9,8 @@
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
-#include "syntax_analyser/statement/statement.hpp"
+#include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
-#include <iostream>
 #include <memory>
 
 AbstractSyntaxTree::AbstractSyntaxTree(const TokenContainer& tokenContainer)
@@ -53,6 +52,17 @@ Program AbstractSyntaxTree::parse() {
 
           program.addAssignment(std::move(assignment));
         }
+      }
+
+      if (buffer[0]->tokenType == TokenType::RETURN &&
+          buffer[1]->tokenType == TokenType::IDENTIFIER) {
+
+        IdentifierToken* identifier = dynamic_cast<IdentifierToken*>(buffer[1]);
+        std::unique_ptr<ReturnStatement> returnStatement =
+            std::make_unique<ReturnStatement>(
+                std::make_unique<IdentifierValue>(identifier->name));
+
+        program.addReturn(std::move(returnStatement));
       }
       buffer.clear();
     }

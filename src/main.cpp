@@ -8,6 +8,7 @@
 #include "./io/file_reader.hpp"
 #include "./lexer/lexer.hpp"
 #include "./lexer/token_container/token_container.hpp"
+#include "generation/generator.hpp"
 #include "syntax_analyser/abstract_syntax_tree.hpp"
 
 int main(const int argc, char* argv[]) {
@@ -30,4 +31,8 @@ int main(const int argc, char* argv[]) {
 
   Program program = ast.parse();
   program.print();
+
+  Generator generator(program);
+  generator.init();
+  generator.compile();
 }

@@ -10,6 +10,7 @@
 #include "./tokens/primitives/uint8/uint8.hpp"
 
 #include "./tokens/operators/addition/addition.hpp"
+#include "lexer/tokens/return/return.hpp"
 #include "matcher.hpp"
 
 class Lexer {
@@ -43,6 +44,8 @@ public:
           tokens.addNumber(StringConverter::toInt(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());
+        } else if (buffer == "return") {
+          tokens.addReturn(ReturnToken());
         } else {
           tokens.addIdentifier(IdentifierToken(buffer));
         }

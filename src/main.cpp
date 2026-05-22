@@ -10,8 +10,17 @@
 #include "./lexer/token_container/token_container.hpp"
 #include "syntax_analyser/abstract_syntax_tree.hpp"
 
-int main() {
-  FileReader fileReader("./examples/variable_declaration.lang");
+int main(const int argc, char* argv[]) {
+  if (argc == 1) {
+    std::cerr << "Provide an input file\n";
+    return 1;
+  }
+
+  FileReader fileReader(argv[1]);
+  if (!fileReader.isOpen()) {
+    std::cerr << "Input file failed to open\n";
+    return 1;
+  }
 
   Lexer lexer(fileReader.readAll());
   TokenContainer tokens = lexer.makeTokenList();

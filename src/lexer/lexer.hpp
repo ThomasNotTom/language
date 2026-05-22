@@ -2,10 +2,10 @@
 
 #include <string>
 
+#include "./string_converter.hpp"
 #include "./token_container/token_container.hpp"
 #include "./tokens/end_of_line/end_of_line.hpp"
 #include "./tokens/identifier/identifier.hpp"
-#include "./tokens/number/number.hpp"
 #include "./tokens/operators/assignment/assignment.hpp"
 #include "./tokens/primitives/uint8/uint8.hpp"
 
@@ -40,7 +40,7 @@ public:
         } else if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
         } else if (Matcher::isInt(buffer)) {
-          tokens.addNumber(std::stoi(buffer));
+          tokens.addNumber(StringConverter::toInt(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());
         } else {

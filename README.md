@@ -39,3 +39,30 @@ return a;
 Examples can be found in the `/examples` folder.
 
 # Compilation Structure
+
+## File Reader
+
+The file is opened and read in it's entirity to an `std::string`.
+
+## Lexer
+
+String segments are converted to a list of tokens. Representing the smallest segment of a statement. Tokens can be inherited by sub-tokens, to add more specificity.
+
+| Token Name  | Token Type Enum | Description                      |
+| ----------- | --------------- | -------------------------------- |
+| End of line | `END_OF_LINE`   | Eend of a statement              |
+| Primitive   | `PRIMITIVE`     | Parent class of a primitive type |
+| Operator.   | `OPERATOR`      | Parent class of an operator type |
+| Identifier  | `IDENTIFIER`    | Variable identifier              |
+| Number      | `NUMBER`        | Integer                          |
+| Return      | `RETURN`        | Returns a value from a function  |
+
+## Syntax Analyser
+
+Combines tokens into statements.
+
+| Statement Name | Statement Type Enum | Description                                          |
+| -------------- | ------------------- | ---------------------------------------------------- |
+| Initialisation | `INITIALISATION`    | Initialises a variable with the given primitive type |
+| Assignment     | `ASSIGNMENT`        | Sets a variable to a value                           |
+| Return         | `RETURN`            | Returns a value from a function                      |

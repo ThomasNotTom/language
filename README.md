@@ -16,12 +16,22 @@ The primitves aim to be informative to ensure that there is no ambiguity on how 
 
 ## Variable Declaration
 
+### Basic Assignment
+
 The language uses a `C`-style variable declaration. Namely the form `{type} {identifier} = {value};`.
 For example:
 
 ```
 uint8 a = 10;
-uint8 b = 10;
+```
+
+### Assignment From Variable
+
+Variables can also be assigned a value from another variable.
+
+```
+uint8 a = 10;
+uint8 b = a;
 ```
 
 ## Returning

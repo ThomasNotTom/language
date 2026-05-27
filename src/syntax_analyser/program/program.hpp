@@ -1,6 +1,8 @@
 #pragma once
 
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/assignment/identifier/identifier.hpp"
+#include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
@@ -15,6 +17,10 @@ private:
 
 public:
   Program();
+
+  void addAnyStatement(std::unique_ptr<Statement> statement) {
+    this->statements.push_back(std::move(statement));
+  }
 
   void addAssignment(std::unique_ptr<AssignmentStatement> statement) {
     this->statements.push_back(std::move(statement));
@@ -42,10 +48,31 @@ public:
           AssignmentStatement* assignmentStatement =
               (AssignmentStatement*)statement;
           IdentifierValue identifier = assignmentStatement->identifier;
-          NumberValue statementValue = assignmentStatement->value;
 
-          std::cout << identifier.name << " = " << statementValue.value
-                    << ";\n";
+          switch (assignmentStatement->assignmentType) {
+            case AssignmentType::NUMBER: {
+              AssignmentNumberStatement* assignmentNumberStatement =
+                  (AssignmentNumberStatement*)assignmentStatement;
+
+              NumberValue statementValue = assignmentNumberStatement->value;
+
+              std::cout << identifier.name << " = " << statementValue.value
+                        << ";\n";
+              break;
+            }
+
+            case AssignmentType::IDENTIFIER: {
+              AssignmentIdentifierStatement* assignmentIdentifierStatement =
+                  (AssignmentIdentifierStatement*)assignmentStatement;
+
+              IdentifierValue statementValue =
+                  assignmentIdentifierStatement->value;
+
+              std::cout << identifier.name << " = " << statementValue.name
+                        << ";\n";
+              break;
+            }
+          }
           break;
         }
 

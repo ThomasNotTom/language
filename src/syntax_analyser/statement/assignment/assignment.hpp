@@ -1,14 +1,14 @@
 #pragma once
 
-#include "../statement.hpp"
+#include "syntax_analyser/statement/assignment/assignment_type.hpp"
+#include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
-#include "syntax_analyser/statement/value/number/number.hpp"
 
 class AssignmentStatement : public Statement {
 public:
+  const AssignmentType assignmentType;
   const IdentifierValue identifier;
-  const NumberValue value;
 
-  AssignmentStatement(const IdentifierValue identifier,
-                      const NumberValue value);
+  AssignmentStatement(const AssignmentType assignmentType,
+                      const IdentifierValue identifier);
 };

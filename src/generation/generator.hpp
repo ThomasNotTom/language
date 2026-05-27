@@ -1,6 +1,9 @@
 
 #include "../syntax_analyser/program/program.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/assignment/assignment_type.hpp"
+#include "syntax_analyser/statement/assignment/identifier/identifier.hpp"
+#include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
@@ -99,7 +102,6 @@ public:
           AssignmentStatement* assignmentStatement =
               (AssignmentStatement*)&statement;
 
-          std::string identifierName = assignmentStatement->identifier.name;
           if (!values.contains(assignmentStatement->identifier.name)) {
             std::string err = "Variable " +
                               assignmentStatement->identifier.name +
@@ -107,11 +109,39 @@ public:
             throw std::runtime_error(err);
           }
 
+          std::string identifierName = assignmentStatement->identifier.name;
           Variable variable = values[identifierName];
 
-          llvm::Value* value = llvm::ConstantInt::get(
-              variable.type, assignmentStatement->value.value);
-          builder.CreateStore(value, variable.alloc);
+          switch (assignmentStatement->assignmentType) {
+            case AssignmentType::NUMBER: {
+              AssignmentNumberStatement* assignmentNumberStatement =
+                  (AssignmentNumberStatement*)assignmentStatement;
+
+              llvm::Value* value = llvm::ConstantInt::get(
+                  variable.type, assignmentNumberStatement->value.value);
+
+              builder.CreateStore(value, variable.alloc);
+              break;
+            }
+
+            case AssignmentType::IDENTIFIER: {
+              AssignmentIdentifierStatement* assignmentIdentifierStatement =
+                  (AssignmentIdentifierStatement*)assignmentStatement;
+
+              Variable otherVariable =
+                  values[assignmentIdentifierStatement->value.name];
+
+              // Get RHS value
+              llvm::Value* otherValue = builder.CreateLoad(
+                  otherVariable.type, otherVariable.alloc,
+                  assignmentIdentifierStatement->value.name + "_read");
+
+              // Store into LHS variable
+              builder.CreateStore(otherValue, variable.alloc);
+              break;
+            }
+          }
+
           break;
         }
 

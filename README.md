@@ -86,3 +86,4 @@ Combines tokens into statements.
 | Initialisation | `INITIALISATION`    | Initialises a variable with the given primitive type |
 | Assignment     | `ASSIGNMENT`        | Sets a variable to a value                           |
 | Return         | `RETURN`            | Returns a value from a function                      |
+| Addition       | `ADDITION`          | Adds two values and assigns them to an identifier    |

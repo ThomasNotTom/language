@@ -94,4 +94,4 @@ The statements are then converted into `LLVM` intermediate representation (IR). 
 
 ## Compilation
 
-The `LLVM IR` is compiled into a `.o` file, which is then compiled using `clang` to create a finished `main.out` file.
+The `LLVM IR` is compiled into an `output.o` file, which is then compiled using `clang` to create a finished `main.out` executeable.

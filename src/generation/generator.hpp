@@ -1,10 +1,17 @@
 
 #include "../syntax_analyser/program/program.hpp"
+#include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/assignment/assignment_type.hpp"
+#include "syntax_analyser/statement/assignment/identifier/identifier.hpp"
+#include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
+#include "syntax_analyser/statement/value/identifier/identifier.hpp"
+#include "syntax_analyser/statement/value/number/number.hpp"
+#include "syntax_analyser/statement/value/value.hpp"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
@@ -48,6 +55,7 @@ public:
     struct Variable {
       llvm::Type* type;
       llvm::AllocaInst* alloc;
+      llvm::Value* value;
     };
 
     std::map<std::string, Variable> values;
@@ -88,7 +96,7 @@ public:
               llvm::AllocaInst* alloc = builder.CreateAlloca(
                   i8Type, nullptr, initialisationStatement->identifier->name);
 
-              values[identifierName] = Variable{i8Type, alloc};
+              values[identifierName] = Variable{i8Type, alloc, nullptr};
               break;
             }
           }
@@ -99,7 +107,6 @@ public:
           AssignmentStatement* assignmentStatement =
               (AssignmentStatement*)&statement;
 
-          std::string identifierName = assignmentStatement->identifier.name;
           if (!values.contains(assignmentStatement->identifier.name)) {
             std::string err = "Variable " +
                               assignmentStatement->identifier.name +
@@ -107,11 +114,36 @@ public:
             throw std::runtime_error(err);
           }
 
+          std::string identifierName = assignmentStatement->identifier.name;
           Variable variable = values[identifierName];
 
-          llvm::Value* value = llvm::ConstantInt::get(
-              variable.type, assignmentStatement->value.value);
-          builder.CreateStore(value, variable.alloc);
+          switch (assignmentStatement->assignmentType) {
+            case AssignmentType::NUMBER: {
+              AssignmentNumberStatement* assignmentNumberStatement =
+                  (AssignmentNumberStatement*)assignmentStatement;
+
+              llvm::Value* value = llvm::ConstantInt::get(
+                  variable.type, assignmentNumberStatement->value.value);
+
+              builder.CreateStore(value, variable.alloc);
+              values[identifierName].value = value;
+              break;
+            }
+
+            case AssignmentType::IDENTIFIER: {
+              AssignmentIdentifierStatement* assignmentIdentifierStatement =
+                  (AssignmentIdentifierStatement*)assignmentStatement;
+
+              Variable otherVariable =
+                  values[assignmentIdentifierStatement->value.name];
+
+              builder.CreateStore(otherVariable.value, variable.alloc);
+              values[identifierName].value = otherVariable.value;
+
+              break;
+            }
+          }
+
           break;
         }
 
@@ -119,11 +151,62 @@ public:
           ReturnStatement* returnStatement = (ReturnStatement*)&statement;
           Variable returnValue = values[returnStatement->identifier->name];
 
-          llvm::Value* loadedValue =
-              builder.CreateLoad(returnValue.type, returnValue.alloc,
-                                 returnStatement->identifier->name + "_read");
-          builder.CreateRet(loadedValue);
+          builder.CreateRet(returnValue.value);
           hasMainReturn = true;
+          break;
+        }
+
+        case StatementType::ADDITION: {
+          AdditionStatement* additionStatement = (AdditionStatement*)&statement;
+
+          Variable variable = values[additionStatement->identifier.name];
+
+          llvm::Value* lhs;
+          switch (additionStatement->lhs->statementValueType) {
+            case StatementValueType::IDENTIFIER: {
+              IdentifierValue* lhsIdentifierValue =
+                  (IdentifierValue*)additionStatement->lhs.get();
+
+              lhs = values[lhsIdentifierValue->name].value;
+
+              break;
+            }
+
+            case StatementValueType::NUMBER: {
+              NumberValue* lhsNumberValue =
+                  (NumberValue*)additionStatement->lhs.get();
+              lhs =
+                  llvm::ConstantInt::get(variable.type, lhsNumberValue->value);
+              break;
+            }
+          }
+
+          llvm::Value* rhs;
+          switch (additionStatement->rhs->statementValueType) {
+            case StatementValueType::IDENTIFIER: {
+              IdentifierValue* lhsIdentifierValue =
+                  (IdentifierValue*)additionStatement->rhs.get();
+
+              Variable rhsVariable = values[lhsIdentifierValue->name];
+
+              rhs = rhsVariable.value;
+              break;
+            }
+
+            case StatementValueType::NUMBER: {
+              NumberValue* rhsNumberValue =
+                  (NumberValue*)additionStatement->rhs.get();
+              rhs =
+                  llvm::ConstantInt::get(variable.type, rhsNumberValue->value);
+              break;
+            }
+          }
+
+          llvm::Value* result = builder.CreateAdd(lhs, rhs);
+
+          builder.CreateStore(result, variable.alloc);
+
+          values[additionStatement->identifier.name].value = result;
         }
       }
     }

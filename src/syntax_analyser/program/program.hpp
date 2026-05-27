@@ -1,11 +1,16 @@
 #pragma once
 
+#include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/assignment/identifier/identifier.hpp"
+#include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
+#include "syntax_analyser/statement/value/number/number.hpp"
+#include "syntax_analyser/statement/value/value.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -16,6 +21,10 @@ private:
 public:
   Program();
 
+  void addAnyStatement(std::unique_ptr<Statement> statement) {
+    this->statements.push_back(std::move(statement));
+  }
+
   void addAssignment(std::unique_ptr<AssignmentStatement> statement) {
     this->statements.push_back(std::move(statement));
   }
@@ -25,6 +34,10 @@ public:
   }
 
   void addReturn(std::unique_ptr<ReturnStatement> statement) {
+    this->statements.push_back(std::move(statement));
+  }
+
+  void addAddition(std::unique_ptr<AdditionStatement> statement) {
     this->statements.push_back(std::move(statement));
   }
 
@@ -42,10 +55,31 @@ public:
           AssignmentStatement* assignmentStatement =
               (AssignmentStatement*)statement;
           IdentifierValue identifier = assignmentStatement->identifier;
-          NumberValue statementValue = assignmentStatement->value;
 
-          std::cout << identifier.name << " = " << statementValue.value
-                    << ";\n";
+          switch (assignmentStatement->assignmentType) {
+            case AssignmentType::NUMBER: {
+              AssignmentNumberStatement* assignmentNumberStatement =
+                  (AssignmentNumberStatement*)assignmentStatement;
+
+              NumberValue statementValue = assignmentNumberStatement->value;
+
+              std::cout << identifier.name << " = " << statementValue.value
+                        << ";\n";
+              break;
+            }
+
+            case AssignmentType::IDENTIFIER: {
+              AssignmentIdentifierStatement* assignmentIdentifierStatement =
+                  (AssignmentIdentifierStatement*)assignmentStatement;
+
+              IdentifierValue statementValue =
+                  assignmentIdentifierStatement->value;
+
+              std::cout << identifier.name << " = " << statementValue.name
+                        << ";\n";
+              break;
+            }
+          }
           break;
         }
 
@@ -69,6 +103,32 @@ public:
 
           std::cout << "RETURN " << returnStatement->identifier->name << ";\n";
           break;
+        }
+
+        case StatementType::ADDITION: {
+          AdditionStatement* additionStatement = (AdditionStatement*)statement;
+          std::string lhs = "";
+          if (additionStatement->lhs->statementValueType ==
+              StatementValueType::NUMBER) {
+            lhs = std::to_string(
+                ((NumberValue*)(additionStatement->lhs.get()))->value);
+          } else if (additionStatement->lhs->statementValueType ==
+                     StatementValueType::IDENTIFIER) {
+            lhs = ((IdentifierValue*)(additionStatement->lhs.get()))->name;
+          }
+
+          std::string rhs = "";
+          if (additionStatement->rhs->statementValueType ==
+              StatementValueType::NUMBER) {
+            rhs = std::to_string(
+                ((NumberValue*)(additionStatement->rhs.get()))->value);
+          } else if (additionStatement->rhs->statementValueType ==
+                     StatementValueType::IDENTIFIER) {
+            rhs = ((IdentifierValue*)(additionStatement->rhs.get()))->name;
+          }
+
+          std::cout << additionStatement->identifier.name << " = " << lhs
+                    << " + " << rhs << ";\n";
         }
       }
     }

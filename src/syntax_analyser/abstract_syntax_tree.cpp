@@ -8,6 +8,7 @@
 #include "lexer/tokens/token.hpp"
 #include "lexer/tokens/token_type.hpp"
 #include "syntax_analyser/program/program.hpp"
+#include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/identifier/identifier.hpp"
 #include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
@@ -15,7 +16,10 @@
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
+#include "syntax_analyser/statement/value/number/number.hpp"
+#include "syntax_analyser/statement/value/value.hpp"
 #include <cstddef>
+#include <format>
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -53,28 +57,74 @@ AbstractSyntaxTree::evaluateOperations(std::vector<Token*> tokens,
 
   std::vector<std::unique_ptr<Statement>> statements;
 
-  if (tokens.size() == 1) {
-    switch (tokens[0]->tokenType) {
-      case TokenType::NUMBER: {
-        NumberToken* numberToken = (NumberToken*)tokens[0];
+  size_t tokensIndex = 0;
 
-        statements.push_back(std::make_unique<AssignmentNumberStatement>(
-            outputIdentifier, numberToken->value));
-        break;
-      }
+  // Set identfier = to whatever the left-most value is.
 
-      case TokenType::IDENTIFIER: {
-        IdentifierToken* identfierToken = (IdentifierToken*)tokens[0];
+  switch (tokens[tokensIndex]->tokenType) {
+    case TokenType::NUMBER: {
+      NumberToken* numberToken = (NumberToken*)tokens[tokensIndex];
 
-        statements.push_back(std::make_unique<AssignmentIdentifierStatement>(
-            outputIdentifier, identfierToken->name));
-        break;
-      }
-
-      default: {
-        throw std::runtime_error("Type must be a value or an identifier");
-      }
+      statements.push_back(std::make_unique<AssignmentNumberStatement>(
+          outputIdentifier, numberToken->value));
+      break;
     }
+
+    case TokenType::IDENTIFIER: {
+      IdentifierToken* identfierToken = (IdentifierToken*)tokens[tokensIndex];
+
+      statements.push_back(std::make_unique<AssignmentIdentifierStatement>(
+          outputIdentifier, identfierToken->name));
+      break;
+    }
+
+    default: {
+      throw std::runtime_error("Type must be a value or an identifier");
+    }
+  }
+
+  tokensIndex += 1;
+
+  while (tokensIndex < tokens.size()) {
+    Token* firstToken = tokens[tokensIndex];
+
+    if (firstToken->tokenType != TokenType::OPERATOR) {
+      throw std::runtime_error("Token adjacent to value must be an operator");
+    }
+
+    OperatorToken* firstTokenOperator = (OperatorToken*)firstToken;
+    if (firstTokenOperator->operatorType != OperatorType::ADDITION) {
+      throw std::format_error("Only `+` operator is implemented");
+    }
+
+    Token* secondToken = tokens[tokensIndex + 1];
+    std::cout << secondToken->tokenType << "\n";
+
+    if (secondToken->tokenType != TokenType::NUMBER &&
+        secondToken->tokenType != TokenType::IDENTIFIER) {
+      throw std::runtime_error(
+          "Token adjacent to operator must be an identifier or a value");
+    }
+
+    if (secondToken->tokenType == TokenType::NUMBER) {
+      statements.push_back(std::make_unique<AdditionStatement>(
+          IdentifierValue(outputIdentifier),
+          std::make_unique<IdentifierValue>(outputIdentifier),
+          std::make_unique<NumberValue>(((NumberToken*)secondToken)->value)));
+
+      std::cout << outputIdentifier << " + "
+                << ((NumberToken*)secondToken)->value << "\n";
+    }
+
+    if (secondToken->tokenType == TokenType::IDENTIFIER) {
+      statements.push_back(std::make_unique<AdditionStatement>(
+          IdentifierValue(outputIdentifier),
+          std::make_unique<IdentifierValue>(outputIdentifier),
+          std::make_unique<IdentifierValue>(
+              ((IdentifierToken*)secondToken)->name)));
+    }
+
+    tokensIndex += 2;
   }
 
   return statements;

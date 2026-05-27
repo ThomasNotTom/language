@@ -1,7 +1,7 @@
-#include "./assignment.hpp"
-#include "syntax_analyser/statement/value/identifier/identifier.hpp"
+#include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/statement.hpp"
 
-AssignmentStatement::AssignmentStatement(IdentifierValue identifier,
-                                         NumberValue value)
-    : Statement(StatementType::ASSIGNMENT), identifier(identifier),
-      value(value) {};
+AssignmentStatement::AssignmentStatement(const AssignmentType assignmentType,
+                                         const IdentifierValue identifier)
+    : Statement(StatementType::ASSIGNMENT), assignmentType(assignmentType),
+      identifier(identifier) {}

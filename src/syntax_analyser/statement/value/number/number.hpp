@@ -1,3 +1,5 @@
+#pragma once
+
 #include "syntax_analyser/statement/value/value.hpp"
 
 class NumberValue : public StatementValue {

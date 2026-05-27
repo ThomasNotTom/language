@@ -90,7 +90,7 @@ Combines tokens into statements.
 
 ## `LLVM` Intermediate Representation
 
-The statements are then converted into `LLVM` intermediate representation (IR). Each statement translates almost-directly into a line in the `LLVM IR`, and so the primary technical content of this stage is keeping track of identifiers and using them where needed.
+The statements are then converted into `LLVM` Intermediate Representation (`LLVM IR`). Each statement translates almost-directly into a line in the `LLVM IR`, and so the primary technical content of this stage is keeping track of identifiers and using them where needed.
 
 ## Compilation
 

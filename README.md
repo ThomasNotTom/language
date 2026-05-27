@@ -44,6 +44,16 @@ uint8 a = 1;
 return a;
 ```
 
+## Arithmetic
+
+Values can be defined as a series of arithemtic statements, combining identifiers and values:
+
+```
+uint8 a = 1;
+uint8 b = a + 1;
+uint8 c = a + b + 1;
+```
+
 ## Examples
 
 Examples can be found in the `/examples` folder.

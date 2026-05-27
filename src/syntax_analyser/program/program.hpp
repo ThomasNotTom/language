@@ -1,5 +1,6 @@
 #pragma once
 
+#include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/assignment/identifier/identifier.hpp"
 #include "syntax_analyser/statement/assignment/number/number.hpp"
@@ -8,6 +9,8 @@
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
+#include "syntax_analyser/statement/value/number/number.hpp"
+#include "syntax_analyser/statement/value/value.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -31,6 +34,10 @@ public:
   }
 
   void addReturn(std::unique_ptr<ReturnStatement> statement) {
+    this->statements.push_back(std::move(statement));
+  }
+
+  void addAddition(std::unique_ptr<AdditionStatement> statement) {
     this->statements.push_back(std::move(statement));
   }
 
@@ -96,6 +103,32 @@ public:
 
           std::cout << "RETURN " << returnStatement->identifier->name << ";\n";
           break;
+        }
+
+        case StatementType::ADDITION: {
+          AdditionStatement* additionStatement = (AdditionStatement*)statement;
+          std::string lhs = "";
+          if (additionStatement->lhs->statementValueType ==
+              StatementValueType::NUMBER) {
+            lhs = std::to_string(
+                ((NumberValue*)(additionStatement->lhs.get()))->value);
+          } else if (additionStatement->lhs->statementValueType ==
+                     StatementValueType::IDENTIFIER) {
+            lhs = ((IdentifierValue*)(additionStatement->lhs.get()))->name;
+          }
+
+          std::string rhs = "";
+          if (additionStatement->rhs->statementValueType ==
+              StatementValueType::NUMBER) {
+            rhs = std::to_string(
+                ((NumberValue*)(additionStatement->rhs.get()))->value);
+          } else if (additionStatement->rhs->statementValueType ==
+                     StatementValueType::IDENTIFIER) {
+            rhs = ((IdentifierValue*)(additionStatement->rhs.get()))->name;
+          }
+
+          std::cout << additionStatement->identifier.name << " = " << lhs
+                    << " + " << rhs << ";\n";
         }
       }
     }

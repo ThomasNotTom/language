@@ -2,3 +2,5 @@ uint8 a = 1 + 1;
 uint8 b = a + 1;
 
 uint8 c = a + b;
+
+return c;

@@ -48,9 +48,9 @@ AbstractSyntaxTree::makeInitialisationStatement(PrimitiveType primitiveType,
       std::make_unique<IdentifierValue>(identifierName));
 }
 
-std::vector<std::unique_ptr<Statement>>
-AbstractSyntaxTree::evaluateOperations(std::vector<Token*> tokens,
-                                       std::string outputIdentifier) {
+std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::evaluateOperations(
+    std::vector<std::reference_wrapper<const Token>> tokens,
+    std::string outputIdentifier) {
   if (tokens.size() == 0) {
     throw std::runtime_error("No values to evaluate");
   }
@@ -61,20 +61,22 @@ AbstractSyntaxTree::evaluateOperations(std::vector<Token*> tokens,
 
   // Set identfier = to whatever the left-most value is.
 
-  switch (tokens[tokensIndex]->tokenType) {
+  switch (tokens[tokensIndex].get().tokenType) {
     case TokenType::NUMBER: {
-      NumberToken* numberToken = (NumberToken*)tokens[tokensIndex];
+      const NumberToken& numberToken =
+          static_cast<const NumberToken&>(tokens[tokensIndex].get());
 
       statements.push_back(std::make_unique<AssignmentNumberStatement>(
-          outputIdentifier, numberToken->value));
+          outputIdentifier, numberToken.value));
       break;
     }
 
     case TokenType::IDENTIFIER: {
-      IdentifierToken* identfierToken = (IdentifierToken*)tokens[tokensIndex];
+      const IdentifierToken& identfierToken =
+          static_cast<const IdentifierToken&>(tokens[tokensIndex].get());
 
       statements.push_back(std::make_unique<AssignmentIdentifierStatement>(
-          outputIdentifier, identfierToken->name));
+          outputIdentifier, identfierToken.name));
       break;
     }
 
@@ -86,42 +88,48 @@ AbstractSyntaxTree::evaluateOperations(std::vector<Token*> tokens,
   tokensIndex += 1;
 
   while (tokensIndex < tokens.size()) {
-    Token* firstToken = tokens[tokensIndex];
+    const Token& firstToken =
+        static_cast<const Token&>(tokens[tokensIndex].get());
 
-    if (firstToken->tokenType != TokenType::OPERATOR) {
+    if (firstToken.tokenType != TokenType::OPERATOR) {
       throw std::runtime_error("Token adjacent to value must be an operator");
     }
 
-    OperatorToken* firstTokenOperator = (OperatorToken*)firstToken;
-    if (firstTokenOperator->operatorType != OperatorType::ADDITION) {
+    const OperatorToken& firstTokenOperator =
+        static_cast<const OperatorToken&>(firstToken);
+
+    if (firstTokenOperator.operatorType != OperatorType::ADDITION) {
       throw std::format_error("Only `+` operator is implemented");
     }
 
-    Token* secondToken = tokens[tokensIndex + 1];
-    std::cout << secondToken->tokenType << "\n";
+    const Token& secondToken =
+        static_cast<const Token&>(tokens[tokensIndex + 1].get());
 
-    if (secondToken->tokenType != TokenType::NUMBER &&
-        secondToken->tokenType != TokenType::IDENTIFIER) {
+    std::cout << secondToken.tokenType << "\n";
+
+    if (secondToken.tokenType != TokenType::NUMBER &&
+        secondToken.tokenType != TokenType::IDENTIFIER) {
       throw std::runtime_error(
           "Token adjacent to operator must be an identifier or a value");
     }
 
-    if (secondToken->tokenType == TokenType::NUMBER) {
+    if (secondToken.tokenType == TokenType::NUMBER) {
       statements.push_back(std::make_unique<AdditionStatement>(
           IdentifierValue(outputIdentifier),
           std::make_unique<IdentifierValue>(outputIdentifier),
-          std::make_unique<NumberValue>(((NumberToken*)secondToken)->value)));
+          std::make_unique<NumberValue>(
+              (static_cast<const NumberToken&>(secondToken)).value)));
 
       std::cout << outputIdentifier << " + "
-                << ((NumberToken*)secondToken)->value << "\n";
+                << (static_cast<const NumberToken&>(secondToken)).value << "\n";
     }
 
-    if (secondToken->tokenType == TokenType::IDENTIFIER) {
+    if (secondToken.tokenType == TokenType::IDENTIFIER) {
       statements.push_back(std::make_unique<AdditionStatement>(
           IdentifierValue(outputIdentifier),
           std::make_unique<IdentifierValue>(outputIdentifier),
           std::make_unique<IdentifierValue>(
-              ((IdentifierToken*)secondToken)->name)));
+              static_cast<const IdentifierToken&>(secondToken).name)));
     }
 
     tokensIndex += 2;
@@ -133,38 +141,41 @@ AbstractSyntaxTree::evaluateOperations(std::vector<Token*> tokens,
 Program AbstractSyntaxTree::parse() {
   Program program;
 
-  std::vector<Token*> buffer;
+  std::vector<std::reference_wrapper<const Token>> buffer;
 
   for (size_t i = 0; i < this->tokenContainer.getCount(); i++) {
 
-    Token* token = this->tokenContainer.get(i);
+    const Token& token = this->tokenContainer.view(i);
     buffer.push_back(token);
 
-    if (token->tokenType == TokenType::END_OF_LINE) {
-      if (buffer[0]->tokenType == TokenType::PRIMITIVE &&
-          buffer[1]->tokenType == TokenType::IDENTIFIER &&
-          buffer[2]->tokenType == TokenType::OPERATOR) {
+    if (token.tokenType == TokenType::END_OF_LINE) {
+      if (buffer[0].get().tokenType == TokenType::PRIMITIVE &&
+          buffer[1].get().tokenType == TokenType::IDENTIFIER &&
+          buffer[2].get().tokenType == TokenType::OPERATOR) {
 
-        PrimitiveToken* primitive = dynamic_cast<PrimitiveToken*>(buffer[0]);
-        IdentifierToken* identifier = dynamic_cast<IdentifierToken*>(buffer[1]);
-        OperatorToken* oper = dynamic_cast<OperatorToken*>(buffer[2]);
+        const PrimitiveToken& primitive =
+            static_cast<const PrimitiveToken&>(buffer[0].get());
+        const IdentifierToken& identifier =
+            dynamic_cast<const IdentifierToken&>(buffer[1].get());
+        const OperatorToken& oper =
+            dynamic_cast<const OperatorToken&>(buffer[2].get());
 
-        if (oper->operatorType != OperatorType::ASSIGNMENT) {
+        if (oper.operatorType != OperatorType::ASSIGNMENT) {
           throw std::runtime_error("Assignment must have `=` operator");
         }
 
-        std::vector<Token*> remainingTokens(buffer.begin() + 3,
-                                            buffer.end() - 1);
+        std::vector<std::reference_wrapper<const Token>> remainingTokens(
+            buffer.begin() + 3, buffer.end() - 1);
 
         // Initialise
         program.addInitialisation(std::make_unique<InitialisationStatement>(
             this->getStatementPrimitiveTypeFromPrimitiveType(
-                primitive->primitiveType),
-            std::make_unique<IdentifierValue>(identifier->name)));
+                primitive.primitiveType),
+            std::make_unique<IdentifierValue>(identifier.name)));
 
         // Calculate statements for RHS
         std::vector<std::unique_ptr<Statement>> statements =
-            this->evaluateOperations(remainingTokens, identifier->name);
+            this->evaluateOperations(remainingTokens, identifier.name);
 
         // Append RHS calculations
         for (size_t i = 0; i < statements.size(); i++) {
@@ -172,13 +183,15 @@ Program AbstractSyntaxTree::parse() {
         }
       }
 
-      if (buffer[0]->tokenType == TokenType::RETURN &&
-          buffer[1]->tokenType == TokenType::IDENTIFIER) {
+      if (buffer[0].get().tokenType == TokenType::RETURN &&
+          buffer[1].get().tokenType == TokenType::IDENTIFIER) {
 
-        IdentifierToken* identifier = dynamic_cast<IdentifierToken*>(buffer[1]);
+        const IdentifierToken& identifier =
+            static_cast<const IdentifierToken&>(buffer[1].get());
+
         std::unique_ptr<ReturnStatement> returnStatement =
             std::make_unique<ReturnStatement>(
-                std::make_unique<IdentifierValue>(identifier->name));
+                std::make_unique<IdentifierValue>(identifier.name));
 
         program.addReturn(std::move(returnStatement));
       }

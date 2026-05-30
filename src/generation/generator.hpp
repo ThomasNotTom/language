@@ -80,21 +80,21 @@ public:
     bool hasMainReturn = false;
 
     for (size_t i = 0; i < this->program.size(); i++) {
-      const Statement& statement = program.get(i);
+      const Statement& statement = program.view(i);
 
       switch (statement.statementType) {
         case StatementType::INITIALISATION: {
-          InitialisationStatement* initialisationStatement =
-              (InitialisationStatement*)&statement;
+          const InitialisationStatement& initialisationStatement =
+              static_cast<const InitialisationStatement&>(statement);
 
-          switch (initialisationStatement->type) {
+          switch (initialisationStatement.type) {
             case StatementPrimitiveType::UINT8: {
               llvm::Type* i8Type = llvm::Type::getInt8Ty(context);
               std::string identifierName =
-                  initialisationStatement->identifier->name;
+                  initialisationStatement.identifier->name;
 
               llvm::AllocaInst* alloc = builder.CreateAlloca(
-                  i8Type, nullptr, initialisationStatement->identifier->name);
+                  i8Type, nullptr, initialisationStatement.identifier->name);
 
               values[identifierName] = Variable{i8Type, alloc, nullptr};
               break;
@@ -104,26 +104,27 @@ public:
         }
 
         case StatementType::ASSIGNMENT: {
-          AssignmentStatement* assignmentStatement =
-              (AssignmentStatement*)&statement;
+          const AssignmentStatement& assignmentStatement =
+              static_cast<const AssignmentStatement&>(statement);
 
-          if (!values.contains(assignmentStatement->identifier.name)) {
+          if (!values.contains(assignmentStatement.identifier.name)) {
             std::string err = "Variable " +
-                              assignmentStatement->identifier.name +
+                              assignmentStatement.identifier.name +
                               " does not exist\n";
             throw std::runtime_error(err);
           }
 
-          std::string identifierName = assignmentStatement->identifier.name;
+          std::string identifierName = assignmentStatement.identifier.name;
           Variable variable = values[identifierName];
 
-          switch (assignmentStatement->assignmentType) {
+          switch (assignmentStatement.assignmentType) {
             case AssignmentType::NUMBER: {
-              AssignmentNumberStatement* assignmentNumberStatement =
-                  (AssignmentNumberStatement*)assignmentStatement;
+              const AssignmentNumberStatement& assignmentNumberStatement =
+                  static_cast<const AssignmentNumberStatement&>(
+                      assignmentStatement);
 
               llvm::Value* value = llvm::ConstantInt::get(
-                  variable.type, assignmentNumberStatement->value.value);
+                  variable.type, assignmentNumberStatement.value.value);
 
               builder.CreateStore(value, variable.alloc);
               values[identifierName].value = value;
@@ -131,11 +132,13 @@ public:
             }
 
             case AssignmentType::IDENTIFIER: {
-              AssignmentIdentifierStatement* assignmentIdentifierStatement =
-                  (AssignmentIdentifierStatement*)assignmentStatement;
+              const AssignmentIdentifierStatement&
+                  assignmentIdentifierStatement =
+                      static_cast<const AssignmentIdentifierStatement&>(
+                          assignmentStatement);
 
               Variable otherVariable =
-                  values[assignmentIdentifierStatement->value.name];
+                  values[assignmentIdentifierStatement.value.name];
 
               builder.CreateStore(otherVariable.value, variable.alloc);
               values[identifierName].value = otherVariable.value;
@@ -148,8 +151,9 @@ public:
         }
 
         case StatementType::RETURN: {
-          ReturnStatement* returnStatement = (ReturnStatement*)&statement;
-          Variable returnValue = values[returnStatement->identifier->name];
+          const ReturnStatement& returnStatement =
+              static_cast<const ReturnStatement&>(statement);
+          Variable returnValue = values[returnStatement.identifier->name];
 
           builder.CreateRet(returnValue.value);
           hasMainReturn = true;
@@ -157,47 +161,49 @@ public:
         }
 
         case StatementType::ADDITION: {
-          AdditionStatement* additionStatement = (AdditionStatement*)&statement;
+          const AdditionStatement& additionStatement =
+              static_cast<const AdditionStatement&>(statement);
 
-          Variable variable = values[additionStatement->identifier.name];
+          Variable variable = values[additionStatement.identifier.name];
 
           llvm::Value* lhs;
-          switch (additionStatement->lhs->statementValueType) {
+          switch (additionStatement.lhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
-              IdentifierValue* lhsIdentifierValue =
-                  (IdentifierValue*)additionStatement->lhs.get();
 
-              lhs = values[lhsIdentifierValue->name].value;
+              const IdentifierValue& lhsIdentifierValue =
+                  static_cast<const IdentifierValue&>(
+                      *additionStatement.lhs.get());
+
+              lhs = values[lhsIdentifierValue.name].value;
 
               break;
             }
 
             case StatementValueType::NUMBER: {
-              NumberValue* lhsNumberValue =
-                  (NumberValue*)additionStatement->lhs.get();
-              lhs =
-                  llvm::ConstantInt::get(variable.type, lhsNumberValue->value);
+              const NumberValue& lhsNumberValue =
+                  static_cast<const NumberValue&>(*additionStatement.lhs.get());
+              lhs = llvm::ConstantInt::get(variable.type, lhsNumberValue.value);
               break;
             }
           }
 
           llvm::Value* rhs;
-          switch (additionStatement->rhs->statementValueType) {
+          switch (additionStatement.rhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
-              IdentifierValue* lhsIdentifierValue =
-                  (IdentifierValue*)additionStatement->rhs.get();
+              const IdentifierValue& lhsIdentifierValue =
+                  static_cast<const IdentifierValue&>(
+                      *additionStatement.rhs.get());
 
-              Variable rhsVariable = values[lhsIdentifierValue->name];
+              Variable rhsVariable = values[lhsIdentifierValue.name];
 
               rhs = rhsVariable.value;
               break;
             }
 
             case StatementValueType::NUMBER: {
-              NumberValue* rhsNumberValue =
-                  (NumberValue*)additionStatement->rhs.get();
-              rhs =
-                  llvm::ConstantInt::get(variable.type, rhsNumberValue->value);
+              const NumberValue& rhsNumberValue =
+                  static_cast<const NumberValue&>(*additionStatement.rhs.get());
+              rhs = llvm::ConstantInt::get(variable.type, rhsNumberValue.value);
               break;
             }
           }
@@ -206,7 +212,7 @@ public:
 
           builder.CreateStore(result, variable.alloc);
 
-          values[additionStatement->identifier.name].value = result;
+          values[additionStatement.identifier.name].value = result;
         }
       }
     }

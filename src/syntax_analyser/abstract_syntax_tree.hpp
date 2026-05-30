@@ -11,7 +11,8 @@ private:
   getStatementPrimitiveTypeFromPrimitiveType(PrimitiveType primitiveType);
 
   std::vector<std::unique_ptr<Statement>>
-  evaluateOperations(std::vector<Token*> tokens, std::string outputIdentifier);
+  evaluateOperations(std::vector<std::reference_wrapper<const Token>> tokens,
+                     std::string outputIdentifier);
 
   std::unique_ptr<InitialisationStatement>
   makeInitialisationStatement(PrimitiveType primitiveType,

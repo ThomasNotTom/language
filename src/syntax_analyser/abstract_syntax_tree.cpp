@@ -168,7 +168,7 @@ Program AbstractSyntaxTree::parse() {
             buffer.begin() + 3, buffer.end() - 1);
 
         // Initialise
-        program.addInitialisation(std::make_unique<InitialisationStatement>(
+        program.addStatement(std::make_unique<InitialisationStatement>(
             this->getStatementPrimitiveTypeFromPrimitiveType(
                 primitive.primitiveType),
             std::make_unique<IdentifierValue>(identifier.name)));
@@ -179,7 +179,7 @@ Program AbstractSyntaxTree::parse() {
 
         // Append RHS calculations
         for (size_t i = 0; i < statements.size(); i++) {
-          program.addAnyStatement(std::move(statements[i]));
+          program.addStatement(std::move(statements[i]));
         }
       }
 
@@ -193,7 +193,7 @@ Program AbstractSyntaxTree::parse() {
             std::make_unique<ReturnStatement>(
                 std::make_unique<IdentifierValue>(identifier.name));
 
-        program.addReturn(std::move(returnStatement));
+        program.addStatement(std::move(returnStatement));
       }
       buffer.clear();
     }

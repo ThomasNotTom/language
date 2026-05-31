@@ -18,28 +18,89 @@ class Program {
 private:
   std::vector<std::unique_ptr<Statement>> statements;
 
+  void printAssignmentNumberStatement(
+      const AssignmentNumberStatement assignmentNumberStatement) const {
+    std::string identifierName = assignmentNumberStatement.identifier.name;
+    NumberValue statementValue = assignmentNumberStatement.value;
+
+    std::cout << identifierName << " = " << statementValue.value << ";\n";
+  };
+
+  void printAssignmentIdentifierStatement(
+      const AssignmentIdentifierStatement assignmentIdentifierStatement) const {
+    std::string identifierName = assignmentIdentifierStatement.identifier.name;
+    IdentifierValue statementValue = assignmentIdentifierStatement.value;
+
+    std::cout << identifierName << " = " << statementValue.name << ";\n";
+  };
+
+  void printInitialisationStatement(
+      const InitialisationStatement& initialisationStatement) const {
+    switch (initialisationStatement.type) {
+      case StatementPrimitiveType::UINT8: {
+        std::cout << "UINT8 ";
+        break;
+      }
+    }
+
+    std::cout << initialisationStatement.identifier->name << ";\n";
+  };
+
+  void printReturnStatement(const ReturnStatement& returnStatement) const {
+    std::cout << "RETURN " << returnStatement.identifier->name << ";\n";
+  }
+
+  std::string
+  getStatementValueString(const StatementValue& statementValue) const {
+    std::string out = "";
+    if (statementValue.statementValueType == StatementValueType::NUMBER) {
+      const NumberValue& numberValue =
+          static_cast<const NumberValue&>(statementValue);
+
+      out = std::to_string(numberValue.value);
+
+    } else if (statementValue.statementValueType ==
+               StatementValueType::IDENTIFIER) {
+      const IdentifierValue& identifierValue =
+          static_cast<const IdentifierValue&>(statementValue);
+      out = identifierValue.name;
+    }
+
+    return out;
+  }
+
+  void
+  printAdditionStatement(const AdditionStatement& additionStatement) const {
+    std::string lhs = this->getStatementValueString(*additionStatement.lhs);
+    std::string rhs = this->getStatementValueString(*additionStatement.rhs);
+
+    std::cout << additionStatement.identifier.name << " = " << lhs << " + "
+              << rhs << ";\n";
+  }
+
 public:
   Program();
 
-  void addAnyStatement(std::unique_ptr<Statement> statement) {
+  void addStatement(std::unique_ptr<Statement> statement) {
     this->statements.push_back(std::move(statement));
   }
 
-  void addAssignment(std::unique_ptr<AssignmentStatement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
+  // void addAssignment(std::unique_ptr<AssignmentStatement> statement) {
+  //   this->statements.push_back(std::move(statement));
+  // }
 
-  void addInitialisation(std::unique_ptr<InitialisationStatement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
+  // void addInitialisation(std::unique_ptr<InitialisationStatement> statement)
+  // {
+  //   this->statements.push_back(std::move(statement));
+  // }
 
-  void addReturn(std::unique_ptr<ReturnStatement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
+  // void addReturn(std::unique_ptr<ReturnStatement> statement) {
+  //   this->statements.push_back(std::move(statement));
+  // }
 
-  void addAddition(std::unique_ptr<AdditionStatement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
+  // void addAddition(std::unique_ptr<AdditionStatement> statement) {
+  //   this->statements.push_back(std::move(statement));
+  // }
 
   size_t size() const { return this->statements.size(); }
 
@@ -64,11 +125,7 @@ public:
               const AssignmentNumberStatement& assignmentNumberStatement =
                   static_cast<const AssignmentNumberStatement&>(
                       assignmentStatement);
-
-              NumberValue statementValue = assignmentNumberStatement.value;
-
-              std::cout << identifier.name << " = " << statementValue.value
-                        << ";\n";
+              this->printAssignmentNumberStatement(assignmentNumberStatement);
               break;
             }
 
@@ -78,11 +135,9 @@ public:
                       static_cast<const AssignmentIdentifierStatement&>(
                           assignmentStatement);
 
-              IdentifierValue statementValue =
-                  assignmentIdentifierStatement.value;
+              this->printAssignmentIdentifierStatement(
+                  assignmentIdentifierStatement);
 
-              std::cout << identifier.name << " = " << statementValue.name
-                        << ";\n";
               break;
             }
           }
@@ -93,14 +148,8 @@ public:
           const InitialisationStatement& initialisationStatement =
               static_cast<const InitialisationStatement&>(statement);
 
-          switch (initialisationStatement.type) {
-            case StatementPrimitiveType::UINT8: {
-              std::cout << "UINT8 ";
-              break;
-            }
-          }
+          this->printInitialisationStatement(initialisationStatement);
 
-          std::cout << initialisationStatement.identifier->name << ";\n";
           break;
         }
 
@@ -108,45 +157,18 @@ public:
           const ReturnStatement& returnStatement =
               static_cast<const ReturnStatement&>(statement);
 
-          std::cout << "RETURN " << returnStatement.identifier->name << ";\n";
+          this->printReturnStatement(returnStatement);
+
           break;
         }
 
         case StatementType::ADDITION: {
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
-          std::string lhs = "";
-          if (additionStatement.lhs->statementValueType ==
-              StatementValueType::NUMBER) {
-            NumberValue& numberValue =
-                static_cast<NumberValue&>(*additionStatement.lhs.get());
 
-            lhs = std::to_string(numberValue.value);
+          this->printAdditionStatement(additionStatement);
 
-          } else if (additionStatement.lhs->statementValueType ==
-                     StatementValueType::IDENTIFIER) {
-            IdentifierValue& identifierValue =
-                static_cast<IdentifierValue&>(*additionStatement.lhs.get());
-            lhs = identifierValue.name;
-          }
-
-          std::string rhs = "";
-          if (additionStatement.rhs->statementValueType ==
-              StatementValueType::NUMBER) {
-            NumberValue& numberValue =
-                static_cast<NumberValue&>(*additionStatement.rhs.get());
-            rhs = std::to_string(numberValue.value);
-
-          } else if (additionStatement.rhs->statementValueType ==
-                     StatementValueType::IDENTIFIER) {
-            IdentifierValue& identifierValue =
-                static_cast<IdentifierValue&>(*additionStatement.rhs.get());
-
-            rhs = identifierValue.name;
-          }
-
-          std::cout << additionStatement.identifier.name << " = " << lhs
-                    << " + " << rhs << ";\n";
+          break;
         }
       }
     }

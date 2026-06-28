@@ -1,7 +1,5 @@
 #include "../syntax_analyser/program/program.hpp"
-#include "./compiler_state.hpp"
 #include "generation/builder/builder.hpp"
-#include "generation/primitives/value/uint8.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/assignment/assignment_type.hpp"
@@ -14,6 +12,8 @@
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
 #include "syntax_analyser/statement/value/value.hpp"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Instruction.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
@@ -22,7 +22,6 @@
 #include "llvm/Support/Program.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
-#include <fstream>
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -38,7 +37,6 @@
 #include <llvm/TargetParser/Host.h>
 #include <memory>
 #include <optional>
-#include <stdexcept>
 
 class Generator {
 private:
@@ -60,7 +58,7 @@ public:
     std::unique_ptr<llvm::Module> module =
         std::make_unique<llvm::Module>("build", context);
 
-    llvm::IRBuilder<> builder(context);
+    Builder builder = Builder(context);
 
     llvm::FunctionType* mainFuncType =
         llvm::FunctionType::get(llvm::Type::getInt32Ty(context), {}, false);
@@ -70,7 +68,7 @@ public:
 
     llvm::BasicBlock* mainEntry =
         llvm::BasicBlock::Create(context, "entry", mainFunc);
-    builder.SetInsertPoint(mainEntry);
+    builder.setInsertPoint(mainEntry);
 
     bool hasMainReturn = false;
 
@@ -169,9 +167,8 @@ public:
       }
     }
     if (!hasMainReturn) {
-      llvm::Value* returnValue =
-          llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
-      builder.CreateRet(returnValue);
+      llvm::ConstantInt* returnValue = builder.createConst32(0);
+      builder.createReturn(returnValue);
     }
 
     std::cout << "-- LLVM IR --" << std::endl;

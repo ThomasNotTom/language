@@ -1,5 +1,7 @@
-
 #include "../syntax_analyser/program/program.hpp"
+#include "./compiler_state.hpp"
+#include "generation/builder/builder.hpp"
+#include "generation/primitives/value/uint8.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/assignment/assignment_type.hpp"
@@ -20,6 +22,7 @@
 #include "llvm/Support/Program.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
+#include <fstream>
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -33,7 +36,6 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/TargetParser/Host.h>
-#include <map>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -52,13 +54,6 @@ public:
   }
 
   void compile() {
-    struct Variable {
-      llvm::Type* type;
-      llvm::AllocaInst* alloc;
-      llvm::Value* value;
-    };
-
-    std::map<std::string, Variable> values;
 
     llvm::LLVMContext context;
 
@@ -89,14 +84,9 @@ public:
 
           switch (initialisationStatement.type) {
             case StatementPrimitiveType::UINT8: {
-              llvm::Type* i8Type = llvm::Type::getInt8Ty(context);
               std::string identifierName =
                   initialisationStatement.identifier->name;
 
-              llvm::AllocaInst* alloc = builder.CreateAlloca(
-                  i8Type, nullptr, initialisationStatement.identifier->name);
-
-              values[identifierName] = Variable{i8Type, alloc, nullptr};
               break;
             }
           }
@@ -107,27 +97,12 @@ public:
           const AssignmentStatement& assignmentStatement =
               static_cast<const AssignmentStatement&>(statement);
 
-          if (!values.contains(assignmentStatement.identifier.name)) {
-            std::string err = "Variable " +
-                              assignmentStatement.identifier.name +
-                              " does not exist\n";
-            throw std::runtime_error(err);
-          }
-
-          std::string identifierName = assignmentStatement.identifier.name;
-          Variable variable = values[identifierName];
-
           switch (assignmentStatement.assignmentType) {
             case AssignmentType::NUMBER: {
               const AssignmentNumberStatement& assignmentNumberStatement =
                   static_cast<const AssignmentNumberStatement&>(
                       assignmentStatement);
 
-              llvm::Value* value = llvm::ConstantInt::get(
-                  variable.type, assignmentNumberStatement.value.value);
-
-              builder.CreateStore(value, variable.alloc);
-              values[identifierName].value = value;
               break;
             }
 
@@ -136,12 +111,6 @@ public:
                   assignmentIdentifierStatement =
                       static_cast<const AssignmentIdentifierStatement&>(
                           assignmentStatement);
-
-              Variable otherVariable =
-                  values[assignmentIdentifierStatement.value.name];
-
-              builder.CreateStore(otherVariable.value, variable.alloc);
-              values[identifierName].value = otherVariable.value;
 
               break;
             }
@@ -153,10 +122,7 @@ public:
         case StatementType::RETURN: {
           const ReturnStatement& returnStatement =
               static_cast<const ReturnStatement&>(statement);
-          Variable returnValue = values[returnStatement.identifier->name];
 
-          builder.CreateRet(returnValue.value);
-          hasMainReturn = true;
           break;
         }
 
@@ -164,9 +130,6 @@ public:
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
 
-          Variable variable = values[additionStatement.identifier.name];
-
-          llvm::Value* lhs;
           switch (additionStatement.lhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
 
@@ -174,52 +137,40 @@ public:
                   static_cast<const IdentifierValue&>(
                       *additionStatement.lhs.get());
 
-              lhs = values[lhsIdentifierValue.name].value;
-
               break;
             }
 
             case StatementValueType::NUMBER: {
               const NumberValue& lhsNumberValue =
                   static_cast<const NumberValue&>(*additionStatement.lhs.get());
-              lhs = llvm::ConstantInt::get(variable.type, lhsNumberValue.value);
+
               break;
             }
           }
 
-          llvm::Value* rhs;
           switch (additionStatement.rhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
-              const IdentifierValue& lhsIdentifierValue =
+
+              const IdentifierValue& rhsIdentifierValue =
                   static_cast<const IdentifierValue&>(
                       *additionStatement.rhs.get());
 
-              Variable rhsVariable = values[lhsIdentifierValue.name];
-
-              rhs = rhsVariable.value;
               break;
             }
 
             case StatementValueType::NUMBER: {
               const NumberValue& rhsNumberValue =
                   static_cast<const NumberValue&>(*additionStatement.rhs.get());
-              rhs = llvm::ConstantInt::get(variable.type, rhsNumberValue.value);
+
               break;
             }
           }
-
-          llvm::Value* result = builder.CreateAdd(lhs, rhs);
-
-          builder.CreateStore(result, variable.alloc);
-
-          values[additionStatement.identifier.name].value = result;
         }
       }
     }
     if (!hasMainReturn) {
       llvm::Value* returnValue =
           llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
-
       builder.CreateRet(returnValue);
     }
 

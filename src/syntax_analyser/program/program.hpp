@@ -47,7 +47,22 @@ private:
   };
 
   void printReturnStatement(const ReturnStatement& returnStatement) const {
-    std::cout << "RETURN " << returnStatement.identifier->name << ";\n";
+    switch (returnStatement.value->statementValueType) {
+      case StatementValueType::NUMBER: {
+        const NumberValue& numberValue =
+            static_cast<const NumberValue&>(*returnStatement.value);
+        std::cout << "RETURN " << numberValue.value << ";\n";
+        break;
+      }
+
+      case StatementValueType::IDENTIFIER: {
+        const IdentifierValue& identifierValue =
+            static_cast<const IdentifierValue&>(*returnStatement.value);
+        std::cout << "RETURN " << identifierValue.name << ";\n";
+
+        break;
+      }
+    }
   }
 
   std::string

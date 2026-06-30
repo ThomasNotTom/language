@@ -195,6 +195,19 @@ Program AbstractSyntaxTree::parse() {
 
         program.addStatement(std::move(returnStatement));
       }
+
+      if (buffer[0].get().tokenType == TokenType::RETURN &&
+          buffer[1].get().tokenType == TokenType::NUMBER) {
+
+        const NumberToken& number =
+            static_cast<const NumberToken&>(buffer[1].get());
+
+        std::unique_ptr<ReturnStatement> returnStatement =
+            std::make_unique<ReturnStatement>(
+                std::make_unique<NumberValue>(number.value));
+
+        program.addStatement(std::move(returnStatement));
+      }
       buffer.clear();
     }
   }

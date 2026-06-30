@@ -100,23 +100,6 @@ public:
     this->statements.push_back(std::move(statement));
   }
 
-  // void addAssignment(std::unique_ptr<AssignmentStatement> statement) {
-  //   this->statements.push_back(std::move(statement));
-  // }
-
-  // void addInitialisation(std::unique_ptr<InitialisationStatement> statement)
-  // {
-  //   this->statements.push_back(std::move(statement));
-  // }
-
-  // void addReturn(std::unique_ptr<ReturnStatement> statement) {
-  //   this->statements.push_back(std::move(statement));
-  // }
-
-  // void addAddition(std::unique_ptr<AdditionStatement> statement) {
-  //   this->statements.push_back(std::move(statement));
-  // }
-
   size_t size() const { return this->statements.size(); }
 
   const Statement& view(size_t i) const { return *this->statements[i]; }

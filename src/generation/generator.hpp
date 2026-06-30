@@ -140,16 +140,14 @@ public:
           const ReturnStatement& returnStatement =
               static_cast<const ReturnStatement&>(statement);
 
+          llvm::Value* returnValue;
+
           switch (returnStatement.value->statementValueType) {
             case StatementValueType::NUMBER: {
               const NumberValue& numberValue =
                   static_cast<const NumberValue&>(*returnStatement.value);
 
-              llvm::ConstantInt* returnValue =
-                  builder.createConst32(numberValue.value);
-              builder.createReturn(returnValue);
-
-              hasMainReturn = true;
+              returnValue = builder.createConst32(numberValue.value);
               break;
             }
 
@@ -157,15 +155,19 @@ public:
               const IdentifierValue& identifierValue =
                   static_cast<const IdentifierValue&>(*returnStatement.value);
 
-              std::unique_ptr<BuilderUint8>& returnValue =
+              std::unique_ptr<BuilderUint8>& returnBuilder =
                   symbols.at(identifierValue.name);
 
-              builder.createReturn(
-                  builder.load(builder.getUint32(), returnValue->getAlloc()));
+              llvm::Value* rawOut =
+                  builder.load(builder.getUint8(), returnBuilder->getAlloc());
 
-              hasMainReturn = true;
+              returnValue = builder.zext(rawOut, builder.getUint32());
             }
           }
+
+          builder.createReturn(returnValue);
+
+          hasMainReturn = true;
 
           break;
         }

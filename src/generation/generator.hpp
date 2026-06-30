@@ -1,5 +1,6 @@
 #include "../syntax_analyser/program/program.hpp"
 #include "generation/builder/builder.hpp"
+#include "generation/primitives/uint8.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/assignment/assignment_type.hpp"
@@ -35,6 +36,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/TargetParser/Host.h>
+#include <map>
 #include <memory>
 #include <optional>
 
@@ -70,6 +72,8 @@ public:
         llvm::BasicBlock::Create(context, "entry", mainFunc);
     builder.setInsertPoint(mainEntry);
 
+    std::map<std::string, std::unique_ptr<BuilderUint8>> symbols;
+
     bool hasMainReturn = false;
 
     for (size_t i = 0; i < this->program.size(); i++) {
@@ -84,6 +88,9 @@ public:
             case StatementPrimitiveType::UINT8: {
               std::string identifierName =
                   initialisationStatement.identifier->name;
+
+              symbols.emplace(identifierName, std::make_unique<BuilderUint8>(
+                                                  builder, identifierName));
 
               break;
             }
@@ -101,6 +108,10 @@ public:
                   static_cast<const AssignmentNumberStatement&>(
                       assignmentStatement);
 
+              std::unique_ptr<BuilderUint8>& uint8 =
+                  symbols.at(assignmentNumberStatement.identifier.name);
+
+              uint8->storeValue(assignmentNumberStatement.value.value);
               break;
             }
 

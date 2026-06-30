@@ -62,6 +62,10 @@ public:
   };
 
   llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs) {
-    this->irBuilder.CreateAdd(lhs, rhs);
-  }
+    return this->irBuilder.CreateAdd(lhs, rhs);
+  };
+
+  llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {
+    return this->irBuilder.CreateZExt(in, outType);
+  };
 };

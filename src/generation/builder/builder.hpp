@@ -60,4 +60,8 @@ public:
   llvm::LoadInst* load(llvm::Type* type, llvm::Value* value) {
     return this->irBuilder.CreateLoad(type, value);
   };
+
+  llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs) {
+    this->irBuilder.CreateAdd(lhs, rhs);
+  }
 };

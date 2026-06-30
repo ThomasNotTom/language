@@ -19,9 +19,13 @@ public:
     this->builder.store(builder.createConst8(value), this->alloc);
   };
 
-  void assignValue(Builder& builder, BuilderUint8& other) {
+  void assignValue(BuilderUint8& other) {
     builder.store(builder.load(builder.getUint8(), other.alloc), this->alloc);
   };
 
-  llvm::AllocaInst* getAlloc() { return this->alloc; }
+  void addValue(uint8_t value) {
+    builder.add(this->alloc, builder.createConst8(value));
+  };
+
+  llvm::AllocaInst* getAlloc() { return this->alloc; };
 };

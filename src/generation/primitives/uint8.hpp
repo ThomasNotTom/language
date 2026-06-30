@@ -18,4 +18,10 @@ public:
   void storeValue(uint8_t value) {
     this->builder.store(builder.createConst8(value), this->alloc);
   };
+
+  void assignValue(Builder& builder, BuilderUint8& other) {
+    builder.store(builder.load(builder.getUint8(), other.alloc), this->alloc);
+  };
+
+  llvm::AllocaInst* getAlloc() { return this->alloc; }
 };

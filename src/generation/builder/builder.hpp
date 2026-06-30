@@ -56,4 +56,8 @@ public:
   llvm::StoreInst* store(llvm::Value* value, llvm::Value* out) {
     return this->irBuilder.CreateStore(value, out);
   };
+
+  llvm::LoadInst* load(llvm::Type* type, llvm::Value* value) {
+    return this->irBuilder.CreateLoad(type, value);
+  };
 };

@@ -10,8 +10,8 @@
 
 TokenContainer::TokenContainer() {};
 
-Token* TokenContainer::get(size_t index) const {
-  return this->tokens[index].get();
+const Token& TokenContainer::view(size_t index) const {
+  return *this->tokens[index].get();
 }
 
 size_t TokenContainer::getCount() const { return this->tokens.size(); }
@@ -21,18 +21,19 @@ void TokenContainer::print() const {
   std::cout << "count: " << this->getCount() << "\n";
   std::cout << "tokens: " << "\n";
   for (size_t i = 0; i < this->getCount(); i++) {
-    Token* token = this->get(i);
+    const Token& token = this->view(i);
 
-    switch (token->tokenType) {
+    switch (token.tokenType) {
       case END_OF_LINE: {
         std::cout << "END_OF_LINE\n";
         break;
       }
 
       case PRIMITIVE: {
-        PrimitiveToken* primitive = (PrimitiveToken*)token;
+        const PrimitiveToken& primitive =
+            static_cast<const PrimitiveToken&>(token);
 
-        switch (primitive->primitiveType) {
+        switch (primitive.primitiveType) {
           case PrimitiveType::UINT8: {
             std::cout << "PRIMITIVE(UINT8)\n";
             break;
@@ -42,9 +43,9 @@ void TokenContainer::print() const {
       }
 
       case OPERATOR: {
-        OperatorToken* op = (OperatorToken*)token;
+        const OperatorToken& op = static_cast<const OperatorToken&>(token);
 
-        switch (op->operatorType) {
+        switch (op.operatorType) {
           case ASSIGNMENT: {
             std::cout << "OPERATOR(=)\n";
             break;
@@ -59,16 +60,17 @@ void TokenContainer::print() const {
       }
 
       case IDENTIFIER: {
-        IdentifierToken* identifier = (IdentifierToken*)token;
+        const IdentifierToken& identifier =
+            static_cast<const IdentifierToken&>(token);
 
-        std::cout << "IDENTIFIER(\"" << identifier->name << "\")\n";
+        std::cout << "IDENTIFIER(\"" << identifier.name << "\")\n";
         break;
       }
 
       case NUMBER: {
-        NumberToken* number = (NumberToken*)token;
+        const NumberToken& number = static_cast<const NumberToken&>(token);
 
-        std::cout << "NUMBER(" << number->value << ")\n";
+        std::cout << "NUMBER(" << number.value << ")\n";
         break;
       }
 

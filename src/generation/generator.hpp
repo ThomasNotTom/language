@@ -1,5 +1,6 @@
-
 #include "../syntax_analyser/program/program.hpp"
+#include "generation/builder/builder.hpp"
+#include "generation/primitives/uint8.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/assignment/assignment_type.hpp"
@@ -12,6 +13,8 @@
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
 #include "syntax_analyser/statement/value/value.hpp"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Instruction.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
@@ -36,7 +39,6 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <stdexcept>
 
 class Generator {
 private:
@@ -52,20 +54,13 @@ public:
   }
 
   void compile() {
-    struct Variable {
-      llvm::Type* type;
-      llvm::AllocaInst* alloc;
-      llvm::Value* value;
-    };
-
-    std::map<std::string, Variable> values;
 
     llvm::LLVMContext context;
 
     std::unique_ptr<llvm::Module> module =
         std::make_unique<llvm::Module>("build", context);
 
-    llvm::IRBuilder<> builder(context);
+    Builder builder = Builder(context);
 
     llvm::FunctionType* mainFuncType =
         llvm::FunctionType::get(llvm::Type::getInt32Ty(context), {}, false);
@@ -75,28 +70,28 @@ public:
 
     llvm::BasicBlock* mainEntry =
         llvm::BasicBlock::Create(context, "entry", mainFunc);
-    builder.SetInsertPoint(mainEntry);
+    builder.setInsertPoint(mainEntry);
+
+    std::map<std::string, std::unique_ptr<BuilderUint8>> symbols;
 
     bool hasMainReturn = false;
 
     for (size_t i = 0; i < this->program.size(); i++) {
-      const Statement& statement = program.get(i);
+      const Statement& statement = program.view(i);
 
       switch (statement.statementType) {
         case StatementType::INITIALISATION: {
-          InitialisationStatement* initialisationStatement =
-              (InitialisationStatement*)&statement;
+          const InitialisationStatement& initialisationStatement =
+              static_cast<const InitialisationStatement&>(statement);
 
-          switch (initialisationStatement->type) {
+          switch (initialisationStatement.type) {
             case StatementPrimitiveType::UINT8: {
-              llvm::Type* i8Type = llvm::Type::getInt8Ty(context);
               std::string identifierName =
-                  initialisationStatement->identifier->name;
+                  initialisationStatement.identifier->name;
 
-              llvm::AllocaInst* alloc = builder.CreateAlloca(
-                  i8Type, nullptr, initialisationStatement->identifier->name);
+              symbols.emplace(identifierName, std::make_unique<BuilderUint8>(
+                                                  builder, identifierName));
 
-              values[identifierName] = Variable{i8Type, alloc, nullptr};
               break;
             }
           }
@@ -104,41 +99,35 @@ public:
         }
 
         case StatementType::ASSIGNMENT: {
-          AssignmentStatement* assignmentStatement =
-              (AssignmentStatement*)&statement;
+          const AssignmentStatement& assignmentStatement =
+              static_cast<const AssignmentStatement&>(statement);
 
-          if (!values.contains(assignmentStatement->identifier.name)) {
-            std::string err = "Variable " +
-                              assignmentStatement->identifier.name +
-                              " does not exist\n";
-            throw std::runtime_error(err);
-          }
-
-          std::string identifierName = assignmentStatement->identifier.name;
-          Variable variable = values[identifierName];
-
-          switch (assignmentStatement->assignmentType) {
+          switch (assignmentStatement.assignmentType) {
             case AssignmentType::NUMBER: {
-              AssignmentNumberStatement* assignmentNumberStatement =
-                  (AssignmentNumberStatement*)assignmentStatement;
+              const AssignmentNumberStatement& assignmentNumberStatement =
+                  static_cast<const AssignmentNumberStatement&>(
+                      assignmentStatement);
 
-              llvm::Value* value = llvm::ConstantInt::get(
-                  variable.type, assignmentNumberStatement->value.value);
+              std::unique_ptr<BuilderUint8>& uint8 =
+                  symbols.at(assignmentNumberStatement.identifier.name);
 
-              builder.CreateStore(value, variable.alloc);
-              values[identifierName].value = value;
+              uint8->storeValue(assignmentNumberStatement.value.value);
               break;
             }
 
             case AssignmentType::IDENTIFIER: {
-              AssignmentIdentifierStatement* assignmentIdentifierStatement =
-                  (AssignmentIdentifierStatement*)assignmentStatement;
+              const AssignmentIdentifierStatement&
+                  assignmentIdentifierStatement =
+                      static_cast<const AssignmentIdentifierStatement&>(
+                          assignmentStatement);
 
-              Variable otherVariable =
-                  values[assignmentIdentifierStatement->value.name];
+              std::unique_ptr<BuilderUint8>& in =
+                  symbols.at(assignmentIdentifierStatement.value.name);
 
-              builder.CreateStore(otherVariable.value, variable.alloc);
-              values[identifierName].value = otherVariable.value;
+              std::unique_ptr<BuilderUint8>& out =
+                  symbols.at(assignmentIdentifierStatement.identifier.name);
+
+              out->assignValue(*in);
 
               break;
             }
@@ -148,73 +137,102 @@ public:
         }
 
         case StatementType::RETURN: {
-          ReturnStatement* returnStatement = (ReturnStatement*)&statement;
-          Variable returnValue = values[returnStatement->identifier->name];
+          const ReturnStatement& returnStatement =
+              static_cast<const ReturnStatement&>(statement);
 
-          builder.CreateRet(returnValue.value);
+          llvm::Value* returnValue;
+
+          switch (returnStatement.value->statementValueType) {
+            case StatementValueType::NUMBER: {
+              const NumberValue& numberValue =
+                  static_cast<const NumberValue&>(*returnStatement.value);
+
+              returnValue = builder.createConst32(numberValue.value);
+              break;
+            }
+
+            case StatementValueType::IDENTIFIER: {
+              const IdentifierValue& identifierValue =
+                  static_cast<const IdentifierValue&>(*returnStatement.value);
+
+              std::unique_ptr<BuilderUint8>& returnBuilder =
+                  symbols.at(identifierValue.name);
+
+              llvm::Value* rawOut =
+                  builder.load(builder.getUint8(), returnBuilder->getAlloc());
+
+              returnValue = builder.zext(rawOut, builder.getUint32());
+            }
+          }
+
+          builder.createReturn(returnValue);
+
           hasMainReturn = true;
+
           break;
         }
 
         case StatementType::ADDITION: {
-          AdditionStatement* additionStatement = (AdditionStatement*)&statement;
+          const AdditionStatement& additionStatement =
+              static_cast<const AdditionStatement&>(statement);
 
-          Variable variable = values[additionStatement->identifier.name];
+          std::unique_ptr<BuilderUint8>& out =
+              symbols.at(additionStatement.identifier.name);
 
           llvm::Value* lhs;
-          switch (additionStatement->lhs->statementValueType) {
-            case StatementValueType::IDENTIFIER: {
-              IdentifierValue* lhsIdentifierValue =
-                  (IdentifierValue*)additionStatement->lhs.get();
-
-              lhs = values[lhsIdentifierValue->name].value;
-
-              break;
-            }
-
-            case StatementValueType::NUMBER: {
-              NumberValue* lhsNumberValue =
-                  (NumberValue*)additionStatement->lhs.get();
-              lhs =
-                  llvm::ConstantInt::get(variable.type, lhsNumberValue->value);
-              break;
-            }
-          }
-
           llvm::Value* rhs;
-          switch (additionStatement->rhs->statementValueType) {
+
+          switch (additionStatement.lhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
-              IdentifierValue* lhsIdentifierValue =
-                  (IdentifierValue*)additionStatement->rhs.get();
+              const IdentifierValue& lhsIdentifierValue =
+                  static_cast<const IdentifierValue&>(
+                      *additionStatement.lhs.get());
 
-              Variable rhsVariable = values[lhsIdentifierValue->name];
+              std::unique_ptr<BuilderUint8>& lhsValue =
+                  symbols.at(lhsIdentifierValue.name);
 
-              rhs = rhsVariable.value;
+              lhs = builder.load(builder.getUint8(), lhsValue->getAlloc());
               break;
             }
 
             case StatementValueType::NUMBER: {
-              NumberValue* rhsNumberValue =
-                  (NumberValue*)additionStatement->rhs.get();
-              rhs =
-                  llvm::ConstantInt::get(variable.type, rhsNumberValue->value);
+              const NumberValue& lhsNumberValue =
+                  static_cast<const NumberValue&>(*additionStatement.lhs.get());
+
+              lhs = builder.createConst8(lhsNumberValue.value);
               break;
             }
           }
 
-          llvm::Value* result = builder.CreateAdd(lhs, rhs);
+          switch (additionStatement.rhs->statementValueType) {
+            case StatementValueType::IDENTIFIER: {
+              const IdentifierValue& rhsIdentifierValue =
+                  static_cast<const IdentifierValue&>(
+                      *additionStatement.rhs.get());
 
-          builder.CreateStore(result, variable.alloc);
+              std::unique_ptr<BuilderUint8>& rhsValue =
+                  symbols.at(rhsIdentifierValue.name);
 
-          values[additionStatement->identifier.name].value = result;
+              rhs = builder.load(builder.getUint8(), rhsValue->getAlloc());
+              break;
+            }
+
+            case StatementValueType::NUMBER: {
+              const NumberValue& rhsNumberValue =
+                  static_cast<const NumberValue&>(*additionStatement.rhs.get());
+
+              rhs = builder.createConst8(rhsNumberValue.value);
+              break;
+            }
+          }
+
+          builder.store(builder.add(lhs, rhs), out->getAlloc());
         }
       }
     }
     if (!hasMainReturn) {
-      llvm::Value* returnValue =
-          llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
-
-      builder.CreateRet(returnValue);
+      llvm::ConstantInt* returnValue = builder.createConst32(0);
+      builder.createReturn(returnValue);
     }
 
     std::cout << "-- LLVM IR --" << std::endl;

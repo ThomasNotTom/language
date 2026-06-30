@@ -47,7 +47,7 @@ public:
     tokens.push_back(std::make_unique<ReturnToken>(token));
   }
 
-  Token* get(size_t index) const;
+  const Token& view(size_t index) const;
   size_t getCount() const;
 
   void print() const;

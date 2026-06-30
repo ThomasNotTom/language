@@ -18,65 +18,124 @@ class Program {
 private:
   std::vector<std::unique_ptr<Statement>> statements;
 
+  void printAssignmentNumberStatement(
+      const AssignmentNumberStatement assignmentNumberStatement) const {
+    std::string identifierName = assignmentNumberStatement.identifier.name;
+    NumberValue statementValue = assignmentNumberStatement.value;
+
+    std::cout << identifierName << " = " << statementValue.value << ";\n";
+  };
+
+  void printAssignmentIdentifierStatement(
+      const AssignmentIdentifierStatement assignmentIdentifierStatement) const {
+    std::string identifierName = assignmentIdentifierStatement.identifier.name;
+    IdentifierValue statementValue = assignmentIdentifierStatement.value;
+
+    std::cout << identifierName << " = " << statementValue.name << ";\n";
+  };
+
+  void printInitialisationStatement(
+      const InitialisationStatement& initialisationStatement) const {
+    switch (initialisationStatement.type) {
+      case StatementPrimitiveType::UINT8: {
+        std::cout << "UINT8 ";
+        break;
+      }
+    }
+
+    std::cout << initialisationStatement.identifier->name << ";\n";
+  };
+
+  void printReturnStatement(const ReturnStatement& returnStatement) const {
+    switch (returnStatement.value->statementValueType) {
+      case StatementValueType::NUMBER: {
+        const NumberValue& numberValue =
+            static_cast<const NumberValue&>(*returnStatement.value);
+        std::cout << "RETURN " << numberValue.value << ";\n";
+        break;
+      }
+
+      case StatementValueType::IDENTIFIER: {
+        const IdentifierValue& identifierValue =
+            static_cast<const IdentifierValue&>(*returnStatement.value);
+        std::cout << "RETURN " << identifierValue.name << ";\n";
+
+        break;
+      }
+    }
+  }
+
+  std::string
+  getStatementValueString(const StatementValue& statementValue) const {
+    std::string out = "";
+    if (statementValue.statementValueType == StatementValueType::NUMBER) {
+      const NumberValue& numberValue =
+          static_cast<const NumberValue&>(statementValue);
+
+      out = std::to_string(numberValue.value);
+
+    } else if (statementValue.statementValueType ==
+               StatementValueType::IDENTIFIER) {
+      const IdentifierValue& identifierValue =
+          static_cast<const IdentifierValue&>(statementValue);
+      out = identifierValue.name;
+    }
+
+    return out;
+  }
+
+  void
+  printAdditionStatement(const AdditionStatement& additionStatement) const {
+    std::string lhs = this->getStatementValueString(*additionStatement.lhs);
+    std::string rhs = this->getStatementValueString(*additionStatement.rhs);
+
+    std::cout << additionStatement.identifier.name << " = " << lhs << " + "
+              << rhs << ";\n";
+  }
+
 public:
   Program();
 
-  void addAnyStatement(std::unique_ptr<Statement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
-
-  void addAssignment(std::unique_ptr<AssignmentStatement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
-
-  void addInitialisation(std::unique_ptr<InitialisationStatement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
-
-  void addReturn(std::unique_ptr<ReturnStatement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
-
-  void addAddition(std::unique_ptr<AdditionStatement> statement) {
+  void addStatement(std::unique_ptr<Statement> statement) {
     this->statements.push_back(std::move(statement));
   }
 
   size_t size() const { return this->statements.size(); }
-  const Statement& get(size_t i) const { return *this->statements[i].get(); }
+
+  const Statement& view(size_t i) const { return *this->statements[i]; }
 
   void print() const {
     std::cout << "-- Program --\n";
     std::cout << "count: " << this->statements.size() << "\n";
     std::cout << "statements: " << "\n";
     for (size_t i = 0; i < this->statements.size(); i++) {
-      Statement* statement = this->statements[i].get();
-      switch (statement->statementType) {
+      const Statement& statement = this->view(i);
+
+      switch (statement.statementType) {
         case StatementType::ASSIGNMENT: {
-          AssignmentStatement* assignmentStatement =
-              (AssignmentStatement*)statement;
-          IdentifierValue identifier = assignmentStatement->identifier;
+          const AssignmentStatement& assignmentStatement =
+              static_cast<const AssignmentStatement&>(statement);
 
-          switch (assignmentStatement->assignmentType) {
+          IdentifierValue identifier = assignmentStatement.identifier;
+
+          switch (assignmentStatement.assignmentType) {
             case AssignmentType::NUMBER: {
-              AssignmentNumberStatement* assignmentNumberStatement =
-                  (AssignmentNumberStatement*)assignmentStatement;
-
-              NumberValue statementValue = assignmentNumberStatement->value;
-
-              std::cout << identifier.name << " = " << statementValue.value
-                        << ";\n";
+              const AssignmentNumberStatement& assignmentNumberStatement =
+                  static_cast<const AssignmentNumberStatement&>(
+                      assignmentStatement);
+              this->printAssignmentNumberStatement(assignmentNumberStatement);
               break;
             }
 
             case AssignmentType::IDENTIFIER: {
-              AssignmentIdentifierStatement* assignmentIdentifierStatement =
-                  (AssignmentIdentifierStatement*)assignmentStatement;
+              const AssignmentIdentifierStatement&
+                  assignmentIdentifierStatement =
+                      static_cast<const AssignmentIdentifierStatement&>(
+                          assignmentStatement);
 
-              IdentifierValue statementValue =
-                  assignmentIdentifierStatement->value;
+              this->printAssignmentIdentifierStatement(
+                  assignmentIdentifierStatement);
 
-              std::cout << identifier.name << " = " << statementValue.name
-                        << ";\n";
               break;
             }
           }
@@ -84,51 +143,30 @@ public:
         }
 
         case StatementType::INITIALISATION: {
-          InitialisationStatement* initialisationStatement =
-              (InitialisationStatement*)statement;
+          const InitialisationStatement& initialisationStatement =
+              static_cast<const InitialisationStatement&>(statement);
 
-          switch (initialisationStatement->type) {
-            case StatementPrimitiveType::UINT8: {
-              std::cout << "UINT8 ";
-              break;
-            }
-          }
+          this->printInitialisationStatement(initialisationStatement);
 
-          std::cout << initialisationStatement->identifier->name << ";\n";
           break;
         }
 
         case StatementType::RETURN: {
-          ReturnStatement* returnStatement = (ReturnStatement*)statement;
+          const ReturnStatement& returnStatement =
+              static_cast<const ReturnStatement&>(statement);
 
-          std::cout << "RETURN " << returnStatement->identifier->name << ";\n";
+          this->printReturnStatement(returnStatement);
+
           break;
         }
 
         case StatementType::ADDITION: {
-          AdditionStatement* additionStatement = (AdditionStatement*)statement;
-          std::string lhs = "";
-          if (additionStatement->lhs->statementValueType ==
-              StatementValueType::NUMBER) {
-            lhs = std::to_string(
-                ((NumberValue*)(additionStatement->lhs.get()))->value);
-          } else if (additionStatement->lhs->statementValueType ==
-                     StatementValueType::IDENTIFIER) {
-            lhs = ((IdentifierValue*)(additionStatement->lhs.get()))->name;
-          }
+          const AdditionStatement& additionStatement =
+              static_cast<const AdditionStatement&>(statement);
 
-          std::string rhs = "";
-          if (additionStatement->rhs->statementValueType ==
-              StatementValueType::NUMBER) {
-            rhs = std::to_string(
-                ((NumberValue*)(additionStatement->rhs.get()))->value);
-          } else if (additionStatement->rhs->statementValueType ==
-                     StatementValueType::IDENTIFIER) {
-            rhs = ((IdentifierValue*)(additionStatement->rhs.get()))->name;
-          }
+          this->printAdditionStatement(additionStatement);
 
-          std::cout << additionStatement->identifier.name << " = " << lhs
-                    << " + " << rhs << ";\n";
+          break;
         }
       }
     }

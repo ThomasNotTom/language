@@ -121,6 +121,14 @@ public:
                       static_cast<const AssignmentIdentifierStatement&>(
                           assignmentStatement);
 
+              std::unique_ptr<BuilderUint8>& in =
+                  symbols.at(assignmentIdentifierStatement.value.name);
+
+              std::unique_ptr<BuilderUint8>& out =
+                  symbols.at(assignmentIdentifierStatement.identifier.name);
+
+              out->assignValue(*in);
+
               break;
             }
           }
@@ -132,6 +140,33 @@ public:
           const ReturnStatement& returnStatement =
               static_cast<const ReturnStatement&>(statement);
 
+          switch (returnStatement.value->statementValueType) {
+            case StatementValueType::NUMBER: {
+              const NumberValue& numberValue =
+                  static_cast<const NumberValue&>(*returnStatement.value);
+
+              llvm::ConstantInt* returnValue =
+                  builder.createConst32(numberValue.value);
+              builder.createReturn(returnValue);
+
+              hasMainReturn = true;
+              break;
+            }
+
+            case StatementValueType::IDENTIFIER: {
+              const IdentifierValue& identifierValue =
+                  static_cast<const IdentifierValue&>(*returnStatement.value);
+
+              std::unique_ptr<BuilderUint8>& returnValue =
+                  symbols.at(identifierValue.name);
+
+              builder.createReturn(
+                  builder.load(builder.getUint32(), returnValue->getAlloc()));
+
+              hasMainReturn = true;
+            }
+          }
+
           break;
         }
 
@@ -139,13 +174,22 @@ public:
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
 
+          std::unique_ptr<BuilderUint8>& out =
+              symbols.at(additionStatement.identifier.name);
+
+          llvm::Value* lhs;
+          llvm::Value* rhs;
+
           switch (additionStatement.lhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
-
               const IdentifierValue& lhsIdentifierValue =
                   static_cast<const IdentifierValue&>(
                       *additionStatement.lhs.get());
 
+              std::unique_ptr<BuilderUint8>& lhsValue =
+                  symbols.at(lhsIdentifierValue.name);
+
+              lhs = builder.load(builder.getUint8(), lhsValue->getAlloc());
               break;
             }
 
@@ -153,17 +197,21 @@ public:
               const NumberValue& lhsNumberValue =
                   static_cast<const NumberValue&>(*additionStatement.lhs.get());
 
+              lhs = builder.createConst8(lhsNumberValue.value);
               break;
             }
           }
 
           switch (additionStatement.rhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
-
               const IdentifierValue& rhsIdentifierValue =
                   static_cast<const IdentifierValue&>(
                       *additionStatement.rhs.get());
 
+              std::unique_ptr<BuilderUint8>& rhsValue =
+                  symbols.at(rhsIdentifierValue.name);
+
+              rhs = builder.load(builder.getUint8(), rhsValue->getAlloc());
               break;
             }
 
@@ -171,9 +219,12 @@ public:
               const NumberValue& rhsNumberValue =
                   static_cast<const NumberValue&>(*additionStatement.rhs.get());
 
+              rhs = builder.createConst8(rhsNumberValue.value);
               break;
             }
           }
+
+          builder.store(builder.add(lhs, rhs), out->getAlloc());
         }
       }
     }

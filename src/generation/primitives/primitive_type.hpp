@@ -1,0 +1,1 @@
+enum class BuilderPrimitiveType { UINT = 1 };

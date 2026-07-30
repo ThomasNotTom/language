@@ -10,6 +10,7 @@
 #include "./tokens/primitives/uint8/uint8.hpp"
 
 #include "./tokens/operators/addition/addition.hpp"
+#include "lexer/tokens/primitives/uint16/uint16.hpp"
 #include "lexer/tokens/return/return.hpp"
 #include "matcher.hpp"
 
@@ -38,6 +39,8 @@ public:
       if (c == ' ' || c == ';') {
         if (buffer == "uint8") {
           tokens.addUint8(Uint8Token());
+        } else if (buffer == "uint16") {
+          tokens.addUint16(Uint16Token());
         } else if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
         } else if (Matcher::isInt(buffer)) {

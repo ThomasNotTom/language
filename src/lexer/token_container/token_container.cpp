@@ -38,6 +38,11 @@ void TokenContainer::print() const {
             std::cout << "PRIMITIVE(UINT8)\n";
             break;
           }
+
+          case PrimitiveType::UINT16: {
+            std::cout << "PRIMITIVE(UINT16)\n";
+            break;
+          }
         }
         break;
       }

@@ -8,9 +8,10 @@ The goal of this langauge is to allow for the build up highly nested types, and 
 
 The primitves aim to be informative to ensure that there is no ambiguity on how the primitive will function.
 
-| Keyword | Full Name               | Size     |
-| ------- | ----------------------- | -------- |
-| `uint8` | Unsigned Integer 8-bits | `1 byte` |
+| Keyword  | Full Name                | Size     |
+| -------- | ------------------------ | -------- |
+| `uint8`  | Unsigned Integer 8-bits  | `1 byte` |
+| `uint16` | Unsigned Integer 16-bits | `2 byte` |
 
 # Syntax
 

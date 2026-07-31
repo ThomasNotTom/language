@@ -34,6 +34,10 @@ AbstractSyntaxTree::getStatementPrimitiveTypeFromPrimitiveType(
     case PrimitiveType::UINT8: {
       return StatementPrimitiveType::UINT8;
     }
+
+    case PrimitiveType::UINT16: {
+      return StatementPrimitiveType::UINT16;
+    }
   }
 }
 

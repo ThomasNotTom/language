@@ -38,12 +38,17 @@ private:
       const InitialisationStatement& initialisationStatement) const {
     switch (initialisationStatement.type) {
       case StatementPrimitiveType::UINT8: {
-        std::cout << "UINT8 ";
+        std::cout << "UINT8";
+        break;
+      }
+
+      case StatementPrimitiveType::UINT16: {
+        std::cout << "UINT16";
         break;
       }
     }
 
-    std::cout << initialisationStatement.identifier->name << ";\n";
+    std::cout << " " << initialisationStatement.identifier->name << ";\n";
   };
 
   void printReturnStatement(const ReturnStatement& returnStatement) const {

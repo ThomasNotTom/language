@@ -1,0 +1,1 @@
+enum class BuilderUintType { UINT8 = 1, UINT16 = 2 };

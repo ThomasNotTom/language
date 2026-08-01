@@ -52,7 +52,7 @@ public:
         } else if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
         } else if (Matcher::isInt(buffer)) {
-          tokens.addNumber(StringConverter::toInt(buffer));
+          tokens.addNumber(StringConverter::toUnsignedLongLong(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());
         } else if (buffer == "return") {

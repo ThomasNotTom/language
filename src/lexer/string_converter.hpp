@@ -2,7 +2,7 @@
 
 class StringConverter {
 public:
-  static unsigned long long toInt(std::string string) {
+  static unsigned long long toUnsignedLongLong(std::string string) {
     return std::stoull(string);
   }
 };

@@ -46,6 +46,16 @@ private:
         std::cout << "UINT16";
         break;
       }
+
+      case StatementPrimitiveType::UINT32: {
+        std::cout << "UINT32";
+        break;
+      }
+
+      case StatementPrimitiveType::UINT64: {
+        std::cout << "UINT64";
+        break;
+      }
     }
 
     std::cout << " " << initialisationStatement.identifier->name << ";\n";

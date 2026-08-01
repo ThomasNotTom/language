@@ -7,10 +7,12 @@
 #include "./tokens/end_of_line/end_of_line.hpp"
 #include "./tokens/identifier/identifier.hpp"
 #include "./tokens/operators/assignment/assignment.hpp"
-#include "./tokens/primitives/uint8/uint8.hpp"
+#include "./tokens/primitives/uint32/uint32.hpp"
+#include "./tokens/primitives/uint64/uint64.hpp"
 
 #include "./tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/primitives/uint16/uint16.hpp"
+#include "lexer/tokens/primitives/uint32/uint32.hpp"
 #include "lexer/tokens/return/return.hpp"
 #include "matcher.hpp"
 
@@ -41,6 +43,10 @@ public:
           tokens.addUint8(Uint8Token());
         } else if (buffer == "uint16") {
           tokens.addUint16(Uint16Token());
+        } else if (buffer == "uint32") {
+          tokens.addUint32(Uint32Token());
+        } else if (buffer == "uint64") {
+          tokens.addUint64(Uint64Token());
         } else if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
         } else if (Matcher::isInt(buffer)) {

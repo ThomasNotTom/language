@@ -17,7 +17,7 @@
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
-#include "syntax_analyser/statement/value/value.hpp"
+
 #include <cstddef>
 #include <format>
 #include <memory>
@@ -33,6 +33,18 @@ AbstractSyntaxTree::getStatementPrimitiveTypeFromPrimitiveType(
   switch (primitiveType) {
     case PrimitiveType::UINT8: {
       return StatementPrimitiveType::UINT8;
+    }
+
+    case PrimitiveType::UINT16: {
+      return StatementPrimitiveType::UINT16;
+    }
+
+    case PrimitiveType::UINT32: {
+      return StatementPrimitiveType::UINT32;
+    }
+
+    case PrimitiveType::UINT64: {
+      return StatementPrimitiveType::UINT64;
     }
   }
 }

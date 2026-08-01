@@ -45,6 +45,14 @@ public:
     return llvm::ConstantInt::get(this->getUint32(), value);
   };
 
+  llvm::IntegerType* getUint64() const {
+    return llvm::Type::getInt64Ty(context);
+  }
+
+  llvm::ConstantInt* createConst64(uint64_t value) {
+    return llvm::ConstantInt::get(this->getUint64(), value);
+  };
+
   llvm::ReturnInst* createReturn(llvm::Value* value) {
     return this->irBuilder.CreateRet(value);
   };
@@ -57,12 +65,12 @@ public:
     return this->irBuilder.CreateStore(value, out);
   };
 
-  llvm::LoadInst* load(llvm::Type* type, llvm::Value* value) {
-    return this->irBuilder.CreateLoad(type, value);
+  llvm::LoadInst* load(llvm::Type* type, llvm::Value* value, std::string name) {
+    return this->irBuilder.CreateLoad(type, value, name);
   };
 
-  llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs) {
-    return this->irBuilder.CreateAdd(lhs, rhs);
+  llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs, std::string name) {
+    return this->irBuilder.CreateAdd(lhs, rhs, name);
   };
 
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {

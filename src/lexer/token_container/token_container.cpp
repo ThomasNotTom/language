@@ -92,6 +92,10 @@ void TokenContainer::print() const {
       case RETURN: {
         std::cout << "RETURN\n";
       }
+
+      case PRINT: {
+        std::cout << "PRINT\n";
+      }
     }
   }
 }

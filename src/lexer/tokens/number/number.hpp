@@ -4,6 +4,6 @@
 
 class NumberToken : public Token {
 public:
-  const int value;
-  NumberToken(const int value);
+  const unsigned long long value;
+  NumberToken(const unsigned long long value);
 };

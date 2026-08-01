@@ -45,6 +45,14 @@ public:
     return llvm::ConstantInt::get(this->getUint32(), value);
   };
 
+  llvm::IntegerType* getUint64() const {
+    return llvm::Type::getInt64Ty(context);
+  }
+
+  llvm::ConstantInt* createConst64(uint64_t value) {
+    return llvm::ConstantInt::get(this->getUint64(), value);
+  };
+
   llvm::ReturnInst* createReturn(llvm::Value* value) {
     return this->irBuilder.CreateRet(value);
   };

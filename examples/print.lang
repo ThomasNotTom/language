@@ -1,0 +1,4 @@
+print 1;
+
+uint8 a = 2;
+print a;

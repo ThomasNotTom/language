@@ -9,6 +9,8 @@
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/assignment/assignment.hpp"
 #include "lexer/tokens/primitives/uint16/uint16.hpp"
+#include "lexer/tokens/primitives/uint32/uint32.hpp"
+#include "lexer/tokens/primitives/uint64/uint64.hpp"
 #include "lexer/tokens/primitives/uint8/uint8.hpp"
 #include "lexer/tokens/return/return.hpp"
 #include "lexer/tokens/token.hpp"
@@ -46,6 +48,14 @@ public:
 
   void addUint16(const Uint16Token& token) {
     tokens.push_back(std::make_unique<Uint16Token>(token));
+  }
+
+  void addUint32(const Uint32Token& token) {
+    tokens.push_back(std::make_unique<Uint32Token>(token));
+  }
+
+  void addUint64(const Uint64Token& token) {
+    tokens.push_back(std::make_unique<Uint64Token>(token));
   }
 
   void addReturn(const ReturnToken& token) {

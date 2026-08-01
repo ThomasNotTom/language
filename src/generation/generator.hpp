@@ -12,11 +12,13 @@
 #include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
+#include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
 #include "syntax_analyser/statement/value/value.hpp"
+#include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/LegacyPassManager.h"
@@ -76,6 +78,19 @@ public:
     llvm::BasicBlock* mainEntry =
         llvm::BasicBlock::Create(context, "entry", mainFunc);
     builder.setInsertPoint(mainEntry);
+
+    // Initialise print
+    auto* charPtrType = builder.getUint8Ptr();
+
+    std::vector<llvm::Type*> PrintfArgsTypes = {charPtrType};
+
+    llvm::FunctionType* PrintfType =
+        llvm::FunctionType::get(builder.getUint32(), PrintfArgsTypes, true);
+
+    llvm::Function* PrintfFunc = llvm::Function::Create(
+        PrintfType, llvm::Function::ExternalLinkage, "printf", *module);
+
+    // End print init
 
     std::map<std::string, std::unique_ptr<BuilderPrimitive>> symbols;
 
@@ -349,6 +364,46 @@ public:
           }
 
           builder.store(builder.add(lhs, rhs, outName), outUint.getAlloc());
+        }
+        case StatementType::PRINT: {
+          const PrintStatement& printStatement =
+              static_cast<const PrintStatement&>(statement);
+
+          llvm::Value* out;
+
+          switch (printStatement.value->statementValueType) {
+            case StatementValueType::NUMBER: {
+              const NumberValue& numberValue =
+                  static_cast<const NumberValue&>(*printStatement.value);
+
+              out = builder.createConst32(numberValue.value);
+              break;
+            }
+
+            case StatementValueType::IDENTIFIER: {
+              const IdentifierValue& identifierValue =
+                  static_cast<const IdentifierValue&>(*printStatement.value);
+
+              std::unique_ptr<BuilderPrimitive>& printBuilder =
+                  symbols.at(identifierValue.name);
+
+              if (printBuilder->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot print non-uint type");
+              }
+
+              BuilderUintPrimitive& printBuilderUint =
+                  static_cast<BuilderUintPrimitive&>(*printBuilder);
+
+              out = builder.load(printBuilderUint.getLlvmIntegerType(),
+                                 printBuilderUint.getAlloc(), "temp");
+            }
+          }
+
+          llvm::Value* FormatStr = builder.createGlobalStringPtr("%llu\n");
+
+          std::vector<llvm::Value*> Args = {FormatStr, out};
+
+          builder.createCall(PrintfFunc, Args);
         }
       }
     }

@@ -2,6 +2,8 @@
 #include "generation/builder/builder.hpp"
 #include "generation/primitives/primitive.hpp"
 #include "generation/primitives/uint16.hpp"
+#include "generation/primitives/uint32.hpp"
+#include "generation/primitives/uint64.hpp"
 #include "generation/primitives/uint8.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
@@ -101,6 +103,18 @@ public:
                                                   builder, identifierName));
               break;
             }
+
+            case StatementPrimitiveType::UINT32: {
+              symbols.emplace(identifierName, std::make_unique<BuilderUint32>(
+                                                  builder, identifierName));
+              break;
+            }
+
+            case StatementPrimitiveType::UINT64: {
+              symbols.emplace(identifierName, std::make_unique<BuilderUint64>(
+                                                  builder, identifierName));
+              break;
+            }
           }
           break;
         }
@@ -138,6 +152,24 @@ public:
                           static_cast<BuilderUint16&>(uintPrim);
 
                       uint16Prim.storeValue(
+                          assignmentNumberStatement.value.value);
+                      break;
+                    }
+
+                    case BuilderUintType::UINT32: {
+                      BuilderUint32& uint32Prim =
+                          static_cast<BuilderUint32&>(uintPrim);
+
+                      uint32Prim.storeValue(
+                          assignmentNumberStatement.value.value);
+                      break;
+                    }
+
+                    case BuilderUintType::UINT64: {
+                      BuilderUint64& uint64Prim =
+                          static_cast<BuilderUint64&>(uintPrim);
+
+                      uint64Prim.storeValue(
                           assignmentNumberStatement.value.value);
                       break;
                     }

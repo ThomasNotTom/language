@@ -12,6 +12,7 @@
 #include "lexer/tokens/primitives/uint32/uint32.hpp"
 #include "lexer/tokens/primitives/uint64/uint64.hpp"
 #include "lexer/tokens/primitives/uint8/uint8.hpp"
+#include "lexer/tokens/print/print.hpp"
 #include "lexer/tokens/return/return.hpp"
 #include "lexer/tokens/token.hpp"
 
@@ -60,6 +61,10 @@ public:
 
   void addReturn(const ReturnToken& token) {
     tokens.push_back(std::make_unique<ReturnToken>(token));
+  }
+
+  void addPrint(const PrintToken& token) {
+    tokens.push_back(std::make_unique<PrintToken>(token));
   }
 
   const Token& view(size_t index) const;

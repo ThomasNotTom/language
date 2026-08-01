@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 #include "./string_converter.hpp"
@@ -13,6 +14,7 @@
 #include "./tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/primitives/uint16/uint16.hpp"
 #include "lexer/tokens/primitives/uint32/uint32.hpp"
+#include "lexer/tokens/print/print.hpp"
 #include "lexer/tokens/return/return.hpp"
 #include "matcher.hpp"
 
@@ -50,11 +52,13 @@ public:
         } else if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
         } else if (Matcher::isInt(buffer)) {
-          tokens.addNumber(StringConverter::toInt(buffer));
+          tokens.addNumber(StringConverter::toUnsignedLongLong(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());
         } else if (buffer == "return") {
           tokens.addReturn(ReturnToken());
+        } else if (buffer == "print") {
+          tokens.addPrint(PrintToken());
         } else {
           tokens.addIdentifier(IdentifierToken(buffer));
         }

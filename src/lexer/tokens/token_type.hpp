@@ -6,5 +6,6 @@ enum TokenType {
   OPERATOR = 3,
   IDENTIFIER = 4,
   NUMBER = 5,
-  RETURN = 6
+  RETURN = 6,
+  PRINT = 7
 };

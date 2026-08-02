@@ -3,6 +3,7 @@
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Instructions.h"
@@ -24,6 +25,9 @@ public:
   }
 
   llvm::IntegerType* getUint8() const { return llvm::Type::getInt8Ty(context); }
+  llvm::PointerType* getUint8Ptr() const {
+    return llvm::PointerType::get(this->context, 0);
+  }
 
   llvm::ConstantInt* createConst8(uint8_t value) {
     return llvm::ConstantInt::get(this->getUint8(), value);
@@ -45,6 +49,14 @@ public:
     return llvm::ConstantInt::get(this->getUint32(), value);
   };
 
+  llvm::IntegerType* getUint64() const {
+    return llvm::Type::getInt64Ty(context);
+  }
+
+  llvm::ConstantInt* createConst64(uint64_t value) {
+    return llvm::ConstantInt::get(this->getUint64(), value);
+  };
+
   llvm::ReturnInst* createReturn(llvm::Value* value) {
     return this->irBuilder.CreateRet(value);
   };
@@ -57,15 +69,24 @@ public:
     return this->irBuilder.CreateStore(value, out);
   };
 
-  llvm::LoadInst* load(llvm::Type* type, llvm::Value* value) {
-    return this->irBuilder.CreateLoad(type, value);
+  llvm::LoadInst* load(llvm::Type* type, llvm::Value* value, std::string name) {
+    return this->irBuilder.CreateLoad(type, value, name);
   };
 
-  llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs) {
-    return this->irBuilder.CreateAdd(lhs, rhs);
+  llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs, std::string name) {
+    return this->irBuilder.CreateAdd(lhs, rhs, name);
   };
 
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {
     return this->irBuilder.CreateZExt(in, outType);
   };
+
+  llvm::Value* createGlobalStringPtr(std::string str) {
+    return this->irBuilder.CreateGlobalString(str);
+  };
+
+  llvm::CallInst* createCall(llvm::Function* function,
+                             std::vector<llvm::Value*> args) {
+    return this->irBuilder.CreateCall(function, args);
+  }
 };

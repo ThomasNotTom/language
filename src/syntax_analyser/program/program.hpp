@@ -6,6 +6,7 @@
 #include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
+#include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
@@ -38,12 +39,27 @@ private:
       const InitialisationStatement& initialisationStatement) const {
     switch (initialisationStatement.type) {
       case StatementPrimitiveType::UINT8: {
-        std::cout << "UINT8 ";
+        std::cout << "UINT8";
+        break;
+      }
+
+      case StatementPrimitiveType::UINT16: {
+        std::cout << "UINT16";
+        break;
+      }
+
+      case StatementPrimitiveType::UINT32: {
+        std::cout << "UINT32";
+        break;
+      }
+
+      case StatementPrimitiveType::UINT64: {
+        std::cout << "UINT64";
         break;
       }
     }
 
-    std::cout << initialisationStatement.identifier->name << ";\n";
+    std::cout << " " << initialisationStatement.identifier->name << ";\n";
   };
 
   void printReturnStatement(const ReturnStatement& returnStatement) const {
@@ -91,6 +107,14 @@ private:
 
     std::cout << additionStatement.identifier.name << " = " << lhs << " + "
               << rhs << ";\n";
+  }
+
+  void printPrintStatement(const PrintStatement& printStatement) const {
+    std::string value = this->getStatementValueString(*printStatement.value);
+
+    std::cout << "print(" << value
+              << ")"
+                 ";\n";
   }
 
 public:
@@ -165,6 +189,15 @@ public:
               static_cast<const AdditionStatement&>(statement);
 
           this->printAdditionStatement(additionStatement);
+
+          break;
+        }
+
+        case StatementType::PRINT: {
+          const PrintStatement& printStatement =
+              static_cast<const PrintStatement&>(statement);
+
+          this->printPrintStatement(printStatement);
 
           break;
         }

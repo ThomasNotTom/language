@@ -1,5 +1,9 @@
 #include "../syntax_analyser/program/program.hpp"
 #include "generation/builder/builder.hpp"
+#include "generation/primitives/primitive.hpp"
+#include "generation/primitives/uint16.hpp"
+#include "generation/primitives/uint32.hpp"
+#include "generation/primitives/uint64.hpp"
 #include "generation/primitives/uint8.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
@@ -8,11 +12,13 @@
 #include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
+#include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
 #include "syntax_analyser/statement/value/value.hpp"
+#include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/LegacyPassManager.h"
@@ -39,6 +45,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 
 class Generator {
 private:
@@ -72,7 +79,20 @@ public:
         llvm::BasicBlock::Create(context, "entry", mainFunc);
     builder.setInsertPoint(mainEntry);
 
-    std::map<std::string, std::unique_ptr<BuilderUint8>> symbols;
+    // Initialise print
+    auto* charPtrType = builder.getUint8Ptr();
+
+    std::vector<llvm::Type*> PrintfArgsTypes = {charPtrType};
+
+    llvm::FunctionType* PrintfType =
+        llvm::FunctionType::get(builder.getUint32(), PrintfArgsTypes, true);
+
+    llvm::Function* PrintfFunc = llvm::Function::Create(
+        PrintfType, llvm::Function::ExternalLinkage, "printf", *module);
+
+    // End print init
+
+    std::map<std::string, std::unique_ptr<BuilderPrimitive>> symbols;
 
     bool hasMainReturn = false;
 
@@ -84,14 +104,30 @@ public:
           const InitialisationStatement& initialisationStatement =
               static_cast<const InitialisationStatement&>(statement);
 
+          std::string identifierName = initialisationStatement.identifier->name;
+
           switch (initialisationStatement.type) {
             case StatementPrimitiveType::UINT8: {
-              std::string identifierName =
-                  initialisationStatement.identifier->name;
-
               symbols.emplace(identifierName, std::make_unique<BuilderUint8>(
                                                   builder, identifierName));
+              break;
+            }
 
+            case StatementPrimitiveType::UINT16: {
+              symbols.emplace(identifierName, std::make_unique<BuilderUint16>(
+                                                  builder, identifierName));
+              break;
+            }
+
+            case StatementPrimitiveType::UINT32: {
+              symbols.emplace(identifierName, std::make_unique<BuilderUint32>(
+                                                  builder, identifierName));
+              break;
+            }
+
+            case StatementPrimitiveType::UINT64: {
+              symbols.emplace(identifierName, std::make_unique<BuilderUint64>(
+                                                  builder, identifierName));
               break;
             }
           }
@@ -108,10 +144,53 @@ public:
                   static_cast<const AssignmentNumberStatement&>(
                       assignmentStatement);
 
-              std::unique_ptr<BuilderUint8>& uint8 =
+              std::unique_ptr<BuilderPrimitive>& prim =
                   symbols.at(assignmentNumberStatement.identifier.name);
 
-              uint8->storeValue(assignmentNumberStatement.value.value);
+              switch (prim->getType()) {
+                case BuilderPrimitiveType::UINT: {
+                  BuilderUintPrimitive& uintPrim =
+                      static_cast<BuilderUintPrimitive&>(*prim);
+
+                  switch (uintPrim.getUintType()) {
+                    case BuilderUintType::UINT8: {
+                      BuilderUint8& uint8Prim =
+                          static_cast<BuilderUint8&>(uintPrim);
+
+                      uint8Prim.storeValue(
+                          assignmentNumberStatement.value.value);
+                      break;
+                    }
+
+                    case BuilderUintType::UINT16: {
+                      BuilderUint16& uint16Prim =
+                          static_cast<BuilderUint16&>(uintPrim);
+
+                      uint16Prim.storeValue(
+                          assignmentNumberStatement.value.value);
+                      break;
+                    }
+
+                    case BuilderUintType::UINT32: {
+                      BuilderUint32& uint32Prim =
+                          static_cast<BuilderUint32&>(uintPrim);
+
+                      uint32Prim.storeValue(
+                          assignmentNumberStatement.value.value);
+                      break;
+                    }
+
+                    case BuilderUintType::UINT64: {
+                      BuilderUint64& uint64Prim =
+                          static_cast<BuilderUint64&>(uintPrim);
+
+                      uint64Prim.storeValue(
+                          assignmentNumberStatement.value.value);
+                      break;
+                    }
+                  }
+                }
+              }
               break;
             }
 
@@ -121,13 +200,27 @@ public:
                       static_cast<const AssignmentIdentifierStatement&>(
                           assignmentStatement);
 
-              std::unique_ptr<BuilderUint8>& in =
+              std::unique_ptr<BuilderPrimitive>& inBase =
                   symbols.at(assignmentIdentifierStatement.value.name);
 
-              std::unique_ptr<BuilderUint8>& out =
+              if (inBase->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot add non-uint type");
+              }
+
+              BuilderUintPrimitive& in =
+                  static_cast<BuilderUintPrimitive&>(*inBase);
+
+              std::unique_ptr<BuilderPrimitive>& outBase =
                   symbols.at(assignmentIdentifierStatement.identifier.name);
 
-              out->assignValue(*in);
+              if (outBase->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot add non-uint type");
+              }
+
+              BuilderUintPrimitive& out =
+                  static_cast<BuilderUintPrimitive&>(*outBase);
+
+              out.assignValue(in);
 
               break;
             }
@@ -155,11 +248,19 @@ public:
               const IdentifierValue& identifierValue =
                   static_cast<const IdentifierValue&>(*returnStatement.value);
 
-              std::unique_ptr<BuilderUint8>& returnBuilder =
+              std::unique_ptr<BuilderPrimitive>& returnBuilder =
                   symbols.at(identifierValue.name);
 
-              llvm::Value* rawOut =
-                  builder.load(builder.getUint8(), returnBuilder->getAlloc());
+              if (returnBuilder->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot return non-uint type");
+              }
+
+              BuilderUintPrimitive& returnBuilderUint =
+                  static_cast<BuilderUintPrimitive&>(*returnBuilder);
+
+              llvm::Value* rawOut = builder.load(
+                  returnBuilderUint.getLlvmIntegerType(),
+                  returnBuilderUint.getAlloc(), identifierValue.name + "_load");
 
               returnValue = builder.zext(rawOut, builder.getUint32());
             }
@@ -176,11 +277,20 @@ public:
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
 
-          std::unique_ptr<BuilderUint8>& out =
+          std::unique_ptr<BuilderPrimitive>& out =
               symbols.at(additionStatement.identifier.name);
+
+          if (out->getType() != BuilderPrimitiveType::UINT) {
+            throw std::runtime_error("Cannot assign addition to non-uint type");
+          }
+
+          BuilderUintPrimitive& outUint =
+              static_cast<BuilderUintPrimitive&>(*out);
 
           llvm::Value* lhs;
           llvm::Value* rhs;
+
+          std::string outName = "add_";
 
           switch (additionStatement.lhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
@@ -188,10 +298,21 @@ public:
                   static_cast<const IdentifierValue&>(
                       *additionStatement.lhs.get());
 
-              std::unique_ptr<BuilderUint8>& lhsValue =
+              std::unique_ptr<BuilderPrimitive>& lhsValue =
                   symbols.at(lhsIdentifierValue.name);
 
-              lhs = builder.load(builder.getUint8(), lhsValue->getAlloc());
+              if (lhsValue->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot add non-uint types");
+              }
+
+              BuilderUintPrimitive& lhsUintValue =
+                  static_cast<BuilderUintPrimitive&>(*lhsValue);
+
+              lhs = builder.load(lhsUintValue.getLlvmIntegerType(),
+                                 lhsUintValue.getAlloc(),
+                                 lhsIdentifierValue.name + "_load");
+
+              outName += lhsIdentifierValue.name;
               break;
             }
 
@@ -200,9 +321,12 @@ public:
                   static_cast<const NumberValue&>(*additionStatement.lhs.get());
 
               lhs = builder.createConst8(lhsNumberValue.value);
+              outName += "const";
               break;
             }
           }
+
+          outName += "_and_";
 
           switch (additionStatement.rhs->statementValueType) {
             case StatementValueType::IDENTIFIER: {
@@ -210,10 +334,21 @@ public:
                   static_cast<const IdentifierValue&>(
                       *additionStatement.rhs.get());
 
-              std::unique_ptr<BuilderUint8>& rhsValue =
+              std::unique_ptr<BuilderPrimitive>& rhsValue =
                   symbols.at(rhsIdentifierValue.name);
 
-              rhs = builder.load(builder.getUint8(), rhsValue->getAlloc());
+              if (rhsValue->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot add non-uint types");
+              }
+
+              BuilderUintPrimitive& rhsValueUint =
+                  static_cast<BuilderUintPrimitive&>(*rhsValue);
+
+              rhs = builder.load(rhsValueUint.getLlvmIntegerType(),
+                                 rhsValueUint.getAlloc(),
+                                 rhsIdentifierValue.name + "_load");
+
+              outName += rhsIdentifierValue.name;
               break;
             }
 
@@ -222,11 +357,53 @@ public:
                   static_cast<const NumberValue&>(*additionStatement.rhs.get());
 
               rhs = builder.createConst8(rhsNumberValue.value);
+              outName += "const";
+
               break;
             }
           }
 
-          builder.store(builder.add(lhs, rhs), out->getAlloc());
+          builder.store(builder.add(lhs, rhs, outName), outUint.getAlloc());
+        }
+        case StatementType::PRINT: {
+          const PrintStatement& printStatement =
+              static_cast<const PrintStatement&>(statement);
+
+          llvm::Value* out;
+
+          switch (printStatement.value->statementValueType) {
+            case StatementValueType::NUMBER: {
+              const NumberValue& numberValue =
+                  static_cast<const NumberValue&>(*printStatement.value);
+
+              out = builder.createConst32(numberValue.value);
+              break;
+            }
+
+            case StatementValueType::IDENTIFIER: {
+              const IdentifierValue& identifierValue =
+                  static_cast<const IdentifierValue&>(*printStatement.value);
+
+              std::unique_ptr<BuilderPrimitive>& printBuilder =
+                  symbols.at(identifierValue.name);
+
+              if (printBuilder->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot print non-uint type");
+              }
+
+              BuilderUintPrimitive& printBuilderUint =
+                  static_cast<BuilderUintPrimitive&>(*printBuilder);
+
+              out = builder.load(printBuilderUint.getLlvmIntegerType(),
+                                 printBuilderUint.getAlloc(), "temp");
+            }
+          }
+
+          llvm::Value* FormatStr = builder.createGlobalStringPtr("%llu\n");
+
+          std::vector<llvm::Value*> Args = {FormatStr, out};
+
+          builder.createCall(PrintfFunc, Args);
         }
       }
     }

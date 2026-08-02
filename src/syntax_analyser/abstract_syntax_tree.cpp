@@ -13,11 +13,12 @@
 #include "syntax_analyser/statement/assignment/number/number.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/primitives/primitive_type.hpp"
+#include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
-#include "syntax_analyser/statement/value/value.hpp"
+
 #include <cstddef>
 #include <format>
 #include <memory>
@@ -33,6 +34,18 @@ AbstractSyntaxTree::getStatementPrimitiveTypeFromPrimitiveType(
   switch (primitiveType) {
     case PrimitiveType::UINT8: {
       return StatementPrimitiveType::UINT8;
+    }
+
+    case PrimitiveType::UINT16: {
+      return StatementPrimitiveType::UINT16;
+    }
+
+    case PrimitiveType::UINT32: {
+      return StatementPrimitiveType::UINT32;
+    }
+
+    case PrimitiveType::UINT64: {
+      return StatementPrimitiveType::UINT64;
     }
   }
 }
@@ -147,8 +160,10 @@ Program AbstractSyntaxTree::parse() {
 
     const Token& token = this->tokenContainer.view(i);
     buffer.push_back(token);
+    std::cout << "Reading " << token.tokenType << std::endl;
 
     if (token.tokenType == TokenType::END_OF_LINE) {
+      std::cout << "Reading end of line\n";
       if (buffer[0].get().tokenType == TokenType::PRIMITIVE &&
           buffer[1].get().tokenType == TokenType::IDENTIFIER &&
           buffer[2].get().tokenType == TokenType::OPERATOR) {
@@ -208,6 +223,26 @@ Program AbstractSyntaxTree::parse() {
 
         program.addStatement(std::move(returnStatement));
       }
+
+      if (buffer[0].get().tokenType == TokenType::PRINT) {
+        std::unique_ptr<PrintStatement> printStatement;
+        if (buffer[1].get().tokenType == TokenType::NUMBER) {
+          const NumberToken& number =
+              static_cast<const NumberToken&>(buffer[1].get());
+
+          printStatement = std::make_unique<PrintStatement>(
+              (std::make_unique<NumberValue>(number.value)));
+        } else if (buffer[1].get().tokenType == TokenType::IDENTIFIER) {
+          const IdentifierToken& identifier =
+              static_cast<const IdentifierToken&>(buffer[1].get());
+
+          printStatement = std::make_unique<PrintStatement>(
+              (std::make_unique<IdentifierValue>(identifier.name)));
+        }
+
+        program.addStatement(std::move(printStatement));
+      }
+
       buffer.clear();
     }
   }

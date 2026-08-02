@@ -25,4 +25,5 @@ jobs:
       - name: Build and Test
         run: |
           cmake .
+          make
           ./build/bin/tests

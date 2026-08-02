@@ -20,9 +20,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo add-apt-repository universe
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential libllvm-18-dev llvm-18-dev catch2
+          sudo apt-get install -y cmake build-essential libcatch2-dev
+
+          sudo apt-get install -y llvm-dev libllvm-s-dev || sudo apt-get install -y llvm-dev
 
       - name: Build and Test
         run: |

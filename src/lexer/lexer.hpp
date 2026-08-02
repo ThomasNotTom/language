@@ -59,7 +59,7 @@ public:
           tokens.addReturn(ReturnToken());
         } else if (buffer == "print") {
           tokens.addPrint(PrintToken());
-        } else {
+        } else if (buffer.size() != 0) {
           tokens.addIdentifier(IdentifierToken(buffer));
         }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"

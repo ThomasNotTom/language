@@ -21,20 +21,16 @@
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instruction.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
 #include "llvm/MC/TargetRegistry.h"
-#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Program.h"
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Target/TargetOptions.h"
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/FileSystem.h>
@@ -60,9 +56,7 @@ public:
     llvm::InitializeNativeTargetAsmParser();
   }
 
-  void compile() {
-
-    llvm::LLVMContext context;
+  std::unique_ptr<llvm::Module> buildModule(llvm::LLVMContext& context) {
 
     std::unique_ptr<llvm::Module> module =
         std::make_unique<llvm::Module>("build", context);
@@ -364,6 +358,7 @@ public:
           }
 
           builder.store(builder.add(lhs, rhs, outName), outUint.getAlloc());
+          break;
         }
         case StatementType::PRINT: {
           const PrintStatement& printStatement =
@@ -412,8 +407,16 @@ public:
       builder.createReturn(returnValue);
     }
 
+    return module;
+  }
+
+  void print_module(std::unique_ptr<llvm::Module> module) {
     std::cout << "-- LLVM IR --" << std::endl;
     module->print(llvm::outs(), nullptr);
+  }
+
+  void compile(llvm::LLVMContext& context,
+               std::unique_ptr<llvm::Module> module) {
 
     auto targetTriple = llvm::Triple(llvm::sys::getDefaultTargetTriple());
     module->setTargetTriple(targetTriple);
@@ -426,7 +429,7 @@ public:
     auto CPU = "generic";
     auto features = "";
     llvm::TargetOptions opt;
-    std::optional<llvm::Reloc::Model> RM = std::nullopt;
+    std::optional<llvm::Reloc::Model> RM = llvm::Reloc::PIC_;
 
     llvm::TargetMachine* targetMachine =
         target->createTargetMachine(targetTriple, CPU, features, opt, RM);

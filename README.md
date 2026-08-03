@@ -57,6 +57,17 @@ uint8 b = a + 1;
 uint8 c = a + b + 1;
 ```
 
+## Printing
+
+Values can be printed to standard out using a print statement, proceeded by the value wanted to print.
+
+```
+print 1;
+
+uint8 a = 2;
+print a;
+```
+
 ## Examples
 
 Examples can be found in the `/examples` folder.
@@ -79,6 +90,7 @@ String segments are converted to a list of tokens. Representing the smallest seg
 | Identifier  | `IDENTIFIER`    | Variable identifier              |
 | Number      | `NUMBER`        | Integer                          |
 | Return      | `RETURN`        | Returns a value from a function  |
+| Print       | `PRINT`         | Prints a value                   |
 
 ## Syntax Analyser
 
@@ -90,6 +102,7 @@ Combines tokens into statements.
 | Assignment     | `ASSIGNMENT`        | Sets a variable to a value                           |
 | Return         | `RETURN`            | Returns a value from a function                      |
 | Addition       | `ADDITION`          | Adds two values and assigns them to an identifier    |
+| Print          | `PRINT`             | Prints the value after it                            |
 
 ## `LLVM` Intermediate Representation
 

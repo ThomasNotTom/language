@@ -409,12 +409,13 @@ public:
     return module;
   }
 
-  void compile() {
-    llvm::LLVMContext context;
-    std::unique_ptr<llvm::Module> module = this->buildModule(context);
-    
+  void print_module(std::unique_ptr<llvm::Module> module) {
     std::cout << "-- LLVM IR --" << std::endl;
     module->print(llvm::outs(), nullptr);
+  }
+
+  void compile(llvm::LLVMContext& context,
+               std::unique_ptr<llvm::Module> module) {
 
     auto targetTriple = llvm::Triple(llvm::sys::getDefaultTargetTriple());
     module->setTargetTriple(targetTriple);

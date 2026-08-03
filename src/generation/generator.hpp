@@ -358,6 +358,7 @@ public:
           }
 
           builder.store(builder.add(lhs, rhs, outName), outUint.getAlloc());
+          break;
         }
         case StatementType::PRINT: {
           const PrintStatement& printStatement =

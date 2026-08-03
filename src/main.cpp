@@ -10,7 +10,6 @@
 #include "./lexer/lexer.hpp"
 #include "./lexer/token_container/token_container.hpp"
 #include "generation/generator.hpp"
-#include "generation/module.hpp"
 #include "syntax_analyser/abstract_syntax_tree.hpp"
 
 int main(const int argc, char* argv[]) {

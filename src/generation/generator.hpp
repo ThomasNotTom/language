@@ -22,6 +22,8 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Value.h"
+#include "llvm/MC/TargetRegistry.h"
+#include "llvm/Support/Program.h"
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -430,13 +432,8 @@ public:
     std::error_code ec;
     llvm::raw_fd_ostream dest(filename, ec, llvm::sys::fs::OF_None);
 
-    llvm::legacy::PassManager pass;
-
     auto fileType = llvm::CodeGenFileType::ObjectFile;
 
-    targetMachine->addPassesToEmitFile(pass, dest, nullptr, fileType);
-
-    pass.run(*module);
     dest.flush();
 
     llvm::ErrorOr<std::string> clangPath =

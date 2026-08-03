@@ -160,10 +160,8 @@ Program AbstractSyntaxTree::parse() {
 
     const Token& token = this->tokenContainer.view(i);
     buffer.push_back(token);
-    std::cout << "Reading " << token.tokenType << std::endl;
 
     if (token.tokenType == TokenType::END_OF_LINE) {
-      std::cout << "Reading end of line\n";
       if (buffer[0].get().tokenType == TokenType::PRIMITIVE &&
           buffer[1].get().tokenType == TokenType::IDENTIFIER &&
           buffer[2].get().tokenType == TokenType::OPERATOR) {

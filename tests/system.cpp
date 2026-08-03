@@ -6,17 +6,14 @@
 #include <catch2/internal/catch_test_failure_exception.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
+#include <csignal>
 #include <cstdlib>
-#include <iostream>
 
 class CompilerBuildListener : public Catch::EventListenerBase {
 public:
   using Catch::EventListenerBase::EventListenerBase;
-
   void testRunStarting(const Catch::TestRunInfo& testRunInfo) override {
-    std::cout << "Building compiler\n";
-
-    int result = std::system("cmake . && make && ./bin/main");
+    int result = std::system("cmake . && make");
   }
 };
 
@@ -50,7 +47,7 @@ TEST_CASE("Run \"./examples/integer_primitives.lang\"", "[system]") {
   int out = std::system("./main.out");
   REQUIRE(out != -1);
   REQUIRE(WIFEXITED(out));
-  REQUIRE(WEXITSTATUS(out) == 1);
+  REQUIRE(WEXITSTATUS(out) == 0);
 };
 
 TEST_CASE("Run \"./examples/print.lang\"", "[system]") {

@@ -8,6 +8,7 @@
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <csignal>
 #include <cstdlib>
+#include <filesystem>
 
 class CompilerBuildListener : public Catch::EventListenerBase {
 public:

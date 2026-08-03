@@ -1,8 +1,8 @@
 #pragma once
-#include <memory>
 
+#include "syntax_analyser/statement/assignment/assignment_type.hpp"
 #include "syntax_analyser/statement/statement.hpp"
-#include "syntax_analyser/statement/value/value.hpp"
+#include "syntax_analyser/statement/value/identifier/identifier.hpp"
 
 class PrintStatement : public Statement {
 public:

@@ -429,7 +429,7 @@ public:
     auto CPU = "generic";
     auto features = "";
     llvm::TargetOptions opt;
-    std::optional<llvm::Reloc::Model> RM = std::nullopt;
+    std::optional<llvm::Reloc::Model> RM = llvm::Reloc::PIC_;
 
     llvm::TargetMachine* targetMachine =
         target->createTargetMachine(targetTriple, CPU, features, opt, RM);

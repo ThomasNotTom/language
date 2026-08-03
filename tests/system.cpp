@@ -13,7 +13,11 @@ class CompilerBuildListener : public Catch::EventListenerBase {
 public:
   using Catch::EventListenerBase::EventListenerBase;
   void testRunStarting(const Catch::TestRunInfo& testRunInfo) override {
-    int result = std::system("cmake . && make");
+    if (std::filesystem::exists("./bin/main")) {
+      return;
+    }
+    std::cerr << "Compiler not found";
+    std::exit(1);
   }
 };
 

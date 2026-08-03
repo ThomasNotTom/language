@@ -56,8 +56,7 @@ public:
     llvm::InitializeNativeTargetAsmParser();
   }
 
-  void compile() {
-
+  std::unique_ptr<llvm::Module> buildModule() {
     llvm::LLVMContext context;
 
     std::unique_ptr<llvm::Module> module =
@@ -408,6 +407,11 @@ public:
       builder.createReturn(returnValue);
     }
 
+    return std::move(module);
+  }
+
+  void compile() {
+    std::unique_ptr<llvm::Module> module = this->buildModule();
     std::cout << "-- LLVM IR --" << std::endl;
     module->print(llvm::outs(), nullptr);
 

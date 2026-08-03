@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 #include "./string_converter.hpp"
@@ -58,7 +59,7 @@ public:
           tokens.addReturn(ReturnToken());
         } else if (buffer == "print") {
           tokens.addPrint(PrintToken());
-        } else if (buffer.size() != 0) {
+        } else {
           tokens.addIdentifier(IdentifierToken(buffer));
         }
 

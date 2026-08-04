@@ -3,5 +3,6 @@ enum class StatementType {
   ASSIGNMENT = 2,
   RETURN = 3,
   ADDITION = 4,
-  PRINT = 5
+  SUBTRACTION = 5,
+  PRINT = 6
 };

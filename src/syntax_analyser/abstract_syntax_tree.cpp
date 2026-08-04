@@ -111,14 +111,13 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::evaluateOperations(
     const OperatorToken& firstTokenOperator =
         static_cast<const OperatorToken&>(firstToken);
 
-    if (firstTokenOperator.operatorType != OperatorType::ADDITION) {
-      throw std::format_error("Only `+` operator is implemented");
+    if (firstTokenOperator.operatorType != OperatorType::ADDITION &&
+        firstTokenOperator.operatorType != OperatorType::SUBTRACTION) {
+      throw std::format_error("Only `+` and `-` operators are implemented");
     }
 
     const Token& secondToken =
         static_cast<const Token&>(tokens[tokensIndex + 1].get());
-
-    std::cout << secondToken.tokenType << "\n";
 
     if (secondToken.tokenType != TokenType::NUMBER &&
         secondToken.tokenType != TokenType::IDENTIFIER) {
@@ -126,23 +125,50 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::evaluateOperations(
           "Token adjacent to operator must be an identifier or a value");
     }
 
-    if (secondToken.tokenType == TokenType::NUMBER) {
-      statements.push_back(std::make_unique<AdditionStatement>(
-          IdentifierValue(outputIdentifier),
-          std::make_unique<IdentifierValue>(outputIdentifier),
-          std::make_unique<NumberValue>(
-              (static_cast<const NumberToken&>(secondToken)).value)));
+    switch (firstTokenOperator.operatorType) {
+      case OperatorType::ADDITION: {
+        if (secondToken.tokenType == TokenType::NUMBER) {
+          statements.push_back(std::make_unique<AdditionStatement>(
+              IdentifierValue(outputIdentifier),
+              std::make_unique<IdentifierValue>(outputIdentifier),
+              std::make_unique<NumberValue>(
+                  (static_cast<const NumberToken&>(secondToken)).value)));
 
-      std::cout << outputIdentifier << " + "
-                << (static_cast<const NumberToken&>(secondToken)).value << "\n";
-    }
+          std::cout << outputIdentifier << " + "
+                    << (static_cast<const NumberToken&>(secondToken)).value
+                    << "\n";
+        }
 
-    if (secondToken.tokenType == TokenType::IDENTIFIER) {
-      statements.push_back(std::make_unique<AdditionStatement>(
-          IdentifierValue(outputIdentifier),
-          std::make_unique<IdentifierValue>(outputIdentifier),
-          std::make_unique<IdentifierValue>(
-              static_cast<const IdentifierToken&>(secondToken).name)));
+        if (secondToken.tokenType == TokenType::IDENTIFIER) {
+          statements.push_back(std::make_unique<AdditionStatement>(
+              IdentifierValue(outputIdentifier),
+              std::make_unique<IdentifierValue>(outputIdentifier),
+              std::make_unique<IdentifierValue>(
+                  static_cast<const IdentifierToken&>(secondToken).name)));
+        }
+
+        break;
+      }
+
+      case OperatorType::SUBTRACTION: {
+        if (secondToken.tokenType == TokenType::NUMBER) {
+          statements.push_back(std::make_unique<SubtractionStatement>(
+              IdentifierValue(outputIdentifier),
+              std::make_unique<IdentifierValue>(outputIdentifier),
+              std::make_unique<NumberValue>(
+                  (static_cast<const NumberToken&>(secondToken)).value)));
+        }
+
+        if (secondToken.tokenType == TokenType::IDENTIFIER) {
+          statements.push_back(std::make_unique<SubtractionStatement>(
+              IdentifierValue(outputIdentifier),
+              std::make_unique<IdentifierValue>(outputIdentifier),
+              std::make_unique<IdentifierValue>(
+                  static_cast<const IdentifierToken&>(secondToken).name)));
+        }
+
+        break;
+      }
     }
 
     tokensIndex += 2;
@@ -160,10 +186,8 @@ Program AbstractSyntaxTree::parse() {
 
     const Token& token = this->tokenContainer.view(i);
     buffer.push_back(token);
-    std::cout << "Reading " << token.tokenType << std::endl;
 
     if (token.tokenType == TokenType::END_OF_LINE) {
-      std::cout << "Reading end of line\n";
       if (buffer[0].get().tokenType == TokenType::PRIMITIVE &&
           buffer[1].get().tokenType == TokenType::IDENTIFIER &&
           buffer[2].get().tokenType == TokenType::OPERATOR) {
@@ -246,6 +270,5 @@ Program AbstractSyntaxTree::parse() {
       buffer.clear();
     }
   }
-  std::cout << "program size: " << program.size() << "\n";
   return program;
 }

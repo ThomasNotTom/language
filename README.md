@@ -49,12 +49,15 @@ return a;
 
 ## Arithmetic
 
-Values can be defined as a series of arithemtic statements, combining identifiers and values:
+Values can be defined as a series of arithmetic statements, combining identifiers and values:
 
 ```
 uint8 a = 1;
 uint8 b = a + 1;
 uint8 c = a + b + 1;
+
+uint8 d = c - b;
+uint8 e = d - 1;
 ```
 
 ## Printing
@@ -96,13 +99,14 @@ String segments are converted to a list of tokens. Representing the smallest seg
 
 Combines tokens into statements.
 
-| Statement Name | Statement Type Enum | Description                                          |
-| -------------- | ------------------- | ---------------------------------------------------- |
-| Initialisation | `INITIALISATION`    | Initialises a variable with the given primitive type |
-| Assignment     | `ASSIGNMENT`        | Sets a variable to a value                           |
-| Return         | `RETURN`            | Returns a value from a function                      |
-| Addition       | `ADDITION`          | Adds two values and assigns them to an identifier    |
-| Print          | `PRINT`             | Prints the value after it                            |
+| Statement Name | Statement Type Enum | Description                                            |
+| -------------- | ------------------- | ------------------------------------------------------ |
+| Initialisation | `INITIALISATION`    | Initialises a variable with the given primitive type   |
+| Assignment     | `ASSIGNMENT`        | Sets a variable to a value                             |
+| Return         | `RETURN`            | Returns a value from a function                        |
+| Addition       | `ADDITION`          | Adds two values and assigns them to an identifier      |
+| Subtraction    | `SUBTRACTION`       | Subtracts two values and assigns them to an identifier |
+| Print          | `PRINT`             | Prints the value after it                              |
 
 ## `LLVM` Intermediate Representation
 

@@ -8,6 +8,7 @@
 #include "lexer/tokens/number/number.hpp"
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/assignment/assignment.hpp"
+#include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/primitives/uint16/uint16.hpp"
 #include "lexer/tokens/primitives/uint32/uint32.hpp"
 #include "lexer/tokens/primitives/uint64/uint64.hpp"
@@ -37,6 +38,10 @@ public:
 
   void addAddition(const AdditionToken& token) {
     tokens.push_back(std::make_unique<AdditionToken>(token));
+  }
+
+  void addSubtraction(const SubtractionToken& token) {
+    tokens.push_back(std::make_unique<SubtractionToken>(token));
   }
 
   void addAssignment(const AssignmentToken& token) {

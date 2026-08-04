@@ -15,6 +15,7 @@
 #include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
+#include "syntax_analyser/statement/subtraction/subtraction.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
 #include "syntax_analyser/statement/value/value.hpp"
@@ -361,6 +362,105 @@ public:
 
           builder.store(builder.add(lhs, rhs, outName), outUint.getAlloc());
         }
+
+        case StatementType::SUBTRACTION: {
+          const SubtractionStatement& subtractionStatement =
+              static_cast<const SubtractionStatement&>(statement);
+
+          std::unique_ptr<BuilderPrimitive>& out =
+              symbols.at(subtractionStatement.identifier.name);
+
+          if (out->getType() != BuilderPrimitiveType::UINT) {
+            throw std::runtime_error(
+                "Cannot assign subtraction to non-uint type");
+          }
+
+          BuilderUintPrimitive& outUint =
+              static_cast<BuilderUintPrimitive&>(*out);
+
+          llvm::Value* lhs;
+          llvm::Value* rhs;
+
+          std::string outName = "subtract_";
+
+          switch (subtractionStatement.lhs->statementValueType) {
+            case StatementValueType::IDENTIFIER: {
+              const IdentifierValue& lhsIdentifierValue =
+                  static_cast<const IdentifierValue&>(
+                      *subtractionStatement.lhs.get());
+
+              std::unique_ptr<BuilderPrimitive>& lhsValue =
+                  symbols.at(lhsIdentifierValue.name);
+
+              if (lhsValue->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot subtract non-uint types");
+              }
+
+              BuilderUintPrimitive& lhsUintValue =
+                  static_cast<BuilderUintPrimitive&>(*lhsValue);
+
+              lhs = builder.load(lhsUintValue.getLlvmIntegerType(),
+                                 lhsUintValue.getAlloc(),
+                                 lhsIdentifierValue.name + "_load");
+
+              outName += lhsIdentifierValue.name;
+              break;
+            }
+
+            case StatementValueType::NUMBER: {
+              const NumberValue& lhsNumberValue =
+                  static_cast<const NumberValue&>(
+                      *subtractionStatement.lhs.get());
+
+              lhs = builder.createConst8(lhsNumberValue.value);
+              outName += "const";
+              break;
+            }
+          }
+
+          outName += "_and_";
+
+          switch (subtractionStatement.rhs->statementValueType) {
+            case StatementValueType::IDENTIFIER: {
+              const IdentifierValue& rhsIdentifierValue =
+                  static_cast<const IdentifierValue&>(
+                      *subtractionStatement.rhs.get());
+
+              std::unique_ptr<BuilderPrimitive>& rhsValue =
+                  symbols.at(rhsIdentifierValue.name);
+
+              if (rhsValue->getType() != BuilderPrimitiveType::UINT) {
+                throw std::runtime_error("Cannot subtract non-uint types");
+              }
+
+              BuilderUintPrimitive& rhsValueUint =
+                  static_cast<BuilderUintPrimitive&>(*rhsValue);
+
+              rhs = builder.load(rhsValueUint.getLlvmIntegerType(),
+                                 rhsValueUint.getAlloc(),
+                                 rhsIdentifierValue.name + "_load");
+
+              outName += rhsIdentifierValue.name;
+              break;
+            }
+
+            case StatementValueType::NUMBER: {
+              const NumberValue& rhsNumberValue =
+                  static_cast<const NumberValue&>(
+                      *subtractionStatement.rhs.get());
+
+              rhs = builder.createConst8(rhsNumberValue.value);
+              outName += "const";
+
+              break;
+            }
+          }
+
+          builder.store(builder.subtract(lhs, rhs, outName),
+                        outUint.getAlloc());
+          break;
+        }
+
         case StatementType::PRINT: {
           const PrintStatement& printStatement =
               static_cast<const PrintStatement&>(statement);

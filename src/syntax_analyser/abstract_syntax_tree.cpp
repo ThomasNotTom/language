@@ -149,7 +149,7 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::evaluateOperations(
 
         break;
       }
-
+        
       case OperatorType::SUBTRACTION: {
         if (secondToken.tokenType == TokenType::NUMBER) {
           statements.push_back(std::make_unique<SubtractionStatement>(
@@ -158,7 +158,7 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::evaluateOperations(
               std::make_unique<NumberValue>(
                   (static_cast<const NumberToken&>(secondToken)).value)));
         }
-
+        
         if (secondToken.tokenType == TokenType::IDENTIFIER) {
           statements.push_back(std::make_unique<SubtractionStatement>(
               IdentifierValue(outputIdentifier),

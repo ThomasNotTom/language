@@ -77,6 +77,10 @@ public:
     return this->irBuilder.CreateAdd(lhs, rhs, name);
   };
 
+  llvm::Value* subtract(llvm::Value* lhs, llvm::Value* rhs, std::string name) {
+    return this->irBuilder.CreateSub(lhs, rhs, name);
+  };
+
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {
     return this->irBuilder.CreateZExt(in, outType);
   };

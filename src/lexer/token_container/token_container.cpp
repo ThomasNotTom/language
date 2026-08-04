@@ -7,6 +7,7 @@
 #include "../tokens/number/number.hpp"
 #include "../tokens/operators/operator.hpp"
 #include "../tokens/primitives/primitive.hpp"
+#include "lexer/tokens/operators/operator_type.hpp"
 
 TokenContainer::TokenContainer() {};
 
@@ -59,18 +60,27 @@ void TokenContainer::print() const {
 
       case OPERATOR: {
         const OperatorToken& op = static_cast<const OperatorToken&>(token);
+        std::string out = "OPERATOR(";
 
         switch (op.operatorType) {
           case ASSIGNMENT: {
-            std::cout << "OPERATOR(=)\n";
+            out += "=";
             break;
           }
 
           case ADDITION: {
-            std::cout << "OPERATOR(+)\n";
+            out += "+";
+            break;
+          }
+
+          case SUBTRACTION: {
+            out += "-";
             break;
           }
         }
+        out += ")";
+
+        std::cout << out << "\n";
         break;
       }
 

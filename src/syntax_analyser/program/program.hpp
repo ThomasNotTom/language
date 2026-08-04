@@ -9,6 +9,7 @@
 #include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
+#include "syntax_analyser/statement/subtraction/subtraction.hpp"
 #include "syntax_analyser/statement/value/identifier/identifier.hpp"
 #include "syntax_analyser/statement/value/number/number.hpp"
 #include "syntax_analyser/statement/value/value.hpp"
@@ -109,6 +110,15 @@ private:
               << rhs << ";\n";
   }
 
+  void printSubtractionStatement(
+      const SubtractionStatement& subtractionStatement) const {
+    std::string lhs = this->getStatementValueString(*subtractionStatement.lhs);
+    std::string rhs = this->getStatementValueString(*subtractionStatement.rhs);
+
+    std::cout << subtractionStatement.identifier.name << " = " << lhs << " - "
+              << rhs << ";\n";
+  }
+
   void printPrintStatement(const PrintStatement& printStatement) const {
     std::string value = this->getStatementValueString(*printStatement.value);
 
@@ -163,6 +173,16 @@ public:
               break;
             }
           }
+          break;
+        }
+
+        case StatementType::SUBTRACTION: {
+
+          const SubtractionStatement& subtractionStatement =
+              static_cast<const SubtractionStatement&>(statement);
+
+          this->printSubtractionStatement(subtractionStatement);
+
           break;
         }
 

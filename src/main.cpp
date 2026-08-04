@@ -4,6 +4,7 @@
 #include <llvm/Support/raw_ostream.h>
 
 #include <iostream>
+#include <memory>
 
 #include "./io/file_reader.hpp"
 #include "./lexer/lexer.hpp"
@@ -17,6 +18,14 @@ int main(const int argc, char* argv[]) {
     return 1;
   }
 
+  bool verbose = false;
+
+  if (argc == 3) {
+    if (std::string(argv[2]) == "-v") {
+      verbose = true;
+    }
+  }
+
   FileReader fileReader(argv[1]);
   if (!fileReader.isOpen()) {
     std::cerr << "Input file failed to open\n";
@@ -25,14 +34,26 @@ int main(const int argc, char* argv[]) {
 
   Lexer lexer(fileReader.readAll());
   TokenContainer tokens = lexer.makeTokenList();
-  tokens.print();
+  if (verbose) {
+    tokens.print();
+  }
 
   AbstractSyntaxTree ast(tokens);
 
   Program program = ast.parse();
-  program.print();
+  if (verbose) {
+    program.print();
+  }
 
   Generator generator(program);
   generator.init();
-  generator.compile();
+
+  llvm::LLVMContext context;
+  std::unique_ptr<llvm::Module> module = generator.buildModule(context);
+
+  if (verbose) {
+    generator.print_module(std::move(module));
+  }
+
+  generator.compile(context, std::move(module));
 }

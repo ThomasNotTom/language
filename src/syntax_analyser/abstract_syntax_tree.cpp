@@ -118,8 +118,6 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::evaluateOperations(
     const Token& secondToken =
         static_cast<const Token&>(tokens[tokensIndex + 1].get());
 
-    std::cout << secondToken.tokenType << "\n";
-
     if (secondToken.tokenType != TokenType::NUMBER &&
         secondToken.tokenType != TokenType::IDENTIFIER) {
       throw std::runtime_error(
@@ -132,9 +130,6 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::evaluateOperations(
           std::make_unique<IdentifierValue>(outputIdentifier),
           std::make_unique<NumberValue>(
               (static_cast<const NumberToken&>(secondToken)).value)));
-
-      std::cout << outputIdentifier << " + "
-                << (static_cast<const NumberToken&>(secondToken)).value << "\n";
     }
 
     if (secondToken.tokenType == TokenType::IDENTIFIER) {
@@ -160,10 +155,8 @@ Program AbstractSyntaxTree::parse() {
 
     const Token& token = this->tokenContainer.view(i);
     buffer.push_back(token);
-    std::cout << "Reading " << token.tokenType << std::endl;
 
     if (token.tokenType == TokenType::END_OF_LINE) {
-      std::cout << "Reading end of line\n";
       if (buffer[0].get().tokenType == TokenType::PRIMITIVE &&
           buffer[1].get().tokenType == TokenType::IDENTIFIER &&
           buffer[2].get().tokenType == TokenType::OPERATOR) {
@@ -246,6 +239,5 @@ Program AbstractSyntaxTree::parse() {
       buffer.clear();
     }
   }
-  std::cout << "program size: " << program.size() << "\n";
   return program;
 }

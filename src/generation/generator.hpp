@@ -56,9 +56,7 @@ public:
     llvm::InitializeNativeTargetAsmParser();
   }
 
-  void compile() {
-
-    llvm::LLVMContext context;
+  std::unique_ptr<llvm::Module> buildModule(llvm::LLVMContext& context) {
 
     std::unique_ptr<llvm::Module> module =
         std::make_unique<llvm::Module>("build", context);
@@ -360,6 +358,7 @@ public:
           }
 
           builder.store(builder.add(lhs, rhs, outName), outUint.getAlloc());
+          break;
         }
         case StatementType::PRINT: {
           const PrintStatement& printStatement =
@@ -408,8 +407,16 @@ public:
       builder.createReturn(returnValue);
     }
 
+    return module;
+  }
+
+  void print_module(std::unique_ptr<llvm::Module> module) {
     std::cout << "-- LLVM IR --" << std::endl;
     module->print(llvm::outs(), nullptr);
+  }
+
+  void compile(llvm::LLVMContext& context,
+               std::unique_ptr<llvm::Module> module) {
 
     auto targetTriple = llvm::Triple(llvm::sys::getDefaultTargetTriple());
     module->setTargetTriple(targetTriple);
@@ -422,7 +429,7 @@ public:
     auto CPU = "generic";
     auto features = "";
     llvm::TargetOptions opt;
-    std::optional<llvm::Reloc::Model> RM = std::nullopt;
+    std::optional<llvm::Reloc::Model> RM = llvm::Reloc::PIC_;
 
     llvm::TargetMachine* targetMachine =
         target->createTargetMachine(targetTriple, CPU, features, opt, RM);

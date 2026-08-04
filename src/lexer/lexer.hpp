@@ -11,6 +11,7 @@
 #include "./tokens/primitives/uint64/uint64.hpp"
 
 #include "./tokens/operators/addition/addition.hpp"
+#include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/primitives/uint16/uint16.hpp"
 #include "lexer/tokens/primitives/uint32/uint32.hpp"
 #include "lexer/tokens/print/print.hpp"
@@ -54,6 +55,8 @@ public:
           tokens.addNumber(StringConverter::toUnsignedLongLong(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());
+        } else if (buffer == "-") {
+          tokens.addSubtraction(SubtractionToken());
         } else if (buffer == "return") {
           tokens.addReturn(ReturnToken());
         } else if (buffer == "print") {

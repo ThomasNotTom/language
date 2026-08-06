@@ -1,15 +1,16 @@
 #pragma once
 
-#include "../primitives/primitive.hpp"
 #include "../statement.hpp"
-#include "syntax_analyser/statement/value/identifier/identifier.hpp"
+#include "syntax_analyser/statement/other.hpp"
 #include <memory>
 
 class InitialisationStatement : public Statement {
 public:
-  const StatementPrimitiveType type;
-  const std::unique_ptr<IdentifierValue> identifier;
+  const OtherStatementValue type;
+  const OtherStatementValue identifier;
 
-  InitialisationStatement(StatementPrimitiveType type,
-                          std::unique_ptr<IdentifierValue> identifier);
+  InitialisationStatement(OtherStatementValue type,
+                          OtherStatementValue identifier)
+      : Statement(StatementType::INITIALISATION), type(type),
+        identifier(identifier) {};
 };

@@ -7,19 +7,13 @@ class AbstractSyntaxTree {
 private:
   const TokenContainer& tokenContainer;
 
-  StatementPrimitiveType
-  getStatementPrimitiveTypeFromPrimitiveType(PrimitiveType primitiveType);
-
-  std::vector<std::unique_ptr<Statement>>
-  evaluateOperations(std::vector<std::reference_wrapper<const Token>> tokens,
-                     std::string outputIdentifier);
-
-  std::unique_ptr<InitialisationStatement>
-  makeInitialisationStatement(PrimitiveType primitiveType,
-                              std::string identifierName);
-
 public:
   AbstractSyntaxTree(const TokenContainer& tokenContainer);
+  std::vector<std::unique_ptr<Statement>>
+  leftToRightParse(std::vector<std::reference_wrapper<const Token>> tokens);
+
+  std::vector<std::vector<std::reference_wrapper<const Token>>>
+  splitToLines(const TokenContainer& fullTokens);
 
   Program parse();
 };

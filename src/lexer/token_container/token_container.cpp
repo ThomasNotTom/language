@@ -1,12 +1,10 @@
 #include <iostream>
 
-#include "../tokens/identifier/identifier.hpp"
+#include "../tokens/other.hpp"
 #include "../tokens/token_type.hpp"
 #include "./token_container.hpp"
 
-#include "../tokens/number/number.hpp"
 #include "../tokens/operators/operator.hpp"
-#include "../tokens/primitives/primitive.hpp"
 #include "lexer/tokens/operators/operator_type.hpp"
 
 TokenContainer::TokenContainer() {};
@@ -27,34 +25,6 @@ void TokenContainer::print() const {
     switch (token.tokenType) {
       case END_OF_LINE: {
         std::cout << "END_OF_LINE\n";
-        break;
-      }
-
-      case PRIMITIVE: {
-        const PrimitiveToken& primitive =
-            static_cast<const PrimitiveToken&>(token);
-
-        switch (primitive.primitiveType) {
-          case PrimitiveType::UINT8: {
-            std::cout << "PRIMITIVE(UINT8)\n";
-            break;
-          }
-
-          case PrimitiveType::UINT16: {
-            std::cout << "PRIMITIVE(UINT16)\n";
-            break;
-          }
-
-          case PrimitiveType::UINT32: {
-            std::cout << "PRIMITIVE(UINT32)\n";
-            break;
-          }
-
-          case PrimitiveType::UINT64: {
-            std::cout << "PRIMITIVE(UINT64)\n";
-            break;
-          }
-        }
         break;
       }
 
@@ -84,27 +54,21 @@ void TokenContainer::print() const {
         break;
       }
 
-      case IDENTIFIER: {
-        const IdentifierToken& identifier =
-            static_cast<const IdentifierToken&>(token);
-
-        std::cout << "IDENTIFIER(\"" << identifier.name << "\")\n";
-        break;
-      }
-
-      case NUMBER: {
-        const NumberToken& number = static_cast<const NumberToken&>(token);
-
-        std::cout << "NUMBER(" << number.value << ")\n";
-        break;
-      }
-
       case RETURN: {
         std::cout << "RETURN\n";
+        break;
       }
 
       case PRINT: {
         std::cout << "PRINT\n";
+        break;
+      }
+
+      case OTHER: {
+        const OtherToken& other = static_cast<const OtherToken&>(token);
+
+        std::cout << "OTHER(\"" << other.name << "\")\n";
+        break;
       }
     }
   }

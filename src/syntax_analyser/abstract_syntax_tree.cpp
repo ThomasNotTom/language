@@ -78,6 +78,13 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
             OtherStatementValue(out.name), OtherStatementValue(out.name),
             OtherStatementValue(otherToken.name)));
         break;
+
+        case SUBTRACTION: {
+          outStatements.push_back(std::make_unique<SubtractionStatement>(
+              OtherStatementValue(out.name), OtherStatementValue(out.name),
+              OtherStatementValue(otherToken.name)));
+          break;
+        }
       }
     }
   }
@@ -126,8 +133,21 @@ Program AbstractSyntaxTree::parse() {
       for (int i = 0; i < statements.size(); i++) {
         program.addStatement(std::move(statements[i]));
       }
+      continue;
     }
 
+    // print_statement ::= "print" {other}
+    if (row.size() >= 2 && row[0].get().tokenType == TokenType::PRINT &&
+        row[1].get().tokenType == TokenType::OTHER) {
+      const OtherToken& identifier =
+          dynamic_cast<const OtherToken&>(row[1].get());
+
+      program.addStatement(std::make_unique<PrintStatement>(
+          OtherStatementValue(identifier.name)));
+      continue;
+    }
+
+    // return_statement ::= "return" {other}
     if (row.size() >= 2 && row[0].get().tokenType == TokenType::RETURN &&
         row[1].get().tokenType == TokenType::OTHER) {
       const OtherToken& identifier =
@@ -135,6 +155,7 @@ Program AbstractSyntaxTree::parse() {
 
       program.addStatement(std::make_unique<ReturnStatement>(
           OtherStatementValue(identifier.name)));
+      continue;
     }
   }
   return program;

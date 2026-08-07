@@ -62,6 +62,15 @@ TEST_CASE("Run \"./examples/print.lang\"", "[system]") {
   REQUIRE(out == "1\n2\n");
 };
 
+TEST_CASE("Run \"./examples/subtraction.lang\"", "[system]") {
+  std::system("./bin/main ./examples/subtraction.lang");
+  int out = std::system("./main.out");
+
+  REQUIRE(out != -1);
+  REQUIRE(WIFEXITED(out));
+  REQUIRE(WEXITSTATUS(out) == 1);
+};
+
 TEST_CASE("Run \"./examples/transitive_assignment.lang\"", "[system]") {
   std::system("./bin/main ./examples/transitive_assignment.lang");
   int out = std::system("./main.out");

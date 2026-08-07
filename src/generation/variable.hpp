@@ -5,7 +5,6 @@
 
 class Variable {
 protected:
-  // const BuilderType& builderType;
   llvm::Value* storage;
 
 public:

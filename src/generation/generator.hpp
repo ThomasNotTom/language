@@ -1,10 +1,11 @@
 #include "../syntax_analyser/program/program.hpp"
 #include "generation/builder/builder.hpp"
-#include "generation/primitives/primitive.hpp"
-#include "generation/primitives/uint16.hpp"
-#include "generation/primitives/uint32.hpp"
-#include "generation/primitives/uint64.hpp"
-#include "generation/primitives/uint8.hpp"
+#include "generation/primitives/uint16/uint16.hpp"
+#include "generation/primitives/uint16/uint16_variable.hpp"
+#include "generation/primitives/uint8/uint8.hpp"
+#include "generation/primitives/uint8/uint8_variable.hpp"
+#include "generation/type.hpp"
+#include "generation/variable.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
@@ -80,7 +81,15 @@ public:
 
     // End print init
 
-    std::map<std::string, std::unique_ptr<BuilderPrimitive>> symbols;
+    std::map<std::string, std::unique_ptr<BuilderType>> types =
+        std::map<std::string, std::unique_ptr<BuilderType>>();
+
+    // Create primitive types
+    types.emplace("uint8", std::make_unique<Uint8Builder>());
+    types.emplace("uint16", std::make_unique<Uint16Builder>());
+
+    std::map<std::string, std::unique_ptr<Variable>> symbols =
+        std::map<std::string, std::unique_ptr<Variable>>();
 
     bool hasMainReturn = false;
 
@@ -91,6 +100,12 @@ public:
         case StatementType::INITIALISATION: {
           const InitialisationStatement& initialisationStatement =
               static_cast<const InitialisationStatement&>(statement);
+
+          const BuilderType& builderType =
+              *types[initialisationStatement.type.name];
+
+          symbols.emplace(initialisationStatement.identifier.name,
+                          builderType.makeVariable(builder));
 
           break;
         }
@@ -137,9 +152,9 @@ public:
     return module;
   }
 
-  void print_module(std::unique_ptr<llvm::Module> module) {
+  void print_module(const llvm::Module& module) {
     std::cout << "-- LLVM IR --" << std::endl;
-    module->print(llvm::outs(), nullptr);
+    module.print(llvm::outs(), nullptr);
   }
 
   void compile(llvm::LLVMContext& context,

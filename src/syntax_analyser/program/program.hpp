@@ -56,9 +56,7 @@ private:
   void printPrintStatement(const PrintStatement& printStatement) const {
     std::string value = printStatement.value.name;
 
-    std::cout << "print(" << value
-              << ")"
-                 ";\n";
+    std::cout << "print " << value << ";\n";
   }
 
 public:

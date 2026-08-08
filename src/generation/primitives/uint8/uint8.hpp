@@ -5,9 +5,9 @@
 
 class Uint8Builder : public BuilderType {
 public:
-  Uint8Builder() : BuilderType() {};
+  Uint8Builder(unsigned int typeID) : BuilderType(typeID) {};
 
   std::unique_ptr<Variable> makeVariable(Builder& builder) const override {
-    return std::make_unique<Uint8Variable>(builder);
+    return std::make_unique<Uint8Variable>(builder, *this);
   };
 };

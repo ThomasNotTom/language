@@ -5,9 +5,9 @@
 
 class Uint16Builder : public BuilderType {
 public:
-  Uint16Builder() : BuilderType() {};
+  Uint16Builder(unsigned int typeID) : BuilderType(typeID) {};
 
   std::unique_ptr<Variable> makeVariable(Builder& builder) const override {
-    return std::make_unique<Uint16Variable>(builder);
+    return std::make_unique<Uint16Variable>(builder, *this);
   };
 };

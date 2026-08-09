@@ -13,7 +13,7 @@ public:
     this->storage = builder.allocate(this->llvmType, "uint64");
   };
 
-  llvm::LoadInst* load(Builder& builder) const {
+  llvm::LoadInst* load(Builder& builder) const override {
     return builder.load(this->llvmType, this->storage, "uint64");
   }
 
@@ -85,16 +85,5 @@ public:
         this->load(builder), builder.createConst64(other), "uint64_sub_val");
 
     builder.store(subOut, this->storage);
-  };
-
-  void print(Builder& builder,
-             PrintCallableBuilder& printCallableBuilder) const override {
-    printCallableBuilder.printLine(builder, this->load(builder));
-  };
-
-  void returnValue(Builder& builder) const override {
-    llvm::Value* extended =
-        builder.zext(this->load(builder), builder.getUint64());
-    builder.createReturn(extended);
   };
 };

@@ -15,7 +15,7 @@ public:
     this->storage = builder.allocate(this->llvmType, "uint8");
   };
 
-  llvm::LoadInst* load(Builder& builder) const {
+  llvm::LoadInst* load(Builder& builder) const override {
     return builder.load(this->llvmType, this->storage, "uint8");
   }
 
@@ -87,16 +87,5 @@ public:
         this->load(builder), builder.createConst8(other), "uint8_sub_val");
 
     builder.store(subOut, this->storage);
-  };
-
-  void print(Builder& builder,
-             PrintCallableBuilder& printCallableBuilder) const override {
-    printCallableBuilder.printLine(builder, this->load(builder));
-  };
-
-  void returnValue(Builder& builder) const override {
-    llvm::Value* extended =
-        builder.zext(this->load(builder), builder.getUint32());
-    builder.createReturn(extended);
   };
 };

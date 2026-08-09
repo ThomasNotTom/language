@@ -42,16 +42,9 @@ AbstractSyntaxTree::splitToLines(const TokenContainer& fullTokens) {
 };
 
 std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
-    std::vector<std::reference_wrapper<const Token>> tokens) {
+    std::vector<std::reference_wrapper<const Token>> tokens,
+    std::string outName) {
   std::vector<std::unique_ptr<Statement>> outStatements;
-
-  const Token& first = tokens[0];
-
-  if (first.tokenType != TokenType::OTHER) {
-    throw std::runtime_error("Asigned token must be other");
-  }
-
-  const OtherToken& out = static_cast<const OtherToken&>(first);
 
   for (int i = 1; i < tokens.size(); i += 2) {
     const Token& nextToken = tokens[i].get();
@@ -75,13 +68,13 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
     switch (operatorToken.operatorType) {
       case ADDITION: {
         outStatements.push_back(std::make_unique<AdditionStatement>(
-            OtherStatementValue(out.name), OtherStatementValue(out.name),
+            OtherStatementValue(outName), OtherStatementValue(outName),
             OtherStatementValue(otherToken.name)));
         break;
 
         case SUBTRACTION: {
           outStatements.push_back(std::make_unique<SubtractionStatement>(
-              OtherStatementValue(out.name), OtherStatementValue(out.name),
+              OtherStatementValue(outName), OtherStatementValue(outName),
               OtherStatementValue(otherToken.name)));
           break;
         }
@@ -127,8 +120,20 @@ Program AbstractSyntaxTree::parse() {
           OtherStatementValue(type.name),
           OtherStatementValue(identifier.name)));
 
+      const OtherToken& value = dynamic_cast<const OtherToken&>(row[3].get());
+      program.addStatement(std::make_unique<AssignmentStatement>(
+          OtherStatementValue(identifier.name),
+          OtherStatementValue(value.name)));
+
+      if (row.size() == 4) {
+        continue;
+      }
+
+      std::vector<std::reference_wrapper<const Token>> remaining =
+          std::vector(row.begin() + 3, row.end());
+
       std::vector<std::unique_ptr<Statement>> statements =
-          this->leftToRightParse(std::vector(row.begin() + 1, row.end()));
+          this->leftToRightParse(remaining, identifier.name);
 
       for (int i = 0; i < statements.size(); i++) {
         program.addStatement(std::move(statements[i]));

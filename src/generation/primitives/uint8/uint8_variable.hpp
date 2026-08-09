@@ -20,7 +20,6 @@ public:
   }
 
   llvm::StoreInst* store(Builder& builder, int other) const override {
-    std::cout << "Calling store\n";
     return builder.store(builder.createConst8(other), this->storage);
   }
 

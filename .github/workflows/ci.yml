@@ -24,8 +24,15 @@ jobs:
 
           echo "LLVM_DIR=/usr/lib/llvm-22/lib/cmake/llvm" >> $GITHUB_ENV
 
-      - name: Build and Test
+      - name: Build
         run: |
           cmake .
           make
+
+      - name: Run `clang-tidy`
+        run: |
+          find src -name "*.cpp" -print0 | xargs -0 clang-tidy-22 -p build
+
+      - name: Run tests
+        run: |
           ./bin/tests

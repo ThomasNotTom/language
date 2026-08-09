@@ -2,10 +2,16 @@
 #include "generation/builder/builder.hpp"
 #include "generation/primitives/uint16/uint16.hpp"
 #include "generation/primitives/uint16/uint16_variable.hpp"
+#include "generation/primitives/uint32/uint32.hpp"
+#include "generation/primitives/uint32/uint32_variable.hpp"
+#include "generation/primitives/uint64/uint64.hpp"
+#include "generation/primitives/uint64/uint64_variable.hpp"
 #include "generation/primitives/uint8/uint8.hpp"
 #include "generation/primitives/uint8/uint8_variable.hpp"
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "lexer/matcher.hpp"
+#include "lexer/string_converter.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
@@ -68,28 +74,23 @@ public:
         llvm::BasicBlock::Create(context, "entry", mainFunc);
     builder.setInsertPoint(mainEntry);
 
-    // Initialise print
-    auto* charPtrType = builder.getUint8Ptr();
-
-    std::vector<llvm::Type*> PrintfArgsTypes = {charPtrType};
-
-    llvm::FunctionType* PrintfType =
-        llvm::FunctionType::get(builder.getUint32(), PrintfArgsTypes, true);
-
-    llvm::Function* PrintfFunc = llvm::Function::Create(
-        PrintfType, llvm::Function::ExternalLinkage, "printf", *module);
-
-    // End print init
-
     std::map<std::string, std::unique_ptr<BuilderType>> types =
         std::map<std::string, std::unique_ptr<BuilderType>>();
 
     // Create primitive types
-    types.emplace("uint8", std::make_unique<Uint8Builder>());
-    types.emplace("uint16", std::make_unique<Uint16Builder>());
+    types.emplace("uint8", std::make_unique<Uint8Builder>(types.size()));
+    types.emplace("uint16", std::make_unique<Uint16Builder>(types.size()));
+    types.emplace("uint32", std::make_unique<Uint32Builder>(types.size()));
+    types.emplace("uint64", std::make_unique<Uint64Builder>(types.size()));
 
     std::map<std::string, std::unique_ptr<Variable>> symbols =
         std::map<std::string, std::unique_ptr<Variable>>();
+
+    std::map<std::string, std::unique_ptr<PrintCallableBuilder>> callables =
+        std::map<std::string, std::unique_ptr<PrintCallableBuilder>>();
+
+    callables.emplace("print",
+                      std::make_unique<PrintCallableBuilder>(*module, builder));
 
     bool hasMainReturn = false;
 
@@ -114,12 +115,31 @@ public:
           const AssignmentStatement& assignmentStatement =
               static_cast<const AssignmentStatement&>(statement);
 
+          const Variable& identifier =
+              *symbols[assignmentStatement.identifier.name];
+
+          if (Matcher::isInt(assignmentStatement.value.name)) {
+            int valueInt = StringConverter::toUnsignedLongLong(
+                assignmentStatement.value.name);
+
+                identifier.store(builder, valueInt);
+            break;
+          }
+
+          const Variable& value = *symbols[assignmentStatement.value.name];
+          identifier.store(builder, value);
+
           break;
         }
 
         case StatementType::RETURN: {
           const ReturnStatement& returnStatement =
               static_cast<const ReturnStatement&>(statement);
+
+          const Variable& value = *symbols[returnStatement.value.name];
+
+          value.returnValue(builder);
+          hasMainReturn = true;
 
           break;
         }
@@ -128,6 +148,17 @@ public:
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
 
+          const Variable& lhs = *symbols[additionStatement.lhs.name];
+
+          if (Matcher::isInt(additionStatement.rhs.name)) {
+            int valueInt =
+                StringConverter::toUnsignedLongLong(additionStatement.rhs.name);
+            lhs.add(builder, valueInt);
+            break;
+          }
+
+          const Variable& rhs = *symbols[additionStatement.rhs.name];
+          lhs.add(builder, rhs);
           break;
         }
 
@@ -135,12 +166,25 @@ public:
           const SubtractionStatement& subtractionStatement =
               static_cast<const SubtractionStatement&>(statement);
 
+          const Variable& lhs = *symbols[subtractionStatement.lhs.name];
+
+          if (Matcher::isInt(subtractionStatement.rhs.name)) {
+            int valueInt = StringConverter::toUnsignedLongLong(
+                subtractionStatement.rhs.name);
+            lhs.subtract(builder, valueInt);
+            break;
+          }
+          const Variable& rhs = *symbols[subtractionStatement.rhs.name];
+          lhs.subtract(builder, rhs);
           break;
         }
 
         case StatementType::PRINT: {
           const PrintStatement& printStatement =
               static_cast<const PrintStatement&>(statement);
+
+          const Variable& value = *symbols[printStatement.value.name];
+          value.print(builder, *callables["print"]);
         }
       }
     }

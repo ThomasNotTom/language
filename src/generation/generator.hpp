@@ -1,5 +1,7 @@
 #include "../syntax_analyser/program/program.hpp"
 #include "generation/builder/builder.hpp"
+#include "generation/callable/print.hpp"
+#include "generation/callable/return.hpp"
 #include "generation/primitives/uint16/uint16.hpp"
 #include "generation/primitives/uint16/uint16_variable.hpp"
 #include "generation/primitives/uint32/uint32.hpp"
@@ -86,17 +88,18 @@ public:
     std::map<std::string, std::unique_ptr<Variable>> symbols =
         std::map<std::string, std::unique_ptr<Variable>>();
 
-    std::map<std::string, std::unique_ptr<PrintCallableBuilder>> callables =
-        std::map<std::string, std::unique_ptr<PrintCallableBuilder>>();
+    std::map<std::string, std::unique_ptr<Callable>> callables =
+        std::map<std::string, std::unique_ptr<Callable>>();
 
     callables.emplace("print",
                       std::make_unique<PrintCallableBuilder>(*module, builder));
+
+    callables.emplace("return", std::make_unique<ReturnCallableBuilder>());
 
     bool hasMainReturn = false;
 
     for (size_t i = 0; i < this->program.size(); i++) {
       const Statement& statement = program.view(i);
-
       switch (statement.statementType) {
         case StatementType::INITIALISATION: {
           const InitialisationStatement& initialisationStatement =
@@ -122,7 +125,7 @@ public:
             int valueInt = StringConverter::toUnsignedLongLong(
                 assignmentStatement.value.name);
 
-                identifier.store(builder, valueInt);
+            identifier.store(builder, valueInt);
             break;
           }
 
@@ -135,10 +138,17 @@ public:
         case StatementType::RETURN: {
           const ReturnStatement& returnStatement =
               static_cast<const ReturnStatement&>(statement);
+          if (Matcher::isInt(returnStatement.value.name)) {
+            int valueInt =
+                StringConverter::toUnsignedLongLong(returnStatement.value.name);
+            (*callables["return"]).call(builder, valueInt);
+            hasMainReturn = true;
 
+            break;
+          }
           const Variable& value = *symbols[returnStatement.value.name];
 
-          value.returnValue(builder);
+          (*callables["return"]).call(builder, value);
           hasMainReturn = true;
 
           break;
@@ -183,8 +193,15 @@ public:
           const PrintStatement& printStatement =
               static_cast<const PrintStatement&>(statement);
 
+          if (Matcher::isInt(printStatement.value.name)) {
+            int valueInt =
+                StringConverter::toUnsignedLongLong(printStatement.value.name);
+            (*callables["print"]).call(builder, valueInt);
+            break;
+          }
+
           const Variable& value = *symbols[printStatement.value.name];
-          value.print(builder, *callables["print"]);
+          (*callables["print"]).call(builder, value);
         }
       }
     }

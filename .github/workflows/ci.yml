@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget lsb-release software-properties-common gnupg catch2
+          sudo apt-get install -y wget lsb-release software-properties-common gnupg catch2 clang-tidy-22
 
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
@@ -24,7 +24,9 @@ jobs:
 
           echo "LLVM_DIR=/usr/lib/llvm-22/lib/cmake/llvm" >> $GITHUB_ENV
 
-          ls /usr/lib/llvm-22/bin
+
+          where clag-tidy
+          where clag-tidy-22
 
           echo "/usr/lib/llvm-22/bin" >> $GITHUB_PATH
 

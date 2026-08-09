@@ -52,7 +52,7 @@ int main(const int argc, char* argv[]) {
   std::unique_ptr<llvm::Module> module = generator.buildModule(context);
 
   if (verbose) {
-    generator.print_module(std::move(module));
+    generator.print_module(*module);
   }
 
   generator.compile(context, std::move(module));

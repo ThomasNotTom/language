@@ -3,19 +3,15 @@
 #include <string>
 
 #include "./string_converter.hpp"
-#include "./token_container/token_container.hpp"
 #include "./tokens/end_of_line/end_of_line.hpp"
-#include "./tokens/identifier/identifier.hpp"
 #include "./tokens/operators/assignment/assignment.hpp"
-#include "./tokens/primitives/uint32/uint32.hpp"
-#include "./tokens/primitives/uint64/uint64.hpp"
+#include "./tokens/other.hpp"
 
 #include "./tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
-#include "lexer/tokens/primitives/uint16/uint16.hpp"
-#include "lexer/tokens/primitives/uint32/uint32.hpp"
 #include "lexer/tokens/print/print.hpp"
-#include "lexer/tokens/return/return.hpp"
+#include "lexer/tokens/print/print.hpp"
+#include "lexer/token_container/token_container.hpp"
 #include "matcher.hpp"
 
 class Lexer {
@@ -41,18 +37,8 @@ public:
       }
 
       if (c == ' ' || c == ';') {
-        if (buffer == "uint8") {
-          tokens.addUint8(Uint8Token());
-        } else if (buffer == "uint16") {
-          tokens.addUint16(Uint16Token());
-        } else if (buffer == "uint32") {
-          tokens.addUint32(Uint32Token());
-        } else if (buffer == "uint64") {
-          tokens.addUint64(Uint64Token());
-        } else if (buffer == "=") {
+        if (buffer == "=") {
           tokens.addAssignment(AssignmentToken());
-        } else if (Matcher::isInt(buffer)) {
-          tokens.addNumber(StringConverter::toUnsignedLongLong(buffer));
         } else if (buffer == "+") {
           tokens.addAddition(AdditionToken());
         } else if (buffer == "-") {
@@ -62,7 +48,7 @@ public:
         } else if (buffer == "print") {
           tokens.addPrint(PrintToken());
         } else if (buffer.size() != 0) {
-          tokens.addIdentifier(IdentifierToken(buffer));
+          tokens.addOther(OtherToken(buffer));
         }
 
         buffer = "";

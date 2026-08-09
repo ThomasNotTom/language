@@ -1,12 +1,13 @@
 #pragma once
 #include <memory>
 
+#include "syntax_analyser/statement/other.hpp"
 #include "syntax_analyser/statement/statement.hpp"
-#include "syntax_analyser/statement/value/value.hpp"
 
 class PrintStatement : public Statement {
 public:
-  const std::unique_ptr<StatementValue> value;
+  const OtherStatementValue value;
 
-  PrintStatement(std::unique_ptr<StatementValue> value);
+  PrintStatement(OtherStatementValue value)
+      : Statement(StatementType::PRINT), value(value) {};
 };

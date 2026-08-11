@@ -153,3 +153,16 @@ TEST_CASE("Print number", "[lexer]") {
 
   REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
 };
+
+TEST_CASE("Return number", "[lexer]") {
+  Lexer lexer = Lexer("return 1;");
+  TokenContainer tokenContainer = lexer.makeTokenList();
+  REQUIRE(tokenContainer.getCount() == 3);
+
+  REQUIRE(tokenContainer.view(0).tokenType == TokenType::RETURN);
+
+  REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "1");
+
+  REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
+};

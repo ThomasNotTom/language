@@ -13,12 +13,14 @@
 #include "lexer/tokens/operators/operator.hpp"
 #include "lexer/tokens/token_type.hpp"
 
+// ""
 TEST_CASE("Empty string", "[lexer]") {
   Lexer lexer = Lexer("");
   TokenContainer tokenContainer = lexer.makeTokenList();
   REQUIRE(tokenContainer.getCount() == 0);
 };
 
+// ";"
 TEST_CASE("Single end of line", "[lexer]") {
   Lexer lexer = Lexer(";");
   TokenContainer tokenContainer = lexer.makeTokenList();
@@ -26,6 +28,7 @@ TEST_CASE("Single end of line", "[lexer]") {
   REQUIRE(tokenContainer.view(0).tokenType == TokenType::END_OF_LINE);
 };
 
+// "uint8 a;"
 TEST_CASE("Variable initialisation", "[lexer]") {
   Lexer lexer = Lexer("uint8 a;");
   TokenContainer tokenContainer = lexer.makeTokenList();
@@ -41,6 +44,7 @@ TEST_CASE("Variable initialisation", "[lexer]") {
   REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
 };
 
+// "uint8 a = 0;"
 TEST_CASE("Variable initialisation and assignment", "[lexer]") {
   Lexer lexer = Lexer("uint8 a = 0;");
   TokenContainer tokenContainer = lexer.makeTokenList();
@@ -64,6 +68,7 @@ TEST_CASE("Variable initialisation and assignment", "[lexer]") {
   REQUIRE(tokenContainer.view(4).tokenType == TokenType::END_OF_LINE);
 };
 
+// "a = 0;"
 TEST_CASE("Variable assignment", "[lexer]") {
   Lexer lexer = Lexer("a = 0;");
   TokenContainer tokenContainer = lexer.makeTokenList();
@@ -83,6 +88,7 @@ TEST_CASE("Variable assignment", "[lexer]") {
   REQUIRE(tokenContainer.view(3).tokenType == TokenType::END_OF_LINE);
 };
 
+// "uint8 a = 0 + 1;"
 TEST_CASE("Variable initialisation and assignment with arithmetic", "[lexer]") {
   Lexer lexer = Lexer("uint8 a = 0 + 1;");
   TokenContainer tokenContainer = lexer.makeTokenList();
@@ -114,6 +120,7 @@ TEST_CASE("Variable initialisation and assignment with arithmetic", "[lexer]") {
   REQUIRE(tokenContainer.view(6).tokenType == TokenType::END_OF_LINE);
 };
 
+// "a = 0 + 1;"
 TEST_CASE("Variable assignment with arithmetic", "[lexer]") {
   Lexer lexer = Lexer("a = 0 + 1;");
   TokenContainer tokenContainer = lexer.makeTokenList();
@@ -141,6 +148,7 @@ TEST_CASE("Variable assignment with arithmetic", "[lexer]") {
   REQUIRE(tokenContainer.view(5).tokenType == TokenType::END_OF_LINE);
 };
 
+// "print 1;"
 TEST_CASE("Print number", "[lexer]") {
   Lexer lexer = Lexer("print 1;");
   TokenContainer tokenContainer = lexer.makeTokenList();
@@ -154,6 +162,7 @@ TEST_CASE("Print number", "[lexer]") {
   REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
 };
 
+// "return 1;"
 TEST_CASE("Return number", "[lexer]") {
   Lexer lexer = Lexer("return 1;");
   TokenContainer tokenContainer = lexer.makeTokenList();

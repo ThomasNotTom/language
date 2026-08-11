@@ -27,6 +27,7 @@
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 
+// ""
 TEST_CASE("Empty token container", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
 
@@ -35,6 +36,7 @@ TEST_CASE("Empty token container", "[syntax analyser]") {
   REQUIRE(program.size() == 0);
 };
 
+// ";"
 TEST_CASE("Empty line", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addEndOfLine(EndOfLineToken());
@@ -44,6 +46,7 @@ TEST_CASE("Empty line", "[syntax analyser]") {
   REQUIRE(program.size() == 0);
 };
 
+// "uint8 a;"
 TEST_CASE("Variable initialisation", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8"));
@@ -61,6 +64,7 @@ TEST_CASE("Variable initialisation", "[syntax analyser]") {
   REQUIRE(statement.identifier.name == "a");
 };
 
+// "uint8 a = 0;"
 TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8"));
@@ -88,6 +92,7 @@ TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
   REQUIRE(assignStatement.value.name == "0");
 };
 
+// "a = 0;"
 TEST_CASE("Variable assignment", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a"));
@@ -107,6 +112,43 @@ TEST_CASE("Variable assignment", "[syntax analyser]") {
   REQUIRE(assignStatement.value.name == "0");
 };
 
+// "uint a = 0 + 1;"
+TEST_CASE("Variable initialisation and assignment with arithmetic",
+          "[syntax analyser]") {
+  TokenContainer tokenContainer = TokenContainer();
+  tokenContainer.addOther(OtherToken("uint8"));
+  tokenContainer.addOther(OtherToken("a"));
+  tokenContainer.addAssignment(AssignmentToken());
+  tokenContainer.addOther(OtherToken("0"));
+  tokenContainer.addAddition(AdditionToken());
+  tokenContainer.addOther(OtherToken("1"));
+  tokenContainer.addEndOfLine(EndOfLineToken());
+
+  Program program = AbstractSyntaxTree(tokenContainer).parse();
+
+  REQUIRE(program.size() == 2);
+
+  REQUIRE(program.view(0).statementType == StatementType::INITIALISATION);
+  const InitialisationStatement& initStatement =
+      static_cast<const InitialisationStatement&>(program.view(0));
+
+  REQUIRE(program.view(1).statementType == StatementType::ASSIGNMENT);
+  const AssignmentStatement& assignStatement =
+      static_cast<const AssignmentStatement&>(program.view(1));
+
+  REQUIRE(assignStatement.identifier.name == "a");
+  REQUIRE(assignStatement.value.name == "0");
+
+  REQUIRE(program.view(2).statementType == StatementType::ADDITION);
+  const AdditionStatement& additionStatement =
+      static_cast<const AdditionStatement&>(program.view(2));
+
+  REQUIRE(additionStatement.identifier.name == "a");
+  REQUIRE(additionStatement.lhs.name == "a");
+  REQUIRE(additionStatement.rhs.name == "1");
+};
+
+// "a = 0 + 1;"
 TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a"));
@@ -136,6 +178,7 @@ TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   REQUIRE(additionStatement.rhs.name == "1");
 };
 
+// "print 1;"
 TEST_CASE("Print number", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addPrint(PrintToken());
@@ -153,6 +196,7 @@ TEST_CASE("Print number", "[syntax analyser]") {
   REQUIRE(printStatement.value.name == "1");
 };
 
+// "return 1;"
 TEST_CASE("Return number", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addReturn(ReturnToken());

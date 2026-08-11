@@ -140,3 +140,16 @@ TEST_CASE("Variable assignment with arithmetic", "[lexer]") {
 
   REQUIRE(tokenContainer.view(5).tokenType == TokenType::END_OF_LINE);
 };
+
+TEST_CASE("Print number", "[lexer]") {
+  Lexer lexer = Lexer("print 1;");
+  TokenContainer tokenContainer = lexer.makeTokenList();
+  REQUIRE(tokenContainer.getCount() == 3);
+
+  REQUIRE(tokenContainer.view(0).tokenType == TokenType::PRINT);
+
+  REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "1");
+
+  REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
+};

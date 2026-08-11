@@ -36,7 +36,7 @@ TEST_CASE("Variable initialisation", "[lexer]") {
           "uint8");
 
   REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
-  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name == "a");
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "a");
 
   REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
 };
@@ -51,7 +51,7 @@ TEST_CASE("Variable initialisation and assignment", "[lexer]") {
           "uint8");
 
   REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
-  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name == "a");
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "a");
 
   REQUIRE(tokenContainer.view(2).tokenType == TokenType::OPERATOR);
   REQUIRE(
@@ -59,7 +59,7 @@ TEST_CASE("Variable initialisation and assignment", "[lexer]") {
       OperatorType::ASSIGNMENT);
 
   REQUIRE(tokenContainer.view(3).tokenType == TokenType::OTHER);
-  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name == "0");
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(3)).name == "0");
 
   REQUIRE(tokenContainer.view(4).tokenType == TokenType::END_OF_LINE);
 };
@@ -72,12 +72,12 @@ TEST_CASE("Variable assignment", "[lexer]") {
   REQUIRE(tokenContainer.view(0).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name == "a");
 
-  REQUIRE(tokenContainer.view(2).tokenType == TokenType::OPERATOR);
+  REQUIRE(tokenContainer.view(1).tokenType == TokenType::OPERATOR);
   REQUIRE(
       static_cast<const OperatorToken&>(tokenContainer.view(1)).operatorType ==
       OperatorType::ASSIGNMENT);
 
-  REQUIRE(tokenContainer.view(3).tokenType == TokenType::OTHER);
+  REQUIRE(tokenContainer.view(2).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(2)).name == "0");
 
   REQUIRE(tokenContainer.view(3).tokenType == TokenType::END_OF_LINE);

@@ -1,0 +1,4 @@
+Checks: "misc-include-cleaner,performance-*,modernize-use-override,modernize-use-nullptr,bugprone-*"
+WarningsAsErrors: "*"
+
+HeaderFilterRegex: "^.*(src|tests)/.*$"

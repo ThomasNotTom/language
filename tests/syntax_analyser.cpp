@@ -88,7 +88,7 @@ TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
   REQUIRE(assignStatement.value.name == "0");
 };
 
-TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
+TEST_CASE("Variable assignment", "[syntax analyser]") {
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a"));
   tokenContainer.addAssignment(AssignmentToken());

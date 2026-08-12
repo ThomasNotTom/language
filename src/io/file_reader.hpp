@@ -11,7 +11,7 @@ private:
   uint32_t readIndex = 0;
 
 public:
-  FileReader(const std::string filepath);
+  FileReader(const std::string& filepath);
   bool isOpen() const;
 
   std::string readAll();

@@ -1,13 +1,11 @@
 #pragma once
 
-#include <vector>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/Value.h>
 
 #include "generation/builder/builder.hpp"
 #include "generation/callable/callable.hpp"
 #include "generation/variable.hpp"
-
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Value.h>
 
 class ReturnCallableBuilder : public Callable {
 public:
@@ -19,7 +17,7 @@ public:
     builder.createReturn(extended);
   }
 
-  void call(Builder& builder, int out) override {
+  void call(Builder& builder, uint64_t out) override {
     llvm::Value* extended =
         builder.zext(builder.createConst64(out), builder.getUint32());
     builder.createReturn(extended);

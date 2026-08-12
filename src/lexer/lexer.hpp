@@ -2,24 +2,20 @@
 
 #include <string>
 
-#include "./string_converter.hpp"
 #include "./tokens/end_of_line/end_of_line.hpp"
+#include "./tokens/operators/addition/addition.hpp"
 #include "./tokens/operators/assignment/assignment.hpp"
 #include "./tokens/other.hpp"
-
-#include "./tokens/operators/addition/addition.hpp"
+#include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/print/print.hpp"
-#include "lexer/tokens/print/print.hpp"
-#include "lexer/token_container/token_container.hpp"
-#include "matcher.hpp"
 
 class Lexer {
 private:
   const std::string input;
 
 public:
-  Lexer(const std::string input) : input(input) {};
+  Lexer(const std::string& input) : input(input) {};
 
   TokenContainer makeTokenList() const {
 

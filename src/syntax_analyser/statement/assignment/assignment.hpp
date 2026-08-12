@@ -9,6 +9,6 @@ public:
   const OtherStatementValue value;
 
   AssignmentStatement(OtherStatementValue identifier, OtherStatementValue value)
-      : Statement(StatementType::ASSIGNMENT), identifier(identifier),
-        value(value) {};
+      : Statement(StatementType::ASSIGNMENT), identifier(std::move(identifier)),
+        value(std::move(value)) {};
 };

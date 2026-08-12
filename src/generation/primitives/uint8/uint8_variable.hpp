@@ -3,8 +3,6 @@
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 
-#include "generation/callable/print.hpp"
-
 class Uint8Variable : public Variable {
 private:
   llvm::Type* llvmType;
@@ -19,7 +17,7 @@ public:
     return builder.load(this->llvmType, this->storage, "uint8");
   }
 
-  llvm::StoreInst* store(Builder& builder, int other) const override {
+  llvm::StoreInst* store(Builder& builder, uint64_t other) const override {
     return builder.store(builder.createConst8(other), this->storage);
   }
 
@@ -57,7 +55,7 @@ public:
     };
   };
 
-  void add(Builder& builder, int other) const override {
+  void add(Builder& builder, uint64_t other) const override {
     llvm::Value* addOut = builder.add(
         this->load(builder), builder.createConst8(other), "uint8_add_val");
     builder.store(addOut, this->storage);
@@ -82,7 +80,7 @@ public:
     };
   };
 
-  void subtract(Builder& builder, int other) const override {
+  void subtract(Builder& builder, uint64_t other) const override {
     llvm::Value* subOut = builder.subtract(
         this->load(builder), builder.createConst8(other), "uint8_sub_val");
 

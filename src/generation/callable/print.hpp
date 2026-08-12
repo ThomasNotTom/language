@@ -1,13 +1,12 @@
 #pragma once
 
+#include <llvm/IR/Module.h>
+#include <llvm/IR/Value.h>
 #include <vector>
 
 #include "generation/builder/builder.hpp"
 #include "generation/callable/callable.hpp"
 #include "generation/variable.hpp"
-
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Value.h>
 
 class PrintCallableBuilder : public Callable {
 private:
@@ -34,7 +33,7 @@ public:
     builder.createCall(this->printFunc, Args);
   };
 
-  void call(Builder& builder, int out) override {
+  void call(Builder& builder, uint64_t out) override {
     llvm::Value* FormatStr = builder.createGlobalStringPtr("%llu\n");
 
     std::vector<llvm::Value*> Args = {FormatStr, builder.createConst64(out)};

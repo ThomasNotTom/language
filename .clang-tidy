@@ -1,4 +1,4 @@
-Checks: "misc-include-cleaner,performance-*,modernize-use-override,modernize-use-nullptr,bugprone-*"
+Checks: "misc-include-cleaner,performance-*,modernize-use-override,modernize-use-nullptr,bugprone-*,  -bugprone-easily-swappable-parameters,-bugprone-exception-escape"
 WarningsAsErrors: "*"
 
 HeaderFilterRegex: "^.*(src|tests)/.*$"

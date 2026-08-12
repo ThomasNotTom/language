@@ -11,8 +11,8 @@ public:
   const OtherStatementValue lhs;
   const OtherStatementValue rhs;
 
-  AdditionStatement(const OtherStatementValue identifier,
+  AdditionStatement(const OtherStatementValue& identifier,
                     OtherStatementValue lhs, OtherStatementValue rhs)
-      : Statement(StatementType::ADDITION), identifier(identifier), lhs(lhs),
-        rhs(rhs) {};
+      : Statement(StatementType::ADDITION), identifier(identifier),
+        lhs(std::move(lhs)), rhs(std::move(rhs)) {};
 };

@@ -2,20 +2,28 @@
 #include "syntax_analyser/abstract_syntax_tree.hpp"
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/operators/operator.hpp"
 #include "lexer/tokens/operators/operator_type.hpp"
 #include "lexer/tokens/other.hpp"
 #include "lexer/tokens/token.hpp"
 #include "lexer/tokens/token_type.hpp"
+#include "syntax_analyser/program/program.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/other.hpp"
 #include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
+#include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
 AbstractSyntaxTree::AbstractSyntaxTree(const TokenContainer& tokenContainer)
     : tokenContainer(tokenContainer) {}
@@ -43,7 +51,7 @@ AbstractSyntaxTree::splitToLines(const TokenContainer& fullTokens) {
 
 std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
     std::vector<std::reference_wrapper<const Token>> tokens,
-    std::string outName) {
+    const std::string& outName) {
   std::vector<std::unique_ptr<Statement>> outStatements;
 
   for (int i = 1; i < tokens.size(); i += 2) {
@@ -77,6 +85,10 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
               OtherStatementValue(otherToken.name)));
           break;
         }
+
+        default:
+          throw std::runtime_error("Operator on right-hand-side of assignment "
+                                   "must be addition or subtraction");
       }
     }
   }

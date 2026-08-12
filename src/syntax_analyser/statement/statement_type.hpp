@@ -1,4 +1,6 @@
-enum class StatementType {
+#include <cstdint>
+
+enum class StatementType : uint8_t {
   INITIALISATION = 1,
   ASSIGNMENT = 2,
   RETURN = 3,

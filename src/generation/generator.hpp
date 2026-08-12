@@ -1,32 +1,3 @@
-#include "../syntax_analyser/program/program.hpp"
-#include "generation/builder/builder.hpp"
-#include "generation/callable/print.hpp"
-#include "generation/callable/return.hpp"
-#include "generation/primitives/uint16/uint16.hpp"
-#include "generation/primitives/uint16/uint16_variable.hpp"
-#include "generation/primitives/uint32/uint32.hpp"
-#include "generation/primitives/uint32/uint32_variable.hpp"
-#include "generation/primitives/uint64/uint64.hpp"
-#include "generation/primitives/uint64/uint64_variable.hpp"
-#include "generation/primitives/uint8/uint8.hpp"
-#include "generation/primitives/uint8/uint8_variable.hpp"
-#include "generation/type.hpp"
-#include "generation/variable.hpp"
-#include "lexer/matcher.hpp"
-#include "lexer/string_converter.hpp"
-#include "syntax_analyser/statement/addition/addition.hpp"
-#include "syntax_analyser/statement/assignment/assignment.hpp"
-#include "syntax_analyser/statement/initialisation/initialisation.hpp"
-#include "syntax_analyser/statement/print/print.hpp"
-#include "syntax_analyser/statement/return/return.hpp"
-#include "syntax_analyser/statement/statement.hpp"
-#include "syntax_analyser/statement/subtraction/subtraction.hpp"
-#include "llvm/Analysis/TargetLibraryInfo.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/Instruction.h"
-#include "llvm/IR/Value.h"
-#include "llvm/MC/TargetRegistry.h"
-#include "llvm/Support/Program.h"
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -44,7 +15,32 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <stdexcept>
+
+#include "../syntax_analyser/program/program.hpp"
+#include "generation/builder/builder.hpp"
+#include "generation/callable/print.hpp"
+#include "generation/callable/return.hpp"
+#include "generation/primitives/uint16/uint16.hpp"
+#include "generation/primitives/uint32/uint32.hpp"
+#include "generation/primitives/uint64/uint64.hpp"
+#include "generation/primitives/uint8/uint8.hpp"
+#include "generation/type.hpp"
+#include "generation/variable.hpp"
+#include "lexer/matcher.hpp"
+#include "lexer/string_converter.hpp"
+#include "llvm/Analysis/TargetLibraryInfo.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/Instruction.h"
+#include "llvm/IR/Value.h"
+#include "llvm/MC/TargetRegistry.h"
+#include "llvm/Support/Program.h"
+#include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/print/print.hpp"
+#include "syntax_analyser/statement/return/return.hpp"
+#include "syntax_analyser/statement/statement.hpp"
+#include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
 class Generator {
 private:
@@ -122,7 +118,7 @@ public:
               *symbols[assignmentStatement.identifier.name];
 
           if (Matcher::isInt(assignmentStatement.value.name)) {
-            int valueInt = StringConverter::toUnsignedLongLong(
+            uint64_t valueInt = StringConverter::toUnsignedLongLong(
                 assignmentStatement.value.name);
 
             identifier.store(builder, valueInt);
@@ -139,7 +135,7 @@ public:
           const ReturnStatement& returnStatement =
               static_cast<const ReturnStatement&>(statement);
           if (Matcher::isInt(returnStatement.value.name)) {
-            int valueInt =
+            uint64_t valueInt =
                 StringConverter::toUnsignedLongLong(returnStatement.value.name);
             (*callables["return"]).call(builder, valueInt);
             hasMainReturn = true;
@@ -161,7 +157,7 @@ public:
           const Variable& lhs = *symbols[additionStatement.lhs.name];
 
           if (Matcher::isInt(additionStatement.rhs.name)) {
-            int valueInt =
+            uint64_t valueInt =
                 StringConverter::toUnsignedLongLong(additionStatement.rhs.name);
             lhs.add(builder, valueInt);
             break;
@@ -179,7 +175,7 @@ public:
           const Variable& lhs = *symbols[subtractionStatement.lhs.name];
 
           if (Matcher::isInt(subtractionStatement.rhs.name)) {
-            int valueInt = StringConverter::toUnsignedLongLong(
+            uint64_t valueInt = StringConverter::toUnsignedLongLong(
                 subtractionStatement.rhs.name);
             lhs.subtract(builder, valueInt);
             break;
@@ -194,7 +190,7 @@ public:
               static_cast<const PrintStatement&>(statement);
 
           if (Matcher::isInt(printStatement.value.name)) {
-            int valueInt =
+            uint64_t valueInt =
                 StringConverter::toUnsignedLongLong(printStatement.value.name);
             (*callables["print"]).call(builder, valueInt);
             break;
@@ -214,7 +210,7 @@ public:
   }
 
   void print_module(const llvm::Module& module) {
-    std::cout << "-- LLVM IR --" << std::endl;
+    std::cout << "-- LLVM IR --\n";
     module.print(llvm::outs(), nullptr);
   }
 

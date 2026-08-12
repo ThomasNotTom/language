@@ -3,8 +3,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 
-FileReader::FileReader(const std::string filepath) : filepath(filepath) {
+FileReader::FileReader(const std::string& filepath) : filepath(filepath) {
   this->inputStream = std::ifstream(filepath);
 };
 

@@ -11,7 +11,7 @@ public:
   AbstractSyntaxTree(const TokenContainer& tokenContainer);
   std::vector<std::unique_ptr<Statement>>
   leftToRightParse(std::vector<std::reference_wrapper<const Token>> tokens,
-                   std::string outName);
+                   const std::string& outName);
 
   std::vector<std::vector<std::reference_wrapper<const Token>>>
   splitToLines(const TokenContainer& fullTokens);

@@ -1,16 +1,16 @@
-#include <llvm/IR/Function.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/Module.h>
-#include <llvm/Support/raw_ostream.h>
-
 #include <iostream>
+#include <llvm/IR/Function.h>
+#include <llvm/IR/Module.h>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "./io/file_reader.hpp"
 #include "./lexer/lexer.hpp"
 #include "./lexer/token_container/token_container.hpp"
 #include "generation/generator.hpp"
 #include "syntax_analyser/abstract_syntax_tree.hpp"
+#include "syntax_analyser/program/program.hpp"
 
 int main(const int argc, char* argv[]) {
   if (argc == 1) {

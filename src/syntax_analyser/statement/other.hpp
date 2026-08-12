@@ -5,5 +5,5 @@
 class OtherStatementValue {
 public:
   const std::string name;
-  OtherStatementValue(const std::string name) : name(name) {};
+  OtherStatementValue(const std::string& name) : name(name) {};
 };

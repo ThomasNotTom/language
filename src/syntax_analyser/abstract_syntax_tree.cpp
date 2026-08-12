@@ -101,6 +101,22 @@ Program AbstractSyntaxTree::parse() {
 
     const Token& token = this->tokenContainer.view(i);
 
+    // initialisation ::= {other} {other}";"
+    //
+    // eg: uint8 a;
+    if (row.size() == 2 && row[0].get().tokenType == TokenType::OTHER &&
+        row[1].get().tokenType == TokenType::OTHER) {
+
+      const OtherToken& type = static_cast<const OtherToken&>(row[0].get());
+      const OtherToken& identifier =
+          dynamic_cast<const OtherToken&>(row[1].get());
+
+      program.addStatement(std::make_unique<InitialisationStatement>(
+          OtherStatementValue(type.name),
+          OtherStatementValue(identifier.name)));
+      continue;
+    }
+
     // add_other ::= {other} | ("+" {add_other})
     // addition_statement ::= {other} {other} "=" {add_other}";"
     //

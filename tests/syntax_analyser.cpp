@@ -126,7 +126,7 @@ TEST_CASE("Variable initialisation and assignment with arithmetic",
 
   Program program = AbstractSyntaxTree(tokenContainer).parse();
 
-  REQUIRE(program.size() == 2);
+  REQUIRE(program.size() == 3);
 
   REQUIRE(program.view(0).statementType == StatementType::INITIALISATION);
   const InitialisationStatement& initStatement =

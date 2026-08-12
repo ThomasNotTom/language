@@ -17,7 +17,7 @@ public:
     return builder.load(this->llvmType, this->storage, "uint64");
   }
 
-  llvm::StoreInst* store(Builder& builder, int other) const override {
+  llvm::StoreInst* store(Builder& builder, uint64_t other) const override {
     return builder.store(builder.createConst64(other), this->storage);
   }
 
@@ -55,7 +55,7 @@ public:
     }
   };
 
-  void add(Builder& builder, int other) const override {
+  void add(Builder& builder, uint64_t other) const override {
     llvm::Value* addOut = builder.add(
         this->load(builder), builder.createConst64(other), "uint64_add_val");
     builder.store(addOut, this->storage);
@@ -80,7 +80,7 @@ public:
     };
   };
 
-  void subtract(Builder& builder, int other) const override {
+  void subtract(Builder& builder, uint64_t other) const override {
     llvm::Value* subOut = builder.subtract(
         this->load(builder), builder.createConst64(other), "uint64_sub_val");
 

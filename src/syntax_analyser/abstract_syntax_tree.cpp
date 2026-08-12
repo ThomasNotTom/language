@@ -1,5 +1,11 @@
 
 #include "syntax_analyser/abstract_syntax_tree.hpp"
+
+#include <cstddef>
+#include <memory>
+#include <stdexcept>
+#include <vector>
+
 #include "lexer/tokens/operators/operator.hpp"
 #include "lexer/tokens/operators/operator_type.hpp"
 #include "lexer/tokens/other.hpp"
@@ -10,12 +16,6 @@
 #include "syntax_analyser/statement/print/print.hpp"
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
-
-#include <cstddef>
-#include <format>
-#include <memory>
-#include <stdexcept>
-#include <vector>
 
 AbstractSyntaxTree::AbstractSyntaxTree(const TokenContainer& tokenContainer)
     : tokenContainer(tokenContainer) {}
@@ -48,7 +48,6 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
 
   for (int i = 1; i < tokens.size(); i += 2) {
     const Token& nextToken = tokens[i].get();
-
     if (nextToken.tokenType != TokenType::OPERATOR) {
       throw std::runtime_error("Token adjacent to other must be an operator");
     }
@@ -102,10 +101,26 @@ Program AbstractSyntaxTree::parse() {
 
     const Token& token = this->tokenContainer.view(i);
 
+    // initialisation ::= {other} {other}";"
+    //
+    // eg: uint8 a;
+    if (row.size() == 2 && row[0].get().tokenType == TokenType::OTHER &&
+        row[1].get().tokenType == TokenType::OTHER) {
+
+      const OtherToken& type = static_cast<const OtherToken&>(row[0].get());
+      const OtherToken& identifier =
+          dynamic_cast<const OtherToken&>(row[1].get());
+
+      program.addStatement(std::make_unique<InitialisationStatement>(
+          OtherStatementValue(type.name),
+          OtherStatementValue(identifier.name)));
+      continue;
+    }
+
     // add_other ::= {other} | ("+" {add_other})
     // addition_statement ::= {other} {other} "=" {add_other}";"
     //
-    // eg: a = b + c;
+    // eg: uint8 a = b + c;
     if (row.size() >= 3 && row[0].get().tokenType == TokenType::OTHER &&
         row[1].get().tokenType == TokenType::OTHER &&
         row[2].get().tokenType == TokenType::OPERATOR) {
@@ -131,6 +146,39 @@ Program AbstractSyntaxTree::parse() {
 
       std::vector<std::reference_wrapper<const Token>> remaining =
           std::vector(row.begin() + 3, row.end());
+
+      std::vector<std::unique_ptr<Statement>> statements =
+          this->leftToRightParse(remaining, identifier.name);
+
+      for (int i = 0; i < statements.size(); i++) {
+        program.addStatement(std::move(statements[i]));
+      }
+      continue;
+    }
+
+    // add_other ::= {other} | ("+" {add_other})
+    // addition_statement ::= {other} "=" {add_other}";"
+    //
+    // eg: a = b + c;
+    if (row.size() >= 2 && row[0].get().tokenType == TokenType::OTHER &&
+        row[1].get().tokenType == TokenType::OPERATOR) {
+      const OtherToken& identifier =
+          dynamic_cast<const OtherToken&>(row[0].get());
+
+      const OperatorToken& oper =
+          dynamic_cast<const OperatorToken&>(row[1].get());
+
+      const OtherToken& value = dynamic_cast<const OtherToken&>(row[2].get());
+      program.addStatement(std::make_unique<AssignmentStatement>(
+          OtherStatementValue(identifier.name),
+          OtherStatementValue(value.name)));
+
+      if (row.size() == 3) {
+        continue;
+      }
+
+      std::vector<std::reference_wrapper<const Token>> remaining =
+          std::vector(row.begin() + 2, row.end());
 
       std::vector<std::unique_ptr<Statement>> statements =
           this->leftToRightParse(remaining, identifier.name);

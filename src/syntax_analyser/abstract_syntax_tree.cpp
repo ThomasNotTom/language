@@ -162,7 +162,6 @@ Program AbstractSyntaxTree::parse() {
     // eg: a = b + c;
     if (row.size() >= 2 && row[0].get().tokenType == TokenType::OTHER &&
         row[1].get().tokenType == TokenType::OPERATOR) {
-      std::cout << "aaa\n";
       const OtherToken& identifier =
           dynamic_cast<const OtherToken&>(row[0].get());
 

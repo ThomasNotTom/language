@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
@@ -10,7 +12,6 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Value.h"
-#include <cstdint>
 
 class Builder {
 private:
@@ -61,7 +62,7 @@ public:
     return this->irBuilder.CreateRet(value);
   };
 
-  llvm::AllocaInst* allocate(llvm::Type* type, std::string name) {
+  llvm::AllocaInst* allocate(llvm::Type* type, const std::string& name) {
     return this->irBuilder.CreateAlloca(type, nullptr, name);
   };
 
@@ -69,15 +70,18 @@ public:
     return this->irBuilder.CreateStore(value, out);
   };
 
-  llvm::LoadInst* load(llvm::Type* type, llvm::Value* value, std::string name) {
+  llvm::LoadInst* load(llvm::Type* type, llvm::Value* value,
+                       const std::string& name) {
     return this->irBuilder.CreateLoad(type, value, name);
   };
 
-  llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs, std::string name) {
+  llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs,
+                   const std::string& name) {
     return this->irBuilder.CreateAdd(lhs, rhs, name);
   };
 
-  llvm::Value* subtract(llvm::Value* lhs, llvm::Value* rhs, std::string name) {
+  llvm::Value* subtract(llvm::Value* lhs, llvm::Value* rhs,
+                        const std::string& name) {
     return this->irBuilder.CreateSub(lhs, rhs, name);
   };
 
@@ -85,12 +89,12 @@ public:
     return this->irBuilder.CreateZExt(in, outType);
   };
 
-  llvm::Value* createGlobalStringPtr(std::string str) {
+  llvm::Value* createGlobalStringPtr(const std::string& str) {
     return this->irBuilder.CreateGlobalString(str);
   };
 
   llvm::CallInst* createCall(llvm::Function* function,
-                             std::vector<llvm::Value*> args) {
+                             const std::vector<llvm::Value*>& args) {
     return this->irBuilder.CreateCall(function, args);
   }
 };

@@ -10,8 +10,8 @@ public:
   const OtherStatementValue lhs;
   const OtherStatementValue rhs;
 
-  SubtractionStatement(const OtherStatementValue identifier,
+  SubtractionStatement(const OtherStatementValue& identifier,
                        OtherStatementValue lhs, OtherStatementValue rhs)
-      : Statement(StatementType::SUBTRACTION), identifier(identifier), lhs(lhs),
-        rhs(rhs) {};
+      : Statement(StatementType::SUBTRACTION), identifier(identifier),
+        lhs(std::move(lhs)), rhs(std::move(rhs)) {};
 };

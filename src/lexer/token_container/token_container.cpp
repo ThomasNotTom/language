@@ -1,10 +1,13 @@
-#include <iostream>
-
-#include "../tokens/other.hpp"
-#include "../tokens/token_type.hpp"
 #include "./token_container.hpp"
 
+#include <cstddef>
+#include <iostream>
+#include <string>
+
 #include "../tokens/operators/operator.hpp"
+#include "../tokens/other.hpp"
+#include "../tokens/token.hpp"
+#include "../tokens/token_type.hpp"
 #include "lexer/tokens/operators/operator_type.hpp"
 
 TokenContainer::TokenContainer() {};

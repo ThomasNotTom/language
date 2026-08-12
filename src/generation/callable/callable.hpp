@@ -8,7 +8,7 @@ public:
   Callable() {};
 
   virtual void call(Builder& builder, const Variable& out) = 0;
-  virtual void call(Builder& builder, int out) = 0;
+  virtual void call(Builder& builder, uint64_t out) = 0;
 
   virtual ~Callable() = default;
 };

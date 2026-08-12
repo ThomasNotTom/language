@@ -1,5 +1,9 @@
 #pragma once
 
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
@@ -7,15 +11,12 @@
 #include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
-#include <iostream>
-#include <memory>
-#include <vector>
 class Program {
 private:
   std::vector<std::unique_ptr<Statement>> statements;
 
   void printAssignmentStatement(
-      const AssignmentStatement assignmentStatement) const {
+      const AssignmentStatement& assignmentStatement) const {
     std::string identifierName = assignmentStatement.identifier.name;
     std::string statementValue = assignmentStatement.value.name;
 

@@ -4,7 +4,7 @@
 
 class StringConverter {
 public:
-  static unsigned long long toUnsignedLongLong(std::string string) {
+  static uint64_t toUnsignedLongLong(const std::string& string) {
     return std::stoull(string);
   }
 };

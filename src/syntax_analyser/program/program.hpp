@@ -15,6 +15,17 @@ class Program {
 private:
   std::vector<std::unique_ptr<Statement>> statements;
 
+public:
+  Program() {};
+
+  void addStatement(std::unique_ptr<Statement> statement) {
+    this->statements.push_back(std::move(statement));
+  }
+
+  size_t size() const { return this->statements.size(); }
+
+  const Statement& view(size_t i) const { return *this->statements[i]; }
+
   void printAssignmentStatement(
       const AssignmentStatement& assignmentStatement) const {
     std::string identifierName = assignmentStatement.identifier.name;
@@ -59,17 +70,6 @@ private:
 
     std::cout << "print " << value << ";\n";
   }
-
-public:
-  Program() {};
-
-  void addStatement(std::unique_ptr<Statement> statement) {
-    this->statements.push_back(std::move(statement));
-  }
-
-  size_t size() const { return this->statements.size(); }
-
-  const Statement& view(size_t i) const { return *this->statements[i]; }
 
   void print() const {
     std::cout << "-- Program --\n";

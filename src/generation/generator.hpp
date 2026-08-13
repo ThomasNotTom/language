@@ -15,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 
 #include "../syntax_analyser/program/program.hpp"
 #include "generation/builder/builder.hpp"
@@ -104,6 +105,15 @@ public:
           const BuilderType& builderType =
               *types[initialisationStatement.type.name];
 
+          if (symbols.contains(initialisationStatement.identifier.name)) {
+            std::cout << "Error: ";
+            program.printInitialisationStatement(initialisationStatement);
+
+            throw std::runtime_error("Variable \"" +
+                                     initialisationStatement.identifier.name +
+                                     " \" has already been initialised");
+          }
+
           symbols.emplace(initialisationStatement.identifier.name,
                           builderType.makeVariable(builder));
 
@@ -114,6 +124,14 @@ public:
           const AssignmentStatement& assignmentStatement =
               static_cast<const AssignmentStatement&>(statement);
 
+          if (!symbols.contains(assignmentStatement.identifier.name)) {
+            std::cout << "Error: ";
+            program.printAssignmentStatement(assignmentStatement);
+
+            throw std::runtime_error("Assigning to uninitialised variable \"" +
+                                     assignmentStatement.identifier.name +
+                                     "\"");
+          }
           const Variable& identifier =
               *symbols[assignmentStatement.identifier.name];
 

@@ -31,7 +31,7 @@ public:
     std::string identifierName = assignmentStatement.identifier.name;
     std::string statementValue = assignmentStatement.value.name;
 
-    std::cout << identifierName << " = " << statementValue << ";\n";
+    std::cout << identifierName << " = " << statementValue << ";";
   };
 
   void printInitialisationStatement(
@@ -39,13 +39,14 @@ public:
     std::string typeName = initialisationStatement.type.name;
     std::string identifierName = initialisationStatement.identifier.name;
 
-    std::cout << typeName << " " << identifierName << ";\n";
+    std::cout << typeName << " " << identifierName << ";";
+    ;
   };
 
   void printReturnStatement(const ReturnStatement& returnStatement) const {
     std::string identifierName = returnStatement.value.name;
 
-    std::cout << "return " << identifierName << ";\n";
+    std::cout << "return " << identifierName << ";";
   }
 
   void
@@ -53,7 +54,7 @@ public:
     std::string lhs = additionStatement.lhs.name;
     std::string rhs = additionStatement.rhs.name;
     std::cout << additionStatement.identifier.name << " = " << lhs << " + "
-              << rhs << ";\n";
+              << rhs << ";";
   }
 
   void printSubtractionStatement(
@@ -62,13 +63,13 @@ public:
     std::string rhs = subtractionStatement.rhs.name;
 
     std::cout << subtractionStatement.identifier.name << " = " << lhs << " + "
-              << rhs << ";\n";
+              << rhs << ";";
   }
 
   void printPrintStatement(const PrintStatement& printStatement) const {
     std::string value = printStatement.value.name;
 
-    std::cout << "print " << value << ";\n";
+    std::cout << "print " << value << ";";
   }
 
   void print() const {
@@ -107,28 +108,10 @@ public:
           break;
         }
 
-        case StatementType::RETURN: {
-          const ReturnStatement& returnStatement =
-              static_cast<const ReturnStatement&>(statement);
-
-          this->printReturnStatement(returnStatement);
-
-          break;
-        }
-
         case StatementType::ADDITION: {
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
           this->printAdditionStatement(additionStatement);
-
-          break;
-        }
-
-        case StatementType::PRINT: {
-          const PrintStatement& printStatement =
-              static_cast<const PrintStatement&>(statement);
-
-          this->printPrintStatement(printStatement);
 
           break;
         }

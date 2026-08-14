@@ -37,16 +37,6 @@ uint8 a = 10;
 uint8 b = a;
 ```
 
-## Returning
-
-Values can be returned with the `return` keyword.
-For example:
-
-```
-uint8 a = 1;
-return a;
-```
-
 ## Arithmetic
 
 Values can be defined as a series of arithmetic statements, combining identifiers and values:
@@ -62,13 +52,23 @@ uint8 e = d - 1;
 
 ## Printing
 
-Values can be printed to standard out using a print statement, proceeded by the value wanted to print.
+Values can be printed to standard out using the print function, proceeded by the value wanted to print.
 
 ```
-print 1;
+print(1);
 
 uint8 a = 2;
-print a;
+print(a);
+```
+
+## Returning
+
+Values can be returned with the `return` function.
+For example:
+
+```
+uint8 a = 1;
+return(a);
 ```
 
 ## Examples
@@ -88,12 +88,10 @@ String segments are converted to a list of tokens. Representing the smallest seg
 | Token Name  | Token Type Enum | Description                      |
 | ----------- | --------------- | -------------------------------- |
 | End of line | `END_OF_LINE`   | Eend of a statement              |
-| Primitive   | `PRIMITIVE`     | Parent class of a primitive type |
-| Operator.   | `OPERATOR`      | Parent class of an operator type |
-| Identifier  | `IDENTIFIER`    | Variable identifier              |
-| Number      | `NUMBER`        | Integer                          |
-| Return      | `RETURN`        | Returns a value from a function  |
-| Print       | `PRINT`         | Prints a value                   |
+| Operator   | `OPERATOR`      | Parent class of an operator type |
+| Open Normal Bracket  | `BRACKET_NORMAL_CLOSE`      | A `(` bracket |
+| Close Normal Bracket   | `BRACKET_NORMAL_OPEN`      | A `)` bracket |
+| Other   | `OTHER`     | Stores a string for any unknown type  |
 
 ## Syntax Analyser
 
@@ -103,10 +101,9 @@ Combines tokens into statements.
 | -------------- | ------------------- | ------------------------------------------------------ |
 | Initialisation | `INITIALISATION`    | Initialises a variable with the given primitive type   |
 | Assignment     | `ASSIGNMENT`        | Sets a variable to a value                             |
-| Return         | `RETURN`            | Returns a value from a function                        |
 | Addition       | `ADDITION`          | Adds two values and assigns them to an identifier      |
 | Subtraction    | `SUBTRACTION`       | Subtracts two values and assigns them to an identifier |
-| Print          | `PRINT`             | Prints the value after it                              |
+| Function Call    | `FUNCTION_CALL`       | Calls a function with any number of parameters |
 
 ## `LLVM` Intermediate Representation
 

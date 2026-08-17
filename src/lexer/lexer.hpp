@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 
 #include "./tokens/end_of_line/end_of_line.hpp"
@@ -8,7 +9,7 @@
 #include "./tokens/other.hpp"
 #include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
-#include "lexer/tokens/print/print.hpp"
+#include "lexer/tokens/token.hpp"
 
 class Lexer {
 private:
@@ -18,40 +19,62 @@ public:
   Lexer(const std::string& input) : input(input) {};
 
   TokenContainer makeTokenList() const {
+    uint64_t index = 0;
+    uint64_t bufferStartColumn = 1;
+    uint64_t lineNumber = 1;
+    bool bufferBegan = false;
 
     TokenContainer tokens;
     std::string buffer = "";
 
     for (char c : this->input) {
+      index += 1;
+
       if (c == '\n') {
+        lineNumber += 1;
+        index = 0;
         continue;
       }
 
-      if (c != ' ' && c != ';') {
-        buffer += c;
-        continue;
-      }
-
-      if (c == ' ' || c == ';') {
-        if (buffer == "=") {
-          tokens.addAssignment(AssignmentToken());
-        } else if (buffer == "+") {
-          tokens.addAddition(AdditionToken());
-        } else if (buffer == "-") {
-          tokens.addSubtraction(SubtractionToken());
-        } else if (buffer == "return") {
-          tokens.addReturn(ReturnToken());
-        } else if (buffer == "print") {
-          tokens.addPrint(PrintToken());
-        } else if (buffer.size() != 0) {
-          tokens.addOther(OtherToken(buffer));
+      if (c != ' ' && c != ';' && c != '(' && c != ')') {
+        if (!bufferBegan) {
+          bufferStartColumn = index;
+          bufferBegan = true;
         }
+        buffer += c;
 
-        buffer = "";
+        continue;
+      }
+
+      uint64_t endColumn = index - 1;
+      if (buffer == "=") {
+        tokens.addAssignment(AssignmentToken(
+            TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
+      } else if (buffer == "+") {
+        tokens.addAddition(AdditionToken(
+            TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
+      } else if (buffer == "-") {
+        tokens.addSubtraction(SubtractionToken(
+            TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
+      } else if (buffer.size() != 0) {
+        tokens.addOther(OtherToken(
+            buffer, TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
+      }
+      buffer = "";
+      bufferBegan = false;
+
+      if (c == '(') {
+        std::cout << "Adding (\n";
+        tokens.addOpenBracket(
+            TokenMetadata(lineNumber, bufferStartColumn, endColumn));
+      } else if (c == ')') {
+        tokens.addCloseBracket(
+            TokenMetadata(lineNumber, bufferStartColumn, endColumn));
       }
 
       if (c == ';') {
-        tokens.addEndOfLine(EndOfLineToken());
+        tokens.addEndOfLine(
+            EndOfLineToken(TokenMetadata(lineNumber, index, index)));
       }
     }
 

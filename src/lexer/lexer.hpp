@@ -64,7 +64,6 @@ public:
       bufferBegan = false;
 
       if (c == '(') {
-        std::cout << "Adding (\n";
         tokens.addOpenBracket(
             TokenMetadata(lineNumber, bufferStartColumn, endColumn));
       } else if (c == ')') {

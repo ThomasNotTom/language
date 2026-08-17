@@ -148,11 +148,7 @@ Program AbstractSyntaxTree::parse() {
       }
       std::vector<std::reference_wrapper<const Token>> remaining =
           std::vector(row.begin() + 3, row.end());
-      std::cout << "bb\n";
-      std::cout << "Row has length " << row.size() << "\n";
-      for (size_t i = 0; i < row.size(); i++) {
-        std::cout << "Row has " << (uint16_t)row[i].get().tokenType << "\n";
-      }
+
       std::vector<std::unique_ptr<Statement>> statements =
           this->leftToRightParse(remaining, identifier);
 
@@ -206,7 +202,7 @@ Program AbstractSyntaxTree::parse() {
       for (size_t i = 2; i < row.size() - 1; i++) {
         parameters.push_back(static_cast<const OtherToken&>(row[i].get()));
       }
-      std::cout << "Making function call\n";
+
       program.addStatement(
           std::make_unique<FunctionCallStatement>(identifier, parameters));
     }

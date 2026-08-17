@@ -2,9 +2,9 @@
 
 #include "generation/builder/builder.hpp"
 #include "generation/variable.hpp"
+#include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 // enum class TypeID : unsigned int { UINT8 = 1, UINT16 };
-
 
 class BuilderType {
 private:
@@ -15,7 +15,9 @@ public:
 
   unsigned int getTypeID() const { return this->typeID; };
 
-  virtual std::unique_ptr<Variable> makeVariable(Builder& builder) const = 0;
+  virtual std::unique_ptr<Variable> makeVariable(
+      Builder& builder,
+      const InitialisationStatement& initialisationStatement) const = 0;
 
   virtual ~BuilderType() = default;
 };

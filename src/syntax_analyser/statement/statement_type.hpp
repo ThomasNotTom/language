@@ -3,8 +3,7 @@
 enum class StatementType : uint8_t {
   INITIALISATION = 1,
   ASSIGNMENT = 2,
-  RETURN = 3,
   ADDITION = 4,
   SUBTRACTION = 5,
-  PRINT = 6
+  FUNCTION_CALL = 6
 };

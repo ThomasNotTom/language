@@ -18,6 +18,19 @@ const Token& TokenContainer::view(size_t index) const {
 
 size_t TokenContainer::getCount() const { return this->tokens.size(); }
 
+std::string
+TokenContainer::tokenMetadataToString(const TokenMetadata& metadata) {
+  std::string out = "";
+  out += "line: " + std::to_string(metadata.line) + ", column: ";
+  if (metadata.startIndex == metadata.endIndex) {
+    out += std::to_string(metadata.startIndex);
+  } else {
+    out += std::to_string(metadata.startIndex) + "-" +
+           std::to_string(metadata.endIndex);
+  }
+  return out;
+}
+
 void TokenContainer::print() const {
   std::cout << "-- Token Container --\n";
   std::cout << "count: " << this->getCount() << "\n";
@@ -27,7 +40,7 @@ void TokenContainer::print() const {
 
     switch (token.tokenType) {
       case END_OF_LINE: {
-        std::cout << "END_OF_LINE\n";
+        std::cout << "END_OF_LINE";
         break;
       }
 
@@ -53,26 +66,29 @@ void TokenContainer::print() const {
         }
         out += ")";
 
-        std::cout << out << "\n";
-        break;
-      }
-
-      case RETURN: {
-        std::cout << "RETURN\n";
-        break;
-      }
-
-      case PRINT: {
-        std::cout << "PRINT\n";
+        std::cout << out;
         break;
       }
 
       case OTHER: {
         const OtherToken& other = static_cast<const OtherToken&>(token);
 
-        std::cout << "OTHER(\"" << other.name << "\")\n";
+        std::cout << "OTHER(\"" << other.name << "\")";
+        break;
+      }
+
+      case BRACKET_OPEN: {
+        std::cout << "BRACKET_OPEN";
+        break;
+      }
+
+      case BRACKET_CLOSE: {
+        std::cout << "BRACKET_CLOSE";
         break;
       }
     }
+
+    std::cout << "  # " << TokenContainer::tokenMetadataToString(token.metadata)
+              << "\n";
   }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "syntax_analyser/statement/initialisation/initialisation.hpp"
 class BuilderType;
 class Builder;
 
@@ -9,14 +10,19 @@ class Builder;
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Value.h"
+#include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Variable {
 protected:
   llvm::Value* storage;
   const BuilderType& builderType;
+  const InitialisationStatement& initialisationStatement;
 
 public:
-  Variable(const BuilderType& builderType) : builderType(builderType) {};
+  Variable(const BuilderType& builderType,
+           const InitialisationStatement& initialisationStatement)
+      : builderType(builderType),
+        initialisationStatement(initialisationStatement) {};
 
   unsigned int getType() const;
 
@@ -32,6 +38,8 @@ public:
 
   virtual void subtract(Builder& builder, const Variable& other) const = 0;
   virtual void subtract(Builder& builder, uint64_t other) const = 0;
+
+  const InitialisationStatement& getInit() const {return this->initialisationStatement; };
 
   virtual ~Variable() = default;
 };

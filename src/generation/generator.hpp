@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -15,6 +16,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <stdexcept>
 
 #include "../syntax_analyser/program/program.hpp"
 #include "generation/builder/builder.hpp"
@@ -36,9 +38,8 @@
 #include "llvm/Support/Program.h"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
-#include "syntax_analyser/statement/print/print.hpp"
-#include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
@@ -104,8 +105,9 @@ public:
           const BuilderType& builderType =
               *types[initialisationStatement.type.name];
 
-          symbols.emplace(initialisationStatement.identifier.name,
-                          builderType.makeVariable(builder));
+          symbols.emplace(
+              initialisationStatement.identifier.name,
+              builderType.makeVariable(builder, initialisationStatement));
 
           break;
         }
@@ -127,25 +129,6 @@ public:
 
           const Variable& value = *symbols[assignmentStatement.value.name];
           identifier.store(builder, value);
-
-          break;
-        }
-
-        case StatementType::RETURN: {
-          const ReturnStatement& returnStatement =
-              static_cast<const ReturnStatement&>(statement);
-          if (Matcher::isInt(returnStatement.value.name)) {
-            uint64_t valueInt =
-                StringConverter::toUnsignedLongLong(returnStatement.value.name);
-            (*callables["return"]).call(builder, valueInt);
-            hasMainReturn = true;
-
-            break;
-          }
-          const Variable& value = *symbols[returnStatement.value.name];
-
-          (*callables["return"]).call(builder, value);
-          hasMainReturn = true;
 
           break;
         }
@@ -185,19 +168,19 @@ public:
           break;
         }
 
-        case StatementType::PRINT: {
-          const PrintStatement& printStatement =
-              static_cast<const PrintStatement&>(statement);
+        case StatementType::FUNCTION_CALL: {
+          const FunctionCallStatement& functionCallStatement =
+              static_cast<const FunctionCallStatement&>(statement);
+          const Variable& value =
+              *symbols[functionCallStatement.parameters[0].name];
 
-          if (Matcher::isInt(printStatement.value.name)) {
-            uint64_t valueInt =
-                StringConverter::toUnsignedLongLong(printStatement.value.name);
-            (*callables["print"]).call(builder, valueInt);
-            break;
+          if (!callables.contains(functionCallStatement.identifier.name)) {
+            throw std::runtime_error("Function \"" +
+                                     functionCallStatement.identifier.name +
+                                     "\" does not exist");
           }
-
-          const Variable& value = *symbols[printStatement.value.name];
-          (*callables["print"]).call(builder, value);
+          (*callables[functionCallStatement.identifier.name])
+              .call(builder, value);
         }
       }
     }

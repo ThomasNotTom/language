@@ -5,11 +5,11 @@
 #include <functional>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "lexer/token_container/token_container.hpp"
+#include "lexer/tokens/bracket/bracket_open.hpp"
 #include "lexer/tokens/operators/operator.hpp"
 #include "lexer/tokens/operators/operator_type.hpp"
 #include "lexer/tokens/other.hpp"
@@ -18,10 +18,8 @@
 #include "syntax_analyser/program/program.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
-#include "syntax_analyser/statement/other.hpp"
-#include "syntax_analyser/statement/print/print.hpp"
-#include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
@@ -51,9 +49,8 @@ AbstractSyntaxTree::splitToLines(const TokenContainer& fullTokens) {
 
 std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
     std::vector<std::reference_wrapper<const Token>> tokens,
-    const std::string& outName) {
+    const OtherToken& outToken) {
   std::vector<std::unique_ptr<Statement>> outStatements;
-
   for (int i = 1; i < tokens.size(); i += 2) {
     const Token& nextToken = tokens[i].get();
     if (nextToken.tokenType != TokenType::OPERATOR) {
@@ -75,14 +72,12 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
     switch (operatorToken.operatorType) {
       case ADDITION: {
         outStatements.push_back(std::make_unique<AdditionStatement>(
-            OtherStatementValue(outName), OtherStatementValue(outName),
-            OtherStatementValue(otherToken.name)));
+            outToken, outToken, operatorToken, otherToken));
         break;
 
         case SUBTRACTION: {
           outStatements.push_back(std::make_unique<SubtractionStatement>(
-              OtherStatementValue(outName), OtherStatementValue(outName),
-              OtherStatementValue(otherToken.name)));
+              outToken, outToken, operatorToken, otherToken));
           break;
         }
 
@@ -111,8 +106,6 @@ Program AbstractSyntaxTree::parse() {
 
     std::vector<std::reference_wrapper<const Token>> row = lines[i];
 
-    const Token& token = this->tokenContainer.view(i);
-
     // initialisation ::= {other} {other}";"
     //
     // eg: uint8 a;
@@ -123,9 +116,8 @@ Program AbstractSyntaxTree::parse() {
       const OtherToken& identifier =
           dynamic_cast<const OtherToken&>(row[1].get());
 
-      program.addStatement(std::make_unique<InitialisationStatement>(
-          OtherStatementValue(type.name),
-          OtherStatementValue(identifier.name)));
+      program.addStatement(
+          std::make_unique<InitialisationStatement>(type, identifier));
       continue;
     }
 
@@ -139,28 +131,30 @@ Program AbstractSyntaxTree::parse() {
 
       const OtherToken& type = static_cast<const OtherToken&>(row[0].get());
       const OtherToken& identifier =
-          dynamic_cast<const OtherToken&>(row[1].get());
+          static_cast<const OtherToken&>(row[1].get());
       const OperatorToken& oper =
-          dynamic_cast<const OperatorToken&>(row[2].get());
+          static_cast<const OperatorToken&>(row[2].get());
 
-      program.addStatement(std::make_unique<InitialisationStatement>(
-          OtherStatementValue(type.name),
-          OtherStatementValue(identifier.name)));
+      program.addStatement(
+          std::make_unique<InitialisationStatement>(type, identifier));
 
-      const OtherToken& value = dynamic_cast<const OtherToken&>(row[3].get());
-      program.addStatement(std::make_unique<AssignmentStatement>(
-          OtherStatementValue(identifier.name),
-          OtherStatementValue(value.name)));
+      const OtherToken& value = static_cast<const OtherToken&>(row[3].get());
+
+      program.addStatement(
+          std::make_unique<AssignmentStatement>(identifier, value));
 
       if (row.size() == 4) {
         continue;
       }
-
       std::vector<std::reference_wrapper<const Token>> remaining =
           std::vector(row.begin() + 3, row.end());
-
+      std::cout << "bb\n";
+      std::cout << "Row has length " << row.size() << "\n";
+      for (size_t i = 0; i < row.size(); i++) {
+        std::cout << "Row has " << (uint16_t)row[i].get().tokenType << "\n";
+      }
       std::vector<std::unique_ptr<Statement>> statements =
-          this->leftToRightParse(remaining, identifier.name);
+          this->leftToRightParse(remaining, identifier);
 
       for (int i = 0; i < statements.size(); i++) {
         program.addStatement(std::move(statements[i]));
@@ -181,19 +175,17 @@ Program AbstractSyntaxTree::parse() {
           dynamic_cast<const OperatorToken&>(row[1].get());
 
       const OtherToken& value = dynamic_cast<const OtherToken&>(row[2].get());
-      program.addStatement(std::make_unique<AssignmentStatement>(
-          OtherStatementValue(identifier.name),
-          OtherStatementValue(value.name)));
+      program.addStatement(
+          std::make_unique<AssignmentStatement>(identifier, value));
 
       if (row.size() == 3) {
         continue;
       }
 
       std::vector<std::reference_wrapper<const Token>> remaining =
-          std::vector(row.begin() + 2, row.end());
-
+          std::vector(row.begin() + 3, row.end());
       std::vector<std::unique_ptr<Statement>> statements =
-          this->leftToRightParse(remaining, identifier.name);
+          this->leftToRightParse(remaining, identifier);
 
       for (int i = 0; i < statements.size(); i++) {
         program.addStatement(std::move(statements[i]));
@@ -201,26 +193,22 @@ Program AbstractSyntaxTree::parse() {
       continue;
     }
 
-    // print_statement ::= "print" {other}
-    if (row.size() >= 2 && row[0].get().tokenType == TokenType::PRINT &&
-        row[1].get().tokenType == TokenType::OTHER) {
+    if (row[0].get().tokenType == TokenType::OTHER &&
+        row[1].get().tokenType == TokenType::BRACKET_OPEN &&
+        row[row.size() - 1].get().tokenType == TokenType::BRACKET_CLOSE) {
       const OtherToken& identifier =
-          dynamic_cast<const OtherToken&>(row[1].get());
+          static_cast<const OtherToken&>(row[0].get());
+      const BracketOpen& bracketOpen =
+          static_cast<const BracketOpen&>(row[1].get());
 
-      program.addStatement(std::make_unique<PrintStatement>(
-          OtherStatementValue(identifier.name)));
-      continue;
-    }
+      std::vector<OtherToken> parameters;
 
-    // return_statement ::= "return" {other}
-    if (row.size() >= 2 && row[0].get().tokenType == TokenType::RETURN &&
-        row[1].get().tokenType == TokenType::OTHER) {
-      const OtherToken& identifier =
-          dynamic_cast<const OtherToken&>(row[1].get());
-
-      program.addStatement(std::make_unique<ReturnStatement>(
-          OtherStatementValue(identifier.name)));
-      continue;
+      for (size_t i = 2; i < row.size() - 1; i++) {
+        parameters.push_back(static_cast<const OtherToken&>(row[i].get()));
+      }
+      std::cout << "Making function call\n";
+      program.addStatement(
+          std::make_unique<FunctionCallStatement>(identifier, parameters));
     }
   }
   return program;

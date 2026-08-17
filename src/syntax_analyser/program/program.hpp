@@ -4,11 +4,11 @@
 #include <memory>
 #include <vector>
 
+#include "lexer/tokens/other.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
-#include "syntax_analyser/statement/print/print.hpp"
-#include "syntax_analyser/statement/return/return.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 class Program {
@@ -31,12 +31,6 @@ private:
     std::cout << typeName << " " << identifierName << ";\n";
   };
 
-  void printReturnStatement(const ReturnStatement& returnStatement) const {
-    std::string identifierName = returnStatement.value.name;
-
-    std::cout << "return " << identifierName << ";\n";
-  }
-
   void
   printAdditionStatement(const AdditionStatement& additionStatement) const {
     std::string lhs = additionStatement.lhs.name;
@@ -54,10 +48,20 @@ private:
               << rhs << ";\n";
   }
 
-  void printPrintStatement(const PrintStatement& printStatement) const {
-    std::string value = printStatement.value.name;
+  void printFunctionCallStatement(
+      const FunctionCallStatement& subtractionStatement) const {
+    std::string identifierName = subtractionStatement.identifier.name;
+    std::vector<OtherToken> parameters = subtractionStatement.parameters;
+    std::string out = "";
+    out += identifierName + "(";
+    for (size_t i = 0; i < parameters.size(); i++) {
+      if (i != parameters.size() - 1) {
+        out += ", ";
+      }
 
-    std::cout << "print " << value << ";\n";
+      out += parameters[i].name;
+    }
+    std::cout << out << ");\n";
   }
 
 public:
@@ -107,15 +111,6 @@ public:
           break;
         }
 
-        case StatementType::RETURN: {
-          const ReturnStatement& returnStatement =
-              static_cast<const ReturnStatement&>(statement);
-
-          this->printReturnStatement(returnStatement);
-
-          break;
-        }
-
         case StatementType::ADDITION: {
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
@@ -124,12 +119,10 @@ public:
           break;
         }
 
-        case StatementType::PRINT: {
-          const PrintStatement& printStatement =
-              static_cast<const PrintStatement&>(statement);
-
-          this->printPrintStatement(printStatement);
-
+        case StatementType::FUNCTION_CALL: {
+          const FunctionCallStatement& functionCallStatement =
+              static_cast<const FunctionCallStatement&>(statement);
+          this->printFunctionCallStatement(functionCallStatement);
           break;
         }
       }

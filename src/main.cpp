@@ -39,7 +39,7 @@ int main(const int argc, char* argv[]) {
     tokens.print();
   }
 
-  AbstractSyntaxTree ast(tokens);
+  AbstractSyntaxTree ast(tokens, programText);
 
   Program program = ast.parse();
   if (verbose) {

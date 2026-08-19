@@ -97,8 +97,21 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
         }
 
         default:
-          throw std::runtime_error("Operator on right-hand-side of assignment "
-                                   "must be addition or subtraction");
+
+          std::string out = "\n";
+          out += std::to_string(otherToken.metadata.line + 1);
+          out += ": ";
+          out += this->programText.getLine(otherToken.metadata.line);
+          out += "\n";
+          out += "Operator on right-hand-side of assignment (";
+          out += std::to_string(operatorToken.operatorType);
+          out += ") must be addition (";
+          out += std::to_string(OperatorType::ADDITION);
+          out += ") or subtraction (";
+          out += std::to_string(OperatorType::SUBTRACTION);
+          out += ")";
+
+          throw std::runtime_error(out);
       }
     }
   }

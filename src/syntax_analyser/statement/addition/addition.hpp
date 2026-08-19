@@ -2,17 +2,20 @@
 #include <iostream>
 #include <memory>
 
+#include "lexer/tokens/operators/operator.hpp"
+#include "lexer/tokens/other.hpp"
 #include "syntax_analyser/statement/other.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 
 class AdditionStatement : public Statement {
 public:
-  const OtherStatementValue identifier;
-  const OtherStatementValue lhs;
-  const OtherStatementValue rhs;
+  const OtherToken identifier;
+  const OtherToken lhs;
+  const OperatorToken addOperator;
+  const OtherToken rhs;
 
-  AdditionStatement(const OtherStatementValue& identifier,
-                    OtherStatementValue lhs, OtherStatementValue rhs)
-      : Statement(StatementType::ADDITION), identifier(identifier),
-        lhs(std::move(lhs)), rhs(std::move(rhs)) {};
+  AdditionStatement(const OtherToken& identifier, const OtherToken& lhs,
+                    const OperatorToken& addOperator, const OtherToken& rhs)
+      : Statement(StatementType::ADDITION), identifier(identifier), lhs(lhs),
+        addOperator(addOperator), rhs(rhs) {};
 };

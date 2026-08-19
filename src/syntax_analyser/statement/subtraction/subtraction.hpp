@@ -1,17 +1,19 @@
 #pragma once
-#include <memory>
 
-#include "syntax_analyser/statement/other.hpp"
+#include "lexer/tokens/operators/operator.hpp"
+#include "lexer/tokens/other.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 
 class SubtractionStatement : public Statement {
 public:
-  const OtherStatementValue identifier;
-  const OtherStatementValue lhs;
-  const OtherStatementValue rhs;
+  const OtherToken identifier;
+  const OtherToken lhs;
+  const OperatorToken subtractOperator;
+  const OtherToken rhs;
 
-  SubtractionStatement(const OtherStatementValue& identifier,
-                       OtherStatementValue lhs, OtherStatementValue rhs)
-      : Statement(StatementType::SUBTRACTION), identifier(identifier),
-        lhs(std::move(lhs)), rhs(std::move(rhs)) {};
+  SubtractionStatement(const OtherToken& identifier, const OtherToken& lhs,
+                       const OperatorToken& subtractOperator,
+                       const OtherToken& rhs)
+      : Statement(StatementType::SUBTRACTION), identifier(identifier), lhs(lhs),
+        subtractOperator(subtractOperator), rhs(rhs) {};
 };

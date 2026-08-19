@@ -110,10 +110,8 @@ public:
               *types[initialisationStatement.type.name];
 
           if (symbols.contains(initialisationStatement.identifier.name)) {
-            // std::cout << "Error: ";
             Variable& previousDeclaration =
                 (*symbols[initialisationStatement.identifier.name]);
-            // program.printInitialisationStatement(initialisationStatement);
 
             const InitialisationStatement& previousInitialisationStatement =
                 previousDeclaration.getInit();
@@ -231,16 +229,38 @@ public:
         case StatementType::FUNCTION_CALL: {
           const FunctionCallStatement& functionCallStatement =
               static_cast<const FunctionCallStatement&>(statement);
-          const Variable& value =
-              *symbols[functionCallStatement.parameters[0].name];
-
-          if (!callables.contains(functionCallStatement.identifier.name)) {
-            throw std::runtime_error("Function \"" +
-                                     functionCallStatement.identifier.name +
+          const std::string& functionName =
+              functionCallStatement.identifier.name;
+          if (!callables.contains(functionName)) {
+            throw std::runtime_error("Function \"" + functionName +
                                      "\" does not exist");
           }
+
+          const std::string& paramName =
+              functionCallStatement.parameters[0].name;
+
+          if (Matcher::isInt(paramName)) {
+            unsigned long long paramNum =
+                StringConverter::toUnsignedLongLong(paramName);
+
+            (*callables[functionCallStatement.identifier.name])
+                .call(builder, paramNum);
+
+            if (functionName == "return") {
+              hasMainReturn = true;
+            }
+            continue;
+          }
+
+          const Variable& value = *symbols[paramName];
+
           (*callables[functionCallStatement.identifier.name])
               .call(builder, value);
+
+          if (functionName == "return") {
+            hasMainReturn = true;
+          }
+          break;
         }
       }
     }

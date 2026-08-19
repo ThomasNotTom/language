@@ -44,5 +44,9 @@ ProgramText FileReader::toProgramText() {
     buffer += c;
   }
 
+  if (buffer.size() != 0) {
+    programText.addLine(buffer);
+  }
+
   return programText;
 };

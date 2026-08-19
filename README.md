@@ -89,8 +89,8 @@ String segments are converted to a list of tokens. Representing the smallest seg
 | ----------- | --------------- | -------------------------------- |
 | End of line | `END_OF_LINE`   | Eend of a statement              |
 | Operator   | `OPERATOR`      | Parent class of an operator type |
-| Open Normal Bracket  | `BRACKET_NORMAL_CLOSE`      | A `(` bracket |
-| Close Normal Bracket   | `BRACKET_NORMAL_OPEN`      | A `)` bracket |
+| Open Bracket  | `BRACKET_CLOSE`      | A `(` bracket |
+| Close Bracket   | `BRACKET_OPEN`      | A `)` bracket |
 | Other   | `OTHER`     | Stores a string for any unknown type  |
 
 ## Syntax Analyser

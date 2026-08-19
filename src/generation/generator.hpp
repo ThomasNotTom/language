@@ -229,11 +229,22 @@ public:
         case StatementType::FUNCTION_CALL: {
           const FunctionCallStatement& functionCallStatement =
               static_cast<const FunctionCallStatement&>(statement);
+          const std::string& functionCallLine = this->programText.getLine(
+              functionCallStatement.identifier.metadata.line);
+
+          const std::string& functionCallLineNumber = std::to_string(
+              functionCallStatement.identifier.metadata.line + 1);
           const std::string& functionName =
               functionCallStatement.identifier.name;
           if (!callables.contains(functionName)) {
-            throw std::runtime_error("Function \"" + functionName +
-                                     "\" does not exist");
+            std::string out = "\n";
+            out += functionCallLineNumber;
+            out += ": ";
+            out += functionCallLine;
+            out += "\nFunction \"";
+            out += functionCallStatement.identifier.name;
+            out += "\" is not defined";
+            throw std::runtime_error(out);
           }
 
           const std::string& paramName =

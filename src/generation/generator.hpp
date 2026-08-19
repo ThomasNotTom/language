@@ -159,12 +159,22 @@ public:
               static_cast<const AssignmentStatement&>(statement);
 
           if (!symbols.contains(assignmentStatement.identifier.name)) {
-            std::cout << "Error: ";
-            program.printAssignmentStatement(assignmentStatement);
+            const std::string& assignmentStatementLineNumber = std::to_string(
+                assignmentStatement.identifier.metadata.line + 1);
 
-            throw std::runtime_error("Assigning to uninitialised variable \"" +
-                                     assignmentStatement.identifier.name +
-                                     "\"");
+            const std::string& assignmentStatementLine =
+                this->programText.getLine(
+                    assignmentStatement.identifier.metadata.line);
+
+            std::string out = "\n";
+            out += assignmentStatementLineNumber;
+            out += ": ";
+            out += assignmentStatementLine;
+            out += "\nVariable \"";
+            out += assignmentStatement.identifier.name;
+            out += "\" has not been initialised";
+
+            throw std::runtime_error(out);
           }
           const Variable& identifier =
               *symbols[assignmentStatement.identifier.name];

@@ -31,6 +31,7 @@ int main(const int argc, char* argv[]) {
     std::cerr << "Input file failed to open\n";
     return 1;
   }
+  ProgramText programText = fileReader.toProgramText();
 
   Lexer lexer(fileReader.readAll());
   TokenContainer tokens = lexer.makeTokenList();
@@ -45,7 +46,7 @@ int main(const int argc, char* argv[]) {
     program.print();
   }
 
-  Generator generator(program);
+  Generator generator(program, programText);
   generator.init();
 
   llvm::LLVMContext context;

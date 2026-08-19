@@ -43,7 +43,7 @@ public:
     ;
   };
 
-
+  void
   printAdditionStatement(const AdditionStatement& additionStatement) const {
     std::string lhs = additionStatement.lhs.name;
     std::string rhs = additionStatement.rhs.name;
@@ -74,13 +74,6 @@ public:
       out += parameters[i].name;
     }
     std::cout << out << ");\n";
-  }
-
-public:
-  Program() {};
-
-  void addStatement(std::unique_ptr<Statement> statement) {
-    this->statements.push_back(std::move(statement));
   }
 
   void print() const {

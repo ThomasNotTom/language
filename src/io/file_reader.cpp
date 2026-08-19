@@ -26,3 +26,23 @@ char FileReader::readCharacter() {
 }
 
 void FileReader::increment() { this->readIndex++; }
+
+ProgramText FileReader::toProgramText() {
+  ProgramText programText = ProgramText();
+
+  std::string allText = this->readAll();
+
+  std::string buffer = "";
+  for (size_t i = 0; i < allText.size(); i++) {
+    char c = allText[i];
+    if (c == '\n') {
+      programText.addLine(buffer);
+      buffer = "";
+      continue;
+    }
+
+    buffer += c;
+  }
+
+  return programText;
+};

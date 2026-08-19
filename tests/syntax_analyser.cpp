@@ -8,6 +8,7 @@
 
 #include "generation/generator.hpp"
 #include "io/file_reader.hpp"
+#include "io/program_text.hpp"
 #include "lexer/lexer.hpp"
 #include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/end_of_line/end_of_line.hpp"
@@ -23,31 +24,37 @@
 
 // ""
 TEST_CASE("Empty token container", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+
   TokenContainer tokenContainer = TokenContainer();
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 0);
 };
 
 // ";"
 TEST_CASE("Empty line", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 0);
 };
 
 // "uint8 a;"
 TEST_CASE("Variable initialisation", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 1);
   REQUIRE(program.view(0).statementType == StatementType::INITIALISATION);
@@ -60,6 +67,8 @@ TEST_CASE("Variable initialisation", "[syntax analyser]") {
 
 // "uint8 a = 0;"
 TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
@@ -67,7 +76,7 @@ TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
   tokenContainer.addOther(OtherToken("0", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 2);
 
@@ -88,13 +97,15 @@ TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
 
 // "a = 0;"
 TEST_CASE("Variable assignment", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
   tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("0", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 1);
 
@@ -109,6 +120,8 @@ TEST_CASE("Variable assignment", "[syntax analyser]") {
 // "uint a = 0 + 1;"
 TEST_CASE("Variable initialisation and assignment with arithmetic",
           "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
@@ -118,7 +131,7 @@ TEST_CASE("Variable initialisation and assignment with arithmetic",
   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 3);
 
@@ -144,6 +157,8 @@ TEST_CASE("Variable initialisation and assignment with arithmetic",
 
 // "a = 0 + 1;"
 TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
   tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
@@ -152,7 +167,7 @@ TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 2);
 
@@ -171,39 +186,3 @@ TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   REQUIRE(additionStatement.lhs.name == "a");
   REQUIRE(additionStatement.rhs.name == "1");
 };
-
-// "print 1;"
-// TEST_CASE("Print number", "[syntax analyser]") {
-//   TokenContainer tokenContainer = TokenContainer();
-//   tokenContainer.addOther(OtherToken("print", TokenMetadata(0)));
-//   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
-//   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
-
-//   Program program = AbstractSyntaxTree(tokenContainer).parse();
-
-//   REQUIRE(program.size() == 1);
-
-//   REQUIRE(program.view(0).statementType == StatementType::PRINT);
-//   const PrintStatement& printStatement =
-//       static_cast<const PrintStatement&>(program.view(0));
-
-//   REQUIRE(printStatement.value.name == "1");
-// };
-
-// "return 1;"
-// TEST_CASE("Return number", "[syntax analyser]") {
-//   TokenContainer tokenContainer = TokenContainer();
-//   tokenContainer.addOther(OtherToken("return", TokenMetadata(0)));
-//   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
-//   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
-
-//   Program program = AbstractSyntaxTree(tokenContainer).parse();
-
-//   REQUIRE(program.size() == 1);
-
-//   REQUIRE(program.view(0).statementType == StatementType::RETURN);
-//   const ReturnStatement& returnStatement =
-//       static_cast<const ReturnStatement&>(program.view(0));
-
-//   REQUIRE(returnStatement.value.name == "1");
-// };

@@ -21,7 +21,7 @@ public:
   TokenContainer makeTokenList() const {
     uint64_t index = 0;
     uint64_t bufferStartColumn = 1;
-    uint64_t lineNumber = 1;
+    uint64_t lineNumber = 0;
     bool bufferBegan = false;
 
     TokenContainer tokens;

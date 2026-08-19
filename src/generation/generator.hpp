@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cstddef>
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -28,6 +29,7 @@
 #include "generation/primitives/uint8/uint8.hpp"
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "io/program_text.hpp"
 #include "lexer/matcher.hpp"
 #include "lexer/string_converter.hpp"
 #include "llvm/Analysis/TargetLibraryInfo.h"
@@ -46,9 +48,11 @@
 class Generator {
 private:
   const Program& program;
+  const ProgramText programText;
 
 public:
-  Generator(const Program& program) : program(program) {}
+  Generator(const Program& program, const ProgramText& programText)
+      : program(program), programText(programText) {}
 
   void init() {
     llvm::InitializeNativeTarget();
@@ -105,6 +109,24 @@ public:
           const BuilderType& builderType =
               *types[initialisationStatement.type.name];
 
+
+          if (symbols.contains(initialisationStatement.identifier.name)) {
+            // std::cout << "Error: ";
+            Variable& previousDeclaration =
+                (*symbols[initialisationStatement.identifier.name]);
+            // program.printInitialisationStatement(initialisationStatement);
+
+            const InitialisationStatement& initialisationStatement =
+                previousDeclaration.getInit();
+            const std::string& previousDeclarationLine =
+                this->programText.getLine(
+                    initialisationStatement.type.metadata.line);
+
+            throw std::runtime_error(previousDeclarationLine + "\nVariable \"" +
+                                     initialisationStatement.identifier.name +
+                                     "\" has already been initialised");
+          }
+
           symbols.emplace(
               initialisationStatement.identifier.name,
               builderType.makeVariable(builder, initialisationStatement));
@@ -116,6 +138,14 @@ public:
           const AssignmentStatement& assignmentStatement =
               static_cast<const AssignmentStatement&>(statement);
 
+          if (!symbols.contains(assignmentStatement.identifier.name)) {
+            std::cout << "Error: ";
+            program.printAssignmentStatement(assignmentStatement);
+
+            throw std::runtime_error("Assigning to uninitialised variable \"" +
+                                     assignmentStatement.identifier.name +
+                                     "\"");
+          }
           const Variable& identifier =
               *symbols[assignmentStatement.identifier.name];
 

@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 
+#include "io/program_text.hpp"
+
 class FileReader {
 private:
   const std::string filepath;
@@ -17,4 +19,6 @@ public:
   std::string readAll();
   char readCharacter();
   void increment();
+
+  ProgramText toProgramText();
 };

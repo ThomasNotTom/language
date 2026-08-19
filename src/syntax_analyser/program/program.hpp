@@ -15,12 +15,23 @@ class Program {
 private:
   std::vector<std::unique_ptr<Statement>> statements;
 
+public:
+  Program() {};
+
+  void addStatement(std::unique_ptr<Statement> statement) {
+    this->statements.push_back(std::move(statement));
+  }
+
+  size_t size() const { return this->statements.size(); }
+
+  const Statement& view(size_t i) const { return *this->statements[i]; }
+
   void printAssignmentStatement(
       const AssignmentStatement& assignmentStatement) const {
     std::string identifierName = assignmentStatement.identifier.name;
     std::string statementValue = assignmentStatement.value.name;
 
-    std::cout << identifierName << " = " << statementValue << ";\n";
+    std::cout << identifierName << " = " << statementValue << ";";
   };
 
   void printInitialisationStatement(
@@ -28,15 +39,16 @@ private:
     std::string typeName = initialisationStatement.type.name;
     std::string identifierName = initialisationStatement.identifier.name;
 
-    std::cout << typeName << " " << identifierName << ";\n";
+    std::cout << typeName << " " << identifierName << ";";
+    ;
   };
 
-  void
+
   printAdditionStatement(const AdditionStatement& additionStatement) const {
     std::string lhs = additionStatement.lhs.name;
     std::string rhs = additionStatement.rhs.name;
     std::cout << additionStatement.identifier.name << " = " << lhs << " + "
-              << rhs << ";\n";
+              << rhs << ";";
   }
 
   void printSubtractionStatement(
@@ -45,7 +57,7 @@ private:
     std::string rhs = subtractionStatement.rhs.name;
 
     std::cout << subtractionStatement.identifier.name << " = " << lhs << " + "
-              << rhs << ";\n";
+              << rhs << ";";
   }
 
   void printFunctionCallStatement(
@@ -70,10 +82,6 @@ public:
   void addStatement(std::unique_ptr<Statement> statement) {
     this->statements.push_back(std::move(statement));
   }
-
-  size_t size() const { return this->statements.size(); }
-
-  const Statement& view(size_t i) const { return *this->statements[i]; }
 
   void print() const {
     std::cout << "-- Program --\n";

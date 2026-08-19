@@ -1,15 +1,14 @@
 #pragma once
 
 #include "../statement.hpp"
-#include "syntax_analyser/statement/other.hpp"
+#include "lexer/tokens/other.hpp"
 
 class InitialisationStatement : public Statement {
 public:
-  const OtherStatementValue type;
-  const OtherStatementValue identifier;
+  const OtherToken type;
+  const OtherToken identifier;
 
-  InitialisationStatement(const OtherStatementValue& type,
-                          const OtherStatementValue& identifier)
+  InitialisationStatement(const OtherToken& type, const OtherToken& identifier)
       : Statement(StatementType::INITIALISATION), type(type),
         identifier(identifier) {};
 };

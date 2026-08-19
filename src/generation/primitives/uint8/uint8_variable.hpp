@@ -2,14 +2,17 @@
 
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Uint8Variable : public Variable {
 private:
   llvm::Type* llvmType;
 
 public:
-  Uint8Variable(Builder& builder, const BuilderType& builderType)
-      : Variable(builderType), llvmType(builder.getUint8()) {
+  Uint8Variable(Builder& builder, const BuilderType& builderType,
+                const InitialisationStatement& initialisationStatement)
+      : Variable(builderType, initialisationStatement),
+        llvmType(builder.getUint8()) {
     this->storage = builder.allocate(this->llvmType, "uint8");
   };
 

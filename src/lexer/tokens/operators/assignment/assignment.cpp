@@ -2,5 +2,7 @@
 
 #include "lexer/tokens/operators/operator.hpp"
 #include "lexer/tokens/operators/operator_type.hpp"
+#include "lexer/tokens/token.hpp"
 
-AssignmentToken::AssignmentToken() : OperatorToken(OperatorType::ASSIGNMENT) {};
+AssignmentToken::AssignmentToken(const TokenMetadata& metadata)
+    : OperatorToken(OperatorType::ASSIGNMENT, metadata) {};

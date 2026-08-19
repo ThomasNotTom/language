@@ -2,14 +2,17 @@
 
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Uint64Variable : public Variable {
 private:
   llvm::Type* llvmType;
 
 public:
-  Uint64Variable(Builder& builder, const BuilderType& builderType)
-      : Variable(builderType), llvmType(builder.getUint64()) {
+  Uint64Variable(Builder& builder, const BuilderType& builderType,
+                 const InitialisationStatement& initialisationStatement)
+      : Variable(builderType, initialisationStatement),
+        llvmType(builder.getUint64()) {
     this->storage = builder.allocate(this->llvmType, "uint64");
   };
 

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../operator.hpp"
+#include "lexer/tokens/token.hpp"
 
 class AdditionToken : public OperatorToken {
 public:
-  AdditionToken();
+  AdditionToken(const TokenMetadata& metadata);
 };

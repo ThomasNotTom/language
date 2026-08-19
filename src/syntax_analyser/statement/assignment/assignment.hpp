@@ -1,14 +1,15 @@
 #pragma once
 
+#include "lexer/tokens/other.hpp"
 #include "syntax_analyser/statement/other.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 
 class AssignmentStatement : public Statement {
 public:
-  const OtherStatementValue identifier;
-  const OtherStatementValue value;
+  const OtherToken identifier;
+  const OtherToken value;
 
-  AssignmentStatement(OtherStatementValue identifier, OtherStatementValue value)
-      : Statement(StatementType::ASSIGNMENT), identifier(std::move(identifier)),
-        value(std::move(value)) {};
+  AssignmentStatement(const OtherToken& identifier, const OtherToken& value)
+      : Statement(StatementType::ASSIGNMENT), identifier(identifier),
+        value(value) {};
 };

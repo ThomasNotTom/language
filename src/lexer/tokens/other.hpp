@@ -8,5 +8,6 @@
 class OtherToken : public Token {
 public:
   const std::string name;
-  OtherToken(const std::string& name) : Token(TokenType::OTHER), name(name) {};
+  OtherToken(const std::string& name, const TokenMetadata& metadata)
+      : Token(TokenType::OTHER, metadata), name(name) {};
 };

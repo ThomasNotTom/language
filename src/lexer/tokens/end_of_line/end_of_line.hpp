@@ -5,5 +5,5 @@
 class EndOfLineToken : public Token {
 
 public:
-  EndOfLineToken();
+  EndOfLineToken(const TokenMetadata& metadata);
 };

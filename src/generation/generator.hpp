@@ -1,5 +1,5 @@
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -109,22 +109,42 @@ public:
           const BuilderType& builderType =
               *types[initialisationStatement.type.name];
 
-
           if (symbols.contains(initialisationStatement.identifier.name)) {
             // std::cout << "Error: ";
             Variable& previousDeclaration =
                 (*symbols[initialisationStatement.identifier.name]);
             // program.printInitialisationStatement(initialisationStatement);
 
-            const InitialisationStatement& initialisationStatement =
+            const InitialisationStatement& previousInitialisationStatement =
                 previousDeclaration.getInit();
+
             const std::string& previousDeclarationLine =
+                this->programText.getLine(
+                    previousInitialisationStatement.type.metadata.line);
+
+            const std::string& previousDeclarationLineNumber = std::to_string(
+                previousInitialisationStatement.type.metadata.line + 1);
+
+            const std::string& currentDeclarationLine =
                 this->programText.getLine(
                     initialisationStatement.type.metadata.line);
 
-            throw std::runtime_error(previousDeclarationLine + "\nVariable \"" +
-                                     initialisationStatement.identifier.name +
-                                     "\" has already been initialised");
+            const std::string& currentDeclarationLineNumber =
+                std::to_string(initialisationStatement.type.metadata.line + 1);
+
+            std::string out = "\n";
+            out += previousDeclarationLineNumber;
+            out += ": ";
+            out += previousDeclarationLine;
+            out += "\n";
+            out += currentDeclarationLineNumber;
+            out += ": ";
+            out += currentDeclarationLine;
+            out += "\nVariable \"";
+            out += initialisationStatement.identifier.name;
+            out += "\" has already been initialised in line ";
+            out += previousDeclarationLineNumber;
+            throw std::runtime_error(out);
           }
 
           symbols.emplace(

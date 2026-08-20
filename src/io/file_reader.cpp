@@ -1,9 +1,12 @@
 #include "file_reader.hpp"
 
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "io/program_text.hpp"
 
 FileReader::FileReader(const std::string& filepath) : filepath(filepath) {
   this->inputStream = std::ifstream(filepath);
@@ -42,6 +45,10 @@ ProgramText FileReader::toProgramText() {
     }
 
     buffer += c;
+  }
+
+  if (buffer.size() != 0) {
+    programText.addLine(buffer);
   }
 
   return programText;

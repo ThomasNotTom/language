@@ -148,30 +148,22 @@ TEST_CASE("Variable assignment with arithmetic", "[lexer]") {
   REQUIRE(tokenContainer.view(5).tokenType == TokenType::END_OF_LINE);
 };
 
-// "print 1;"
-TEST_CASE("Print number", "[lexer]") {
-  Lexer lexer = Lexer("print 1;");
+// "func(1);"
+TEST_CASE("Function call", "[lexer]") {
+  Lexer lexer = Lexer("func(1);");
   TokenContainer tokenContainer = lexer.makeTokenList();
-  REQUIRE(tokenContainer.getCount() == 3);
+  REQUIRE(tokenContainer.getCount() == 5);
 
-  REQUIRE(tokenContainer.view(0).tokenType == TokenType::PRINT);
+  REQUIRE(tokenContainer.view(0).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name ==
+          "func");
 
-  REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
-  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "1");
+  REQUIRE(tokenContainer.view(1).tokenType == TokenType::BRACKET_OPEN);
 
-  REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
-};
+  REQUIRE(tokenContainer.view(2).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(2)).name == "1");
 
-// "return 1;"
-TEST_CASE("Return number", "[lexer]") {
-  Lexer lexer = Lexer("return 1;");
-  TokenContainer tokenContainer = lexer.makeTokenList();
-  REQUIRE(tokenContainer.getCount() == 3);
+  REQUIRE(tokenContainer.view(3).tokenType == TokenType::BRACKET_CLOSE);
 
-  REQUIRE(tokenContainer.view(0).tokenType == TokenType::RETURN);
-
-  REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
-  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "1");
-
-  REQUIRE(tokenContainer.view(2).tokenType == TokenType::END_OF_LINE);
+  REQUIRE(tokenContainer.view(4).tokenType == TokenType::END_OF_LINE);
 };

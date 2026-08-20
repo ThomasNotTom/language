@@ -5,9 +5,11 @@
 #include <functional>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "io/program_text.hpp"
 #include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/bracket/bracket_open.hpp"
 #include "lexer/tokens/operators/operator.hpp"
@@ -23,8 +25,9 @@
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
-AbstractSyntaxTree::AbstractSyntaxTree(const TokenContainer& tokenContainer)
-    : tokenContainer(tokenContainer) {}
+AbstractSyntaxTree::AbstractSyntaxTree(const TokenContainer& tokenContainer,
+                                       const ProgramText& programText)
+    : tokenContainer(tokenContainer), programText(programText) {}
 
 std::vector<std::vector<std::reference_wrapper<const Token>>>
 AbstractSyntaxTree::splitToLines(const TokenContainer& fullTokens) {
@@ -54,7 +57,18 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
   for (int i = 1; i < tokens.size(); i += 2) {
     const Token& nextToken = tokens[i].get();
     if (nextToken.tokenType != TokenType::OPERATOR) {
-      throw std::runtime_error("Token adjacent to other must be an operator");
+      std::string out = "\n";
+      out += std::to_string(nextToken.metadata.line + 1);
+      out += ": ";
+      out += this->programText.getLine(nextToken.metadata.line);
+      out += "\n";
+      out += "Token adjacent to other (";
+      out += std::to_string(nextToken.tokenType);
+      out += ") must be an operator (";
+      out += std::to_string(TokenType::OPERATOR);
+      out += ")";
+
+      throw std::runtime_error(out);
     }
 
     const OperatorToken& operatorToken =
@@ -63,7 +77,19 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
     const Token& nextNextToken = tokens[i + 1].get();
 
     if (nextNextToken.tokenType != TokenType::OTHER) {
-      throw std::runtime_error("Token adjacent to operator must be an other");
+      std::string out = "\n";
+      out += std::to_string(nextToken.metadata.line + 1);
+      out += ": ";
+      out += this->programText.getLine(nextToken.metadata.line);
+      out += "\n";
+      out += "Token adjacent to operator (";
+      // TODO: Display token character
+      out += std::to_string(operatorToken.tokenType);
+      out += ") must be an other (";
+      out += std::to_string(TokenType::OTHER);
+      out += ")";
+
+      throw std::runtime_error(out);
     }
 
     const OtherToken& otherToken =
@@ -82,8 +108,21 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
         }
 
         default:
-          throw std::runtime_error("Operator on right-hand-side of assignment "
-                                   "must be addition or subtraction");
+
+          std::string out = "\n";
+          out += std::to_string(otherToken.metadata.line + 1);
+          out += ": ";
+          out += this->programText.getLine(otherToken.metadata.line);
+          out += "\n";
+          out += "Operator on right-hand-side of assignment (";
+          out += std::to_string(operatorToken.operatorType);
+          out += ") must be addition (";
+          out += std::to_string(OperatorType::ADDITION);
+          out += ") or subtraction (";
+          out += std::to_string(OperatorType::SUBTRACTION);
+          out += ")";
+
+          throw std::runtime_error(out);
       }
     }
   }
@@ -179,7 +218,7 @@ Program AbstractSyntaxTree::parse() {
       }
 
       std::vector<std::reference_wrapper<const Token>> remaining =
-          std::vector(row.begin() + 3, row.end());
+          std::vector(row.begin() + 2, row.end());
       std::vector<std::unique_ptr<Statement>> statements =
           this->leftToRightParse(remaining, identifier);
 
@@ -189,7 +228,7 @@ Program AbstractSyntaxTree::parse() {
       continue;
     }
 
-    if (row[0].get().tokenType == TokenType::OTHER &&
+    if (row.size() >= 3 && row[0].get().tokenType == TokenType::OTHER &&
         row[1].get().tokenType == TokenType::BRACKET_OPEN &&
         row[row.size() - 1].get().tokenType == TokenType::BRACKET_CLOSE) {
       const OtherToken& identifier =

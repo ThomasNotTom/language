@@ -9,6 +9,7 @@
 #include "./lexer/lexer.hpp"
 #include "./lexer/token_container/token_container.hpp"
 #include "generation/generator.hpp"
+#include "io/program_text.hpp"
 #include "syntax_analyser/abstract_syntax_tree.hpp"
 #include "syntax_analyser/program/program.hpp"
 
@@ -39,7 +40,7 @@ int main(const int argc, char* argv[]) {
     tokens.print();
   }
 
-  AbstractSyntaxTree ast(tokens);
+  AbstractSyntaxTree ast(tokens, programText);
 
   Program program = ast.parse();
   if (verbose) {

@@ -5,11 +5,15 @@
 #include <csignal>
 #include <cstdlib>
 #include <memory>
+#include <stdexcept>
 
 #include "generation/generator.hpp"
 #include "io/file_reader.hpp"
+#include "io/program_text.hpp"
 #include "lexer/lexer.hpp"
 #include "lexer/token_container/token_container.hpp"
+#include "lexer/tokens/bracket/bracket_close.hpp"
+#include "lexer/tokens/bracket/bracket_open.hpp"
 #include "lexer/tokens/end_of_line/end_of_line.hpp"
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/assignment/assignment.hpp"
@@ -18,36 +22,45 @@
 #include "syntax_analyser/program/program.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 
 // ""
 TEST_CASE("Empty token container", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("");
+
   TokenContainer tokenContainer = TokenContainer();
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 0);
 };
 
 // ";"
 TEST_CASE("Empty line", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine(";");
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
-
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
   REQUIRE(program.size() == 0);
 };
 
 // "uint8 a;"
 TEST_CASE("Variable initialisation", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("uint8 a;");
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 1);
   REQUIRE(program.view(0).statementType == StatementType::INITIALISATION);
@@ -60,6 +73,9 @@ TEST_CASE("Variable initialisation", "[syntax analyser]") {
 
 // "uint8 a = 0;"
 TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("uint8 a = 0;");
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
@@ -67,7 +83,7 @@ TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
   tokenContainer.addOther(OtherToken("0", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 2);
 
@@ -88,13 +104,16 @@ TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
 
 // "a = 0;"
 TEST_CASE("Variable assignment", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("a = 0;");
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
   tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("0", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 1);
 
@@ -109,6 +128,9 @@ TEST_CASE("Variable assignment", "[syntax analyser]") {
 // "uint a = 0 + 1;"
 TEST_CASE("Variable initialisation and assignment with arithmetic",
           "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("uint a = 0 + 1;");
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
@@ -118,7 +140,7 @@ TEST_CASE("Variable initialisation and assignment with arithmetic",
   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 3);
 
@@ -144,6 +166,9 @@ TEST_CASE("Variable initialisation and assignment with arithmetic",
 
 // "a = 0 + 1;"
 TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("a = 0 + 1;");
+
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
   tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
@@ -152,7 +177,7 @@ TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-  Program program = AbstractSyntaxTree(tokenContainer).parse();
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
   REQUIRE(program.size() == 2);
 
@@ -172,38 +197,62 @@ TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   REQUIRE(additionStatement.rhs.name == "1");
 };
 
-// "print 1;"
-// TEST_CASE("Print number", "[syntax analyser]") {
-//   TokenContainer tokenContainer = TokenContainer();
-//   tokenContainer.addOther(OtherToken("print", TokenMetadata(0)));
-//   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
-//   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
+// "func(a);"
+TEST_CASE("Function call", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("func(a);");
 
-//   Program program = AbstractSyntaxTree(tokenContainer).parse();
+  TokenContainer tokenContainer = TokenContainer();
+  tokenContainer.addOther(OtherToken("func", TokenMetadata(0)));
+  tokenContainer.addOpenBracket(BracketOpen(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
+  tokenContainer.addCloseBracket(BracketClose(TokenMetadata(0)));
+  tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-//   REQUIRE(program.size() == 1);
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
-//   REQUIRE(program.view(0).statementType == StatementType::PRINT);
-//   const PrintStatement& printStatement =
-//       static_cast<const PrintStatement&>(program.view(0));
+  REQUIRE(program.size() == 1);
 
-//   REQUIRE(printStatement.value.name == "1");
-// };
+  REQUIRE(program.view(0).statementType == StatementType::FUNCTION_CALL);
+  const FunctionCallStatement& functionCallStatement =
+      static_cast<const FunctionCallStatement&>(program.view(0));
 
-// "return 1;"
-// TEST_CASE("Return number", "[syntax analyser]") {
-//   TokenContainer tokenContainer = TokenContainer();
-//   tokenContainer.addOther(OtherToken("return", TokenMetadata(0)));
-//   tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
-//   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
+  REQUIRE(functionCallStatement.identifier.name == "func");
+  REQUIRE(functionCallStatement.parameters[0].name == "a");
+};
 
-//   Program program = AbstractSyntaxTree(tokenContainer).parse();
+// "a = 1 + +;"
+TEST_CASE("Variable assignment with two operators on right hand side",
+          "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("a = 1 + +;");
 
-//   REQUIRE(program.size() == 1);
+  TokenContainer tokenContainer = TokenContainer();
+  tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
+  tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
+  tokenContainer.addAddition(AdditionToken(TokenMetadata(0)));
+  tokenContainer.addAddition(AdditionToken(TokenMetadata(0)));
+  tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
-//   REQUIRE(program.view(0).statementType == StatementType::RETURN);
-//   const ReturnStatement& returnStatement =
-//       static_cast<const ReturnStatement&>(program.view(0));
+  REQUIRE_THROWS_AS(AbstractSyntaxTree(tokenContainer, pt).parse(),
+                    std::runtime_error);
+};
 
-//   REQUIRE(returnStatement.value.name == "1");
-// };
+// "a = 1 = 1;"
+TEST_CASE("Variable assignment with assignment operator on right hand side",
+          "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("a = 1 = 1;");
+
+  TokenContainer tokenContainer = TokenContainer();
+  tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
+  tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
+  tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
+  tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
+
+  REQUIRE_THROWS_AS(AbstractSyntaxTree(tokenContainer, pt).parse(),
+                    std::runtime_error);
+};

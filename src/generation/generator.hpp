@@ -1,5 +1,5 @@
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -109,22 +109,40 @@ public:
           const BuilderType& builderType =
               *types[initialisationStatement.type.name];
 
-
           if (symbols.contains(initialisationStatement.identifier.name)) {
-            // std::cout << "Error: ";
             Variable& previousDeclaration =
                 (*symbols[initialisationStatement.identifier.name]);
-            // program.printInitialisationStatement(initialisationStatement);
 
-            const InitialisationStatement& initialisationStatement =
+            const InitialisationStatement& previousInitialisationStatement =
                 previousDeclaration.getInit();
+
             const std::string& previousDeclarationLine =
+                this->programText.getLine(
+                    previousInitialisationStatement.type.metadata.line);
+
+            const std::string& previousDeclarationLineNumber = std::to_string(
+                previousInitialisationStatement.type.metadata.line + 1);
+
+            const std::string& currentDeclarationLine =
                 this->programText.getLine(
                     initialisationStatement.type.metadata.line);
 
-            throw std::runtime_error(previousDeclarationLine + "\nVariable \"" +
-                                     initialisationStatement.identifier.name +
-                                     "\" has already been initialised");
+            const std::string& currentDeclarationLineNumber =
+                std::to_string(initialisationStatement.type.metadata.line + 1);
+
+            std::string out = "\n";
+            out += previousDeclarationLineNumber;
+            out += ": ";
+            out += previousDeclarationLine;
+            out += "\n";
+            out += currentDeclarationLineNumber;
+            out += ": ";
+            out += currentDeclarationLine;
+            out += "\nVariable \"";
+            out += initialisationStatement.identifier.name;
+            out += "\" has already been initialised in line ";
+            out += previousDeclarationLineNumber;
+            throw std::runtime_error(out);
           }
 
           symbols.emplace(
@@ -139,12 +157,22 @@ public:
               static_cast<const AssignmentStatement&>(statement);
 
           if (!symbols.contains(assignmentStatement.identifier.name)) {
-            std::cout << "Error: ";
-            program.printAssignmentStatement(assignmentStatement);
+            const std::string& assignmentStatementLineNumber = std::to_string(
+                assignmentStatement.identifier.metadata.line + 1);
 
-            throw std::runtime_error("Assigning to uninitialised variable \"" +
-                                     assignmentStatement.identifier.name +
-                                     "\"");
+            const std::string& assignmentStatementLine =
+                this->programText.getLine(
+                    assignmentStatement.identifier.metadata.line);
+
+            std::string out = "\n";
+            out += assignmentStatementLineNumber;
+            out += ": ";
+            out += assignmentStatementLine;
+            out += "\nVariable \"";
+            out += assignmentStatement.identifier.name;
+            out += "\" has not been initialised";
+
+            throw std::runtime_error(out);
           }
           const Variable& identifier =
               *symbols[assignmentStatement.identifier.name];
@@ -201,16 +229,49 @@ public:
         case StatementType::FUNCTION_CALL: {
           const FunctionCallStatement& functionCallStatement =
               static_cast<const FunctionCallStatement&>(statement);
-          const Variable& value =
-              *symbols[functionCallStatement.parameters[0].name];
+          const std::string& functionCallLine = this->programText.getLine(
+              functionCallStatement.identifier.metadata.line);
 
-          if (!callables.contains(functionCallStatement.identifier.name)) {
-            throw std::runtime_error("Function \"" +
-                                     functionCallStatement.identifier.name +
-                                     "\" does not exist");
+          const std::string& functionCallLineNumber = std::to_string(
+              functionCallStatement.identifier.metadata.line + 1);
+          const std::string& functionName =
+              functionCallStatement.identifier.name;
+          if (!callables.contains(functionName)) {
+            std::string out = "\n";
+            out += functionCallLineNumber;
+            out += ": ";
+            out += functionCallLine;
+            out += "\nFunction \"";
+            out += functionCallStatement.identifier.name;
+            out += "\" is not defined";
+            throw std::runtime_error(out);
           }
+
+          const std::string& paramName =
+              functionCallStatement.parameters[0].name;
+
+          if (Matcher::isInt(paramName)) {
+            unsigned long long paramNum =
+                StringConverter::toUnsignedLongLong(paramName);
+
+            (*callables[functionCallStatement.identifier.name])
+                .call(builder, paramNum);
+
+            if (functionName == "return") {
+              hasMainReturn = true;
+            }
+            continue;
+          }
+
+          const Variable& value = *symbols[paramName];
+
           (*callables[functionCallStatement.identifier.name])
               .call(builder, value);
+
+          if (functionName == "return") {
+            hasMainReturn = true;
+          }
+          break;
         }
       }
     }

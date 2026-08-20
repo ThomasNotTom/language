@@ -58,7 +58,7 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
     const Token& nextToken = tokens[i].get();
     if (nextToken.tokenType != TokenType::OPERATOR) {
       std::string out = "\n";
-      out += std::to_string(nextToken.metadata.line);
+      out += std::to_string(nextToken.metadata.line + 1);
       out += ": ";
       out += this->programText.getLine(nextToken.metadata.line);
       out += "\n";
@@ -78,7 +78,7 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
 
     if (nextNextToken.tokenType != TokenType::OTHER) {
       std::string out = "\n";
-      out += std::to_string(nextToken.metadata.line);
+      out += std::to_string(nextToken.metadata.line + 1);
       out += ": ";
       out += this->programText.getLine(nextToken.metadata.line);
       out += "\n";

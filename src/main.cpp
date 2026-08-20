@@ -9,6 +9,7 @@
 #include "./lexer/lexer.hpp"
 #include "./lexer/token_container/token_container.hpp"
 #include "generation/generator.hpp"
+#include "io/program_text.hpp"
 #include "syntax_analyser/abstract_syntax_tree.hpp"
 #include "syntax_analyser/program/program.hpp"
 

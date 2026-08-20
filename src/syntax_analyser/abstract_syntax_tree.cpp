@@ -57,7 +57,18 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
   for (int i = 1; i < tokens.size(); i += 2) {
     const Token& nextToken = tokens[i].get();
     if (nextToken.tokenType != TokenType::OPERATOR) {
-      throw std::runtime_error("Token adjacent to other must be an operator");
+      std::string out = "\n";
+      out += std::to_string(nextToken.metadata.line);
+      out += ": ";
+      out += this->programText.getLine(nextToken.metadata.line);
+      out += "\n";
+      out += "Token adjacent to other (";
+      out += std::to_string(nextToken.tokenType);
+      out += ") must be an operator (";
+      out += std::to_string(TokenType::OPERATOR);
+      out += ")";
+
+      throw std::runtime_error(out);
     }
 
     const OperatorToken& operatorToken =

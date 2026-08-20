@@ -217,7 +217,7 @@ Program AbstractSyntaxTree::parse() {
       continue;
     }
 
-    if (row[0].get().tokenType == TokenType::OTHER &&
+    if (row.size() >= 3 && row[0].get().tokenType == TokenType::OTHER &&
         row[1].get().tokenType == TokenType::BRACKET_OPEN &&
         row[row.size() - 1].get().tokenType == TokenType::BRACKET_CLOSE) {
       const OtherToken& identifier =

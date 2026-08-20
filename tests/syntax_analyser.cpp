@@ -5,6 +5,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <memory>
+#include <stdexcept>
 
 #include "generation/generator.hpp"
 #include "io/file_reader.hpp"
@@ -25,6 +26,7 @@
 // ""
 TEST_CASE("Empty token container", "[syntax analyser]") {
   ProgramText pt = ProgramText();
+  pt.addLine("");
 
   TokenContainer tokenContainer = TokenContainer();
 
@@ -36,18 +38,19 @@ TEST_CASE("Empty token container", "[syntax analyser]") {
 // ";"
 TEST_CASE("Empty line", "[syntax analyser]") {
   ProgramText pt = ProgramText();
+  pt.addLine(";");
 
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
 
   Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
-
   REQUIRE(program.size() == 0);
 };
 
 // "uint8 a;"
 TEST_CASE("Variable initialisation", "[syntax analyser]") {
   ProgramText pt = ProgramText();
+  pt.addLine("uint8 a;");
 
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
@@ -68,6 +71,7 @@ TEST_CASE("Variable initialisation", "[syntax analyser]") {
 // "uint8 a = 0;"
 TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
   ProgramText pt = ProgramText();
+  pt.addLine("uint8 a = 0;");
 
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
@@ -98,6 +102,7 @@ TEST_CASE("Variable initialisation and assignment", "[syntax analyser]") {
 // "a = 0;"
 TEST_CASE("Variable assignment", "[syntax analyser]") {
   ProgramText pt = ProgramText();
+  pt.addLine("a = 0;");
 
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
@@ -121,6 +126,7 @@ TEST_CASE("Variable assignment", "[syntax analyser]") {
 TEST_CASE("Variable initialisation and assignment with arithmetic",
           "[syntax analyser]") {
   ProgramText pt = ProgramText();
+  pt.addLine("uint a = 0 + 1;");
 
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("uint8", TokenMetadata(0)));
@@ -158,6 +164,7 @@ TEST_CASE("Variable initialisation and assignment with arithmetic",
 // "a = 0 + 1;"
 TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   ProgramText pt = ProgramText();
+  pt.addLine("a = 0 + 1;");
 
   TokenContainer tokenContainer = TokenContainer();
   tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
@@ -185,4 +192,40 @@ TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   REQUIRE(additionStatement.identifier.name == "a");
   REQUIRE(additionStatement.lhs.name == "a");
   REQUIRE(additionStatement.rhs.name == "1");
+};
+
+// "a = 1 + +;"
+TEST_CASE("Variable assignment with two operators on right hand side",
+          "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("a = 1 + +;");
+
+  TokenContainer tokenContainer = TokenContainer();
+  tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
+  tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
+  tokenContainer.addAddition(AdditionToken(TokenMetadata(0)));
+  tokenContainer.addAddition(AdditionToken(TokenMetadata(0)));
+  tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
+
+  REQUIRE_THROWS_AS(AbstractSyntaxTree(tokenContainer, pt).parse(),
+                    std::runtime_error);
+};
+
+// "a = 1 = 1;"
+TEST_CASE("Variable assignment with assignment operator on right hand side",
+          "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("a = 1 = 1;");
+
+  TokenContainer tokenContainer = TokenContainer();
+  tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
+  tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
+  tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
+  tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
+
+  REQUIRE_THROWS_AS(AbstractSyntaxTree(tokenContainer, pt).parse(),
+                    std::runtime_error);
 };

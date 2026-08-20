@@ -31,7 +31,7 @@ public:
     std::string identifierName = assignmentStatement.identifier.name;
     std::string statementValue = assignmentStatement.value.name;
 
-    std::cout << identifierName << " = " << statementValue << ";";
+    std::cout << identifierName << " = " << statementValue << ";\n";
   };
 
   void printInitialisationStatement(
@@ -39,7 +39,7 @@ public:
     std::string typeName = initialisationStatement.type.name;
     std::string identifierName = initialisationStatement.identifier.name;
 
-    std::cout << typeName << " " << identifierName << ";";
+    std::cout << typeName << " " << identifierName << ";\n";
     ;
   };
 
@@ -48,7 +48,7 @@ public:
     std::string lhs = additionStatement.lhs.name;
     std::string rhs = additionStatement.rhs.name;
     std::cout << additionStatement.identifier.name << " = " << lhs << " + "
-              << rhs << ";";
+              << rhs << ";\n";
   }
 
   void printSubtractionStatement(
@@ -57,7 +57,7 @@ public:
     std::string rhs = subtractionStatement.rhs.name;
 
     std::cout << subtractionStatement.identifier.name << " = " << lhs << " + "
-              << rhs << ";";
+              << rhs << ";\n";
   }
 
   void printFunctionCallStatement(

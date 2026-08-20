@@ -23,6 +23,7 @@
 #include "generation/builder/builder.hpp"
 #include "generation/callable/print.hpp"
 #include "generation/callable/return.hpp"
+#include "generation/primitives/float16/float16.hpp"
 #include "generation/primitives/uint16/uint16.hpp"
 #include "generation/primitives/uint32/uint32.hpp"
 #include "generation/primitives/uint64/uint64.hpp"
@@ -85,6 +86,8 @@ public:
     types.emplace("uint16", std::make_unique<Uint16Builder>(types.size()));
     types.emplace("uint32", std::make_unique<Uint32Builder>(types.size()));
     types.emplace("uint64", std::make_unique<Uint64Builder>(types.size()));
+
+    types.emplace("float16", std::make_unique<Float16Builder>(types.size()));
 
     std::map<std::string, std::unique_ptr<Variable>> symbols =
         std::map<std::string, std::unique_ptr<Variable>>();

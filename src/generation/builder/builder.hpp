@@ -58,6 +58,10 @@ public:
     return llvm::ConstantInt::get(this->getUint64(), value);
   };
 
+  llvm::Type* getFloat16() const { return llvm::Type::getHalfTy(context); }
+  llvm::Type* getFloat32() const { return llvm::Type::getFloatTy(context); }
+  llvm::Type* getFloat64() const { return llvm::Type::getDoubleTy(context); }
+
   llvm::ReturnInst* createReturn(llvm::Value* value) {
     return this->irBuilder.CreateRet(value);
   };

@@ -12,6 +12,8 @@
 #include "io/program_text.hpp"
 #include "lexer/lexer.hpp"
 #include "lexer/token_container/token_container.hpp"
+#include "lexer/tokens/bracket/bracket_close.hpp"
+#include "lexer/tokens/bracket/bracket_open.hpp"
 #include "lexer/tokens/end_of_line/end_of_line.hpp"
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/assignment/assignment.hpp"
@@ -20,6 +22,7 @@
 #include "syntax_analyser/program/program.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 
@@ -192,6 +195,30 @@ TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
   REQUIRE(additionStatement.identifier.name == "a");
   REQUIRE(additionStatement.lhs.name == "a");
   REQUIRE(additionStatement.rhs.name == "1");
+};
+
+// "func(a);"
+TEST_CASE("Function call", "[syntax analyser]") {
+  ProgramText pt = ProgramText();
+  pt.addLine("func(a);");
+
+  TokenContainer tokenContainer = TokenContainer();
+  tokenContainer.addOther(OtherToken("func", TokenMetadata(0)));
+  tokenContainer.addOpenBracket(BracketOpen(TokenMetadata(0)));
+  tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
+  tokenContainer.addCloseBracket(BracketClose(TokenMetadata(0)));
+  tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
+
+  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
+
+  REQUIRE(program.size() == 1);
+
+  REQUIRE(program.view(0).statementType == StatementType::FUNCTION_CALL);
+  const FunctionCallStatement& functionCallStatement =
+      static_cast<const FunctionCallStatement&>(program.view(0));
+
+  REQUIRE(functionCallStatement.identifier.name == "func");
+  REQUIRE(functionCallStatement.parameters[0].name == "a");
 };
 
 // "a = 1 + +;"

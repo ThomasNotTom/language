@@ -1,7 +1,10 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "lexer/string_converter.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Uint8Variable : public Variable {
@@ -20,8 +23,14 @@ public:
     return builder.load(this->llvmType, this->storage, "uint8");
   }
 
-  llvm::StoreInst* store(Builder& builder, uint64_t other) const override {
-    return builder.store(builder.createConst8(other), this->storage);
+  llvm::StoreInst* store(Builder& builder, std::string other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot convert non-int to int");
+    }
+
+    uint8_t value = StringConverter::toUnsignedLongLong(other);
+
+    return builder.store(builder.createConst8(value), this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,

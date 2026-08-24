@@ -1,7 +1,10 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "lexer/string_converter.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Float16Variable : public Variable {
@@ -20,8 +23,13 @@ public:
     return builder.load(this->llvmType, this->storage, "float16");
   }
 
-  llvm::StoreInst* store(Builder& builder, uint64_t other) const override {
-    return builder.store(builder.createConst16(other), this->storage);
+  llvm::StoreInst* store(Builder& builder, std::string other) const override {
+    if (!StringConverter::isFloat(other)) {
+      // TODO: Improve error message
+      throw std::runtime_error("Cannot stor non-float to float");
+    }
+    float value = StringConverter::toFloat(other);
+    return builder.store(builder.createFloat16(value), this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -48,8 +56,8 @@ public:
           static_cast<const Float16Variable&>(other);
 
       llvm::Value* addOut =
-          builder.add(this->load(builder), float16Other.load(builder),
-                      "float16_add_float16");
+          builder.addf(this->load(builder), float16Other.load(builder),
+                       "float16_add_float16");
 
       builder.store(addOut, this->storage);
     } else {

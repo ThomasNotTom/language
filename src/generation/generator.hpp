@@ -26,6 +26,8 @@
 #include "generation/callable/print.hpp"
 #include "generation/callable/return.hpp"
 #include "generation/primitives/float16/float16.hpp"
+#include "generation/primitives/float32/float32.hpp"
+#include "generation/primitives/float64/float64.hpp"
 #include "generation/primitives/uint16/uint16.hpp"
 #include "generation/primitives/uint32/uint32.hpp"
 #include "generation/primitives/uint64/uint64.hpp"
@@ -33,7 +35,6 @@
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "io/program_text.hpp"
-#include "lexer/string_converter.hpp"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instruction.h"
@@ -83,12 +84,14 @@ public:
         std::map<std::string, std::unique_ptr<BuilderType>>();
 
     // Create primitive types
-    types.emplace("uint8", std::make_unique<Uint8Builder>(types.size()));
-    types.emplace("uint16", std::make_unique<Uint16Builder>(types.size()));
-    types.emplace("uint32", std::make_unique<Uint32Builder>(types.size()));
-    types.emplace("uint64", std::make_unique<Uint64Builder>(types.size()));
+    types.emplace("uint8", std::make_unique<Uint8Builder>());
+    types.emplace("uint16", std::make_unique<Uint16Builder>());
+    types.emplace("uint32", std::make_unique<Uint32Builder>());
+    types.emplace("uint64", std::make_unique<Uint64Builder>());
 
-    types.emplace("float16", std::make_unique<Float16Builder>(types.size()));
+    types.emplace("float16", std::make_unique<Float16Builder>());
+    types.emplace("float32", std::make_unique<Float32Builder>());
+    types.emplace("float64", std::make_unique<Float64Builder>());
 
     std::map<std::string, std::unique_ptr<Variable>> symbols =
         std::map<std::string, std::unique_ptr<Variable>>();
@@ -199,14 +202,12 @@ public:
           const Variable& lhs = *symbols[additionStatement.lhs.name];
 
           // TODO: Fix addition of floats and primitive + variable
-          if (StringConverter::isInt(additionStatement.rhs.name)) {
-            uint64_t valueInt =
-                StringConverter::toUnsignedLongLong(additionStatement.rhs.name);
-            lhs.add(builder, valueInt);
+          if (!symbols.contains(additionStatement.rhs.name)) {
+            lhs.add(builder, additionStatement.rhs.name);
             break;
           }
-
           const Variable& rhs = *symbols[additionStatement.rhs.name];
+
           lhs.add(builder, rhs);
           break;
         }
@@ -218,16 +219,13 @@ public:
           const Variable& lhs = *symbols[subtractionStatement.lhs.name];
 
           // TODO: Fix addition of floats and primitive + variable
-          if (StringConverter::isInt(subtractionStatement.rhs.name)) {
-            uint64_t valueInt = StringConverter::toUnsignedLongLong(
-                subtractionStatement.rhs.name);
-            lhs.subtract(builder, valueInt);
+          if (!symbols.contains(subtractionStatement.rhs.name)) {
+            lhs.subtract(builder, subtractionStatement.rhs.name);
             break;
           }
           const Variable& rhs = *symbols[subtractionStatement.rhs.name];
           lhs.subtract(builder, rhs);
-          break;
-        }
+        };
 
         case StatementType::FUNCTION_CALL: {
           const FunctionCallStatement& functionCallStatement =

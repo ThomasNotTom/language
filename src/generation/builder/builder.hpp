@@ -64,7 +64,13 @@ public:
     return llvm::ConstantFP::get(this->getFloat16(), value);
   }
   llvm::Type* getFloat32() const { return llvm::Type::getFloatTy(context); }
+  llvm::Constant* createFloat32(float value) const {
+    return llvm::ConstantFP::get(this->getFloat32(), value);
+  }
   llvm::Type* getFloat64() const { return llvm::Type::getDoubleTy(context); }
+  llvm::Constant* createFloat64(double value) const {
+    return llvm::ConstantFP::get(this->getFloat64(), value);
+  }
 
   llvm::ReturnInst* createReturn(llvm::Value* value) {
     return this->irBuilder.CreateRet(value);
@@ -96,6 +102,11 @@ public:
   llvm::Value* subtract(llvm::Value* lhs, llvm::Value* rhs,
                         const std::string& name) {
     return this->irBuilder.CreateSub(lhs, rhs, name);
+  };
+
+  llvm::Value* subtractf(llvm::Value* lhs, llvm::Value* rhs,
+                         const std::string& name) {
+    return this->irBuilder.CreateFSub(lhs, rhs, name);
   };
 
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {

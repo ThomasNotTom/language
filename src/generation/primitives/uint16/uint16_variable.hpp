@@ -52,7 +52,7 @@ public:
 
       builder.store(addOut, this->storage);
     } else {
-      throw std::runtime_error("No addition method is definedb between type " +
+      throw std::runtime_error("No addition method is defined between type " +
                                std::to_string(THIS_TYPE) + " and " +
                                std::to_string(other.getType()));
     }
@@ -77,7 +77,7 @@ public:
       builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
-          "No subtraction method is definedb between type " +
+          "No subtraction method is defined between type " +
           std::to_string(THIS_TYPE) + " and " +
           std::to_string(other.getType()));
     };

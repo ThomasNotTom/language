@@ -26,7 +26,7 @@ public:
   llvm::StoreInst* store(Builder& builder, std::string other) const override {
     if (!StringConverter::isDouble(other)) {
       // TODO: Improve error message
-      throw std::runtime_error("Cannot stor non-float to float");
+      throw std::runtime_error("Cannot store non-float to float");
     }
     double value = StringConverter::toDouble(other);
     return builder.store(builder.createFloat64(value), this->storage);

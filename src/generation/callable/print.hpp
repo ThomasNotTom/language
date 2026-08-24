@@ -10,6 +10,7 @@
 
 #include "generation/builder/builder.hpp"
 #include "generation/callable/callable.hpp"
+#include "generation/primitives/builder_type.hpp"
 #include "generation/variable.hpp"
 #include "lexer/string_converter.hpp"
 
@@ -42,7 +43,7 @@ public:
     const Parameter& parameter = *parameters[0];
     std::vector<llvm::Value*> Args;
 
-    std::cout << (uint16_t)parameter.getType() << "\n";
+    std::cout << "Type: " << (uint16_t)parameter.getType() << "\n";
     if (parameter.getType() == ParamaterType::VALUE) {
       const ParameterValue& parameterValue =
           static_cast<const ParameterValue&>(parameter);
@@ -58,13 +59,13 @@ public:
         Args = {FormatStr, builder.createConst64(value)};
       }
 
-      else if (StringConverter::isFloat(parameterValue.getValue())) {
+      else if (StringConverter::isDouble(parameterValue.getValue())) {
         std::cout << "adding float\n";
         llvm::Value* FormatStr = builder.createGlobalStringPtr("%f\n");
 
-        float value = StringConverter::toFloat(parameterValue.getValue());
+        double value = StringConverter::toDouble(parameterValue.getValue());
 
-        Args = {FormatStr, builder.createFloat16(value)};
+        Args = {FormatStr, builder.createFloat64(value)};
       }
 
       else {
@@ -77,8 +78,39 @@ public:
       const ParameterVariable& parameterVariable =
           static_cast<const ParameterVariable&>(parameter);
 
-      // TODO: Can only print integer variables (not floats)
-      llvm::Value* FormatStr = builder.createGlobalStringPtr("%f\n");
+      llvm::Value* FormatStr;
+
+      switch (parameterVariable.getVariable().getType()) {
+        case (uint8_t)BuilderTypeID::UINT8: {
+          FormatStr = builder.createGlobalStringPtr("%hhu\n");
+          break;
+        }
+
+        case (uint8_t)BuilderTypeID::UINT16: {
+          FormatStr = builder.createGlobalStringPtr("%hu\n");
+          break;
+        }
+
+        case (uint8_t)BuilderTypeID::UINT32: {
+          FormatStr = builder.createGlobalStringPtr("%u\n");
+          break;
+        }
+
+        case (uint8_t)BuilderTypeID::UINT64: {
+          FormatStr = builder.createGlobalStringPtr("%lu\n");
+          break;
+        }
+
+        case (uint8_t)BuilderTypeID::FLOAT16:
+        case (uint8_t)BuilderTypeID::FLOAT32:
+        case (uint8_t)BuilderTypeID::FLOAT64: {
+          FormatStr = builder.createGlobalStringPtr("%f\n");
+          break;
+        }
+
+        default:
+          throw std::runtime_error("No implementation defined for printing");
+      }
 
       Args = {FormatStr, parameterVariable.getVariable().load(builder)};
     }

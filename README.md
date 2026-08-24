@@ -8,15 +8,15 @@ The goal of this langauge is to allow for the build up highly nested types, and 
 
 The primitves aim to be informative to ensure that there is no ambiguity on how the primitive will function.
 
-| Keyword   | Full Name                | Size (bytes) | Range                                                                               |
-| --------- | ------------------------ | ------------ | ----------------------------------------------------------------------------------- |
-| `uint8`   | Unsigned Integer 8-bits  | `1`          | $0$ to $255$                                                                        |
-| `uint16`  | Unsigned Integer 16-bits | `2`          | $0$ to $65535$                                                                      |
-| `uint32`  | Unsigned Integer 32-bits | `4`          | $0$ to $2 ^ {32} - 1$                                                               |
-| `uint64`  | Unsigned Integer 64-bits | `8`          | $0$ to $2 ^ {64} - 1$                                                               |
-| `float16` | Signed Float 16-bits     | `2`          | $-65504$ to $65504$                                                                 |
-| `float32` | Signed Float 32-bits     | `4`          | $\approx -3.4028234664 \times 10^{38}$ to $\approx 3.4028234664 × 10^{38}$          |
-| `float64` | Signed Float 64-bits     | `8`          | $\approx  -1.7976931348 \times 10^{308}$ to $\approx  1.7976931348 \times 10^{308}$ |
+| Keyword   | Full Name                  | Size (bytes) | Range                                                                               |
+| --------- | -------------------------- | ------------ | ----------------------------------------------------------------------------------- |
+| `uint8`   | Unsigned Integer $8$-bits  | $1$          | $0$ to $255$                                                                        |
+| `uint16`  | Unsigned Integer $16$-bits | $2$          | $0$ to $65535$                                                                      |
+| `uint32`  | Unsigned Integer $32$-bits | $4$          | $0$ to $2 ^ {32} - 1$                                                               |
+| `uint64`  | Unsigned Integer $64$-bits | $8$          | $0$ to $2 ^ {64} - 1$                                                               |
+| `float16` | Signed Float $16$-bits     | $2$          | $-65504$ to $65504$                                                                 |
+| `float32` | Signed Float $32$-bits     | $4$          | $\approx -3.4028234664 \times 10^{38}$ to $\approx 3.4028234664 × 10^{38}$          |
+| `float64` | Signed Float $64$-bits     | $8$          | $\approx  -1.7976931348 \times 10^{308}$ to $\approx  1.7976931348 \times 10^{308}$ |
 
 # Syntax
 

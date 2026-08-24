@@ -65,9 +65,15 @@ public:
     }
   };
 
-  void add(Builder& builder, uint64_t other) const override {
+  void add(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot add uint64 and non-uint64");
+    }
+
+    uint64_t value = StringConverter::toUnsignedLongLong(other);
+
     llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst64(other), "uint64_add_val");
+        this->load(builder), builder.createConst64(value), "uint64_add_val");
     builder.store(addOut, this->storage);
   };
 
@@ -90,10 +96,15 @@ public:
     };
   };
 
-  void subtract(Builder& builder, uint64_t other) const override {
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst64(other), "uint64_sub_val");
+  void subtract(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot subtract uint64 and non-uint64");
+    }
 
+    uint64_t value = StringConverter::toUnsignedLongLong(other);
+
+    llvm::Value* subOut = builder.subtract(
+        this->load(builder), builder.createConst64(value), "uint64_sub_val");
     builder.store(subOut, this->storage);
   };
 };

@@ -65,9 +65,16 @@ public:
     }
   };
 
-  void add(Builder& builder, uint64_t other) const override {
+  void add(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot add uint16 and non-uint16");
+    }
+
+    uint16_t value =
+        static_cast<uint16_t>(StringConverter::toUnsignedLongLong(other));
+
     llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst16(other), "uint16_add_val");
+        this->load(builder), builder.createConst16(value), "uint16_add_val");
     builder.store(addOut, this->storage);
   };
 
@@ -90,10 +97,16 @@ public:
     };
   };
 
-  void subtract(Builder& builder, uint64_t other) const override {
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst16(other), "uint16_sub_val");
+  void subtract(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot add uint16 and non-uint16");
+    }
 
+    uint16_t value =
+        static_cast<uint16_t>(StringConverter::toUnsignedLongLong(other));
+
+    llvm::Value* subOut = builder.subtract(
+        this->load(builder), builder.createConst16(value), "uint16_sub_val");
     builder.store(subOut, this->storage);
   };
 };

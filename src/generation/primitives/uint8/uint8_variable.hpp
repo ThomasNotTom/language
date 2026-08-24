@@ -67,9 +67,16 @@ public:
     };
   };
 
-  void add(Builder& builder, uint64_t other) const override {
+  void add(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot add uint8 and non-uint8");
+    }
+
+    uint8_t value =
+        static_cast<uint8_t>(StringConverter::toUnsignedLongLong(other));
+
     llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst8(other), "uint8_add_val");
+        this->load(builder), builder.createConst8(value), "uint8_add_val");
     builder.store(addOut, this->storage);
   };
 
@@ -92,10 +99,16 @@ public:
     };
   };
 
-  void subtract(Builder& builder, uint64_t other) const override {
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst8(other), "uint8_sub_val");
+  void subtract(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot subtract uint8 and non-uint8");
+    }
 
-    builder.store(subOut, this->storage);
+    uint8_t value =
+        static_cast<uint8_t>(StringConverter::toUnsignedLongLong(other));
+
+    llvm::Value* subout = builder.subtract(
+        this->load(builder), builder.createConst8(value), "uint8_sub_val");
+    builder.store(subout, this->storage);
   };
 };

@@ -9,7 +9,7 @@ public:
     return std::regex_match(string, std::regex("-?[0-9]+"));
   };
 
-  static bool isFloat(const std::string& string) {
+  static bool isDouble(const std::string& string) {
     return std::regex_match(string, std::regex("-?[0-9]+\\.[0-9]+"));
   }
 
@@ -17,5 +17,7 @@ public:
     return std::stoull(string);
   }
 
-  static float toFloat(const std::string& string) { return std::stof(string); }
+  static double toDouble(const std::string& string) {
+    return std::stod(string);
+  }
 };

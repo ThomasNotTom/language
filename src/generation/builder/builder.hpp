@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constant.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
@@ -59,6 +60,9 @@ public:
   };
 
   llvm::Type* getFloat16() const { return llvm::Type::getHalfTy(context); }
+  llvm::Constant* createFloat16(float value) const {
+    return llvm::ConstantFP::get(this->getFloat16(), value);
+  }
   llvm::Type* getFloat32() const { return llvm::Type::getFloatTy(context); }
   llvm::Type* getFloat64() const { return llvm::Type::getDoubleTy(context); }
 
@@ -82,6 +86,11 @@ public:
   llvm::Value* add(llvm::Value* lhs, llvm::Value* rhs,
                    const std::string& name) {
     return this->irBuilder.CreateAdd(lhs, rhs, name);
+  };
+
+  llvm::Value* addf(llvm::Value* lhs, llvm::Value* rhs,
+                    const std::string& name) {
+    return this->irBuilder.CreateFAdd(lhs, rhs, name);
   };
 
   llvm::Value* subtract(llvm::Value* lhs, llvm::Value* rhs,

@@ -31,7 +31,7 @@ public:
   virtual llvm::StoreInst* store(Builder& builder,
                                  const Variable& other) const = 0;
 
-  virtual llvm::StoreInst* store(Builder& builder, uint64_t other) const = 0;
+  virtual llvm::StoreInst* store(Builder& builder, std::string value) const = 0;
 
   virtual void add(Builder& builder, const Variable& other) const = 0;
   virtual void add(Builder& builder, uint64_t other) const = 0;
@@ -39,7 +39,9 @@ public:
   virtual void subtract(Builder& builder, const Variable& other) const = 0;
   virtual void subtract(Builder& builder, uint64_t other) const = 0;
 
-  const InitialisationStatement& getInit() const {return this->initialisationStatement; };
+  const InitialisationStatement& getInit() const {
+    return this->initialisationStatement;
+  };
 
   virtual ~Variable() = default;
 };

@@ -24,11 +24,11 @@ public:
   }
 
   llvm::StoreInst* store(Builder& builder, std::string other) const override {
-    if (!StringConverter::isFloat(other)) {
+    if (!StringConverter::isDouble(other)) {
       // TODO: Improve error message
       throw std::runtime_error("Cannot stor non-float to float");
     }
-    float value = StringConverter::toFloat(other);
+    float value = static_cast<float>(StringConverter::toDouble(other));
     return builder.store(builder.createFloat16(value), this->storage);
   }
 
@@ -67,10 +67,16 @@ public:
     }
   };
 
-  void add(Builder& builder, uint64_t other) const override {
-    llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst16(other), "float16_add_val");
-    builder.store(addOut, this->storage);
+  void add(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isDouble(other)) {
+      throw std::runtime_error("Cannot add half and non-half");
+    }
+
+    float value = static_cast<float>(StringConverter::toDouble(other));
+    llvm::Value* subOut = builder.addf(
+        this->load(builder), builder.createFloat16(value), "float16_add_val");
+
+    builder.store(subOut, this->storage);
   };
 
   void subtract(Builder& builder, const Variable& other) const override {
@@ -81,8 +87,8 @@ public:
           static_cast<const Float16Variable&>(other);
 
       llvm::Value* subOut =
-          builder.subtract(this->load(builder), Float16Other.load(builder),
-                           "float16_sub_float16");
+          builder.subtractf(this->load(builder), Float16Other.load(builder),
+                            "float16_sub_float16");
 
       builder.store(subOut, this->storage);
     } else {
@@ -93,9 +99,14 @@ public:
     };
   };
 
-  void subtract(Builder& builder, uint64_t other) const override {
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst16(other), "float16_sub_val");
+  void subtract(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isDouble(other)) {
+      throw std::runtime_error("Cannot subtract half and non-half");
+    }
+
+    float value = static_cast<float>(StringConverter::toDouble(other));
+    llvm::Value* subOut = builder.subtractf(
+        this->load(builder), builder.createFloat16(value), "float16_sub_val");
 
     builder.store(subOut, this->storage);
   };

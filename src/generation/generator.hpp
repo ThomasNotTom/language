@@ -225,6 +225,7 @@ public:
           }
           const Variable& rhs = *symbols[subtractionStatement.rhs.name];
           lhs.subtract(builder, rhs);
+          break;
         };
 
         case StatementType::FUNCTION_CALL: {

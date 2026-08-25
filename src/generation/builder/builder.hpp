@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constant.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/Function.h"
@@ -58,6 +59,19 @@ public:
     return llvm::ConstantInt::get(this->getUint64(), value);
   };
 
+  llvm::Type* getFloat16() const { return llvm::Type::getHalfTy(context); }
+  llvm::Constant* createFloat16(float value) const {
+    return llvm::ConstantFP::get(this->getFloat16(), value);
+  }
+  llvm::Type* getFloat32() const { return llvm::Type::getFloatTy(context); }
+  llvm::Constant* createFloat32(float value) const {
+    return llvm::ConstantFP::get(this->getFloat32(), value);
+  }
+  llvm::Type* getFloat64() const { return llvm::Type::getDoubleTy(context); }
+  llvm::Constant* createFloat64(double value) const {
+    return llvm::ConstantFP::get(this->getFloat64(), value);
+  }
+
   llvm::ReturnInst* createReturn(llvm::Value* value) {
     return this->irBuilder.CreateRet(value);
   };
@@ -80,9 +94,19 @@ public:
     return this->irBuilder.CreateAdd(lhs, rhs, name);
   };
 
+  llvm::Value* addf(llvm::Value* lhs, llvm::Value* rhs,
+                    const std::string& name) {
+    return this->irBuilder.CreateFAdd(lhs, rhs, name);
+  };
+
   llvm::Value* subtract(llvm::Value* lhs, llvm::Value* rhs,
                         const std::string& name) {
     return this->irBuilder.CreateSub(lhs, rhs, name);
+  };
+
+  llvm::Value* subtractf(llvm::Value* lhs, llvm::Value* rhs,
+                         const std::string& name) {
+    return this->irBuilder.CreateFSub(lhs, rhs, name);
   };
 
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {

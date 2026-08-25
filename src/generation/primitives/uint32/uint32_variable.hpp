@@ -2,6 +2,7 @@
 
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "lexer/string_converter.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Uint32Variable : public Variable {
@@ -20,8 +21,14 @@ public:
     return builder.load(this->llvmType, this->storage, "uint32");
   }
 
-  llvm::StoreInst* store(Builder& builder, uint64_t other) const override {
-    return builder.store(builder.createConst32(other), this->storage);
+  llvm::StoreInst* store(Builder& builder, std::string other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot convert non-int to int");
+    }
+
+    uint8_t value = StringConverter::toUnsignedLongLong(other);
+
+    return builder.store(builder.createConst32(value), this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -52,15 +59,22 @@ public:
 
       builder.store(addOut, this->storage);
     } else {
-      throw std::runtime_error("No addition method is definedb between type " +
+      throw std::runtime_error("No addition method is defined between type " +
                                std::to_string(THIS_TYPE) + " and " +
                                std::to_string(other.getType()));
     }
   };
 
-  void add(Builder& builder, uint64_t other) const override {
+  void add(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot add uint32 and non-uint32");
+    }
+
+    uint32_t value =
+        static_cast<uint32_t>(StringConverter::toUnsignedLongLong(other));
+
     llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst32(other), "uint32_add_val");
+        this->load(builder), builder.createConst32(value), "uint32_add_val");
     builder.store(addOut, this->storage);
   };
 
@@ -77,16 +91,22 @@ public:
       builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
-          "No subtraction method is definedb between type " +
+          "No subtraction method is defined between type " +
           std::to_string(THIS_TYPE) + " and " +
           std::to_string(other.getType()));
     };
   };
 
-  void subtract(Builder& builder, uint64_t other) const override {
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst32(other), "uint32_sub_val");
+  void subtract(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot subtract uint32 and non-uint32");
+    }
 
+    uint32_t value =
+        static_cast<uint32_t>(StringConverter::toUnsignedLongLong(other));
+
+    llvm::Value* subOut = builder.subtract(
+        this->load(builder), builder.createConst32(value), "uint32_sub_val");
     builder.store(subOut, this->storage);
   };
 };

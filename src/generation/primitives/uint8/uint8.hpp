@@ -1,11 +1,12 @@
 #include <functional>
 
+#include "generation/primitives/builder_type.hpp"
 #include "generation/primitives/uint8/uint8_variable.hpp"
 #include "generation/type.hpp"
 
 class Uint8Builder : public BuilderType {
 public:
-  Uint8Builder(unsigned int typeID) : BuilderType(typeID) {};
+  Uint8Builder() : BuilderType((uint8_t)BuilderTypeID::UINT8) {};
 
   std::unique_ptr<Variable> makeVariable(
       Builder& builder,

@@ -1,7 +1,10 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
+#include "lexer/string_converter.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Uint8Variable : public Variable {
@@ -20,8 +23,14 @@ public:
     return builder.load(this->llvmType, this->storage, "uint8");
   }
 
-  llvm::StoreInst* store(Builder& builder, uint64_t other) const override {
-    return builder.store(builder.createConst8(other), this->storage);
+  llvm::StoreInst* store(Builder& builder, std::string other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot convert non-int to int");
+    }
+
+    uint8_t value = StringConverter::toUnsignedLongLong(other);
+
+    return builder.store(builder.createConst8(value), this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -34,7 +43,7 @@ public:
 
       return builder.store(uint8Other.load(builder), this->storage);
     } else {
-      throw std::runtime_error("No addition method is definedb between type " +
+      throw std::runtime_error("No addition method is defined between type " +
                                std::to_string(THIS_TYPE) + " and " +
                                std::to_string(other.getType()));
     };
@@ -52,15 +61,22 @@ public:
 
       builder.store(addOut, this->storage);
     } else {
-      throw std::runtime_error("No addition method is definedb between type " +
+      throw std::runtime_error("No addition method is defined between type " +
                                std::to_string(THIS_TYPE) + " and " +
                                std::to_string(other.getType()));
     };
   };
 
-  void add(Builder& builder, uint64_t other) const override {
+  void add(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot add uint8 and non-uint8");
+    }
+
+    uint8_t value =
+        static_cast<uint8_t>(StringConverter::toUnsignedLongLong(other));
+
     llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst8(other), "uint8_add_val");
+        this->load(builder), builder.createConst8(value), "uint8_add_val");
     builder.store(addOut, this->storage);
   };
 
@@ -77,16 +93,22 @@ public:
       builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
-          "No subtraction method is definedb between type " +
+          "No subtraction method is defined between type " +
           std::to_string(THIS_TYPE) + " and " +
           std::to_string(other.getType()));
     };
   };
 
-  void subtract(Builder& builder, uint64_t other) const override {
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst8(other), "uint8_sub_val");
+  void subtract(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot subtract uint8 and non-uint8");
+    }
 
-    builder.store(subOut, this->storage);
+    uint8_t value =
+        static_cast<uint8_t>(StringConverter::toUnsignedLongLong(other));
+
+    llvm::Value* subout = builder.subtract(
+        this->load(builder), builder.createConst8(value), "uint8_sub_val");
+    builder.store(subout, this->storage);
   };
 };

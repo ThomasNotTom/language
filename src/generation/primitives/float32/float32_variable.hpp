@@ -1,34 +1,35 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "lexer/string_converter.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
-class Uint64Variable : public Variable {
+class Float32Variable : public Variable {
 private:
   llvm::Type* llvmType;
 
 public:
-  Uint64Variable(Builder& builder, const BuilderType& builderType,
-                 const InitialisationStatement& initialisationStatement)
+  Float32Variable(Builder& builder, const BuilderType& builderType,
+                  const InitialisationStatement& initialisationStatement)
       : Variable(builderType, initialisationStatement),
-        llvmType(builder.getUint64()) {
-    this->storage = builder.allocate(this->llvmType, "uint64");
+        llvmType(builder.getFloat32()) {
+    this->storage = builder.allocate(this->llvmType, "float32");
   };
 
   llvm::LoadInst* load(Builder& builder) const override {
-    return builder.load(this->llvmType, this->storage, "uint64");
+    return builder.load(this->llvmType, this->storage, "float32");
   }
 
   llvm::StoreInst* store(Builder& builder, std::string other) const override {
-    if (!StringConverter::isInt(other)) {
-      throw std::runtime_error("Cannot convert non-int to int");
+    if (!StringConverter::isDouble(other)) {
+      // TODO: Improve error message
+      throw std::runtime_error("Cannot store non-float to float");
     }
-
-    uint8_t value = StringConverter::toUnsignedLongLong(other);
-
-    return builder.store(builder.createConst64(value), this->storage);
+    float value = static_cast<float>(StringConverter::toDouble(other));
+    return builder.store(builder.createFloat32(value), this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -36,10 +37,10 @@ public:
     const unsigned int THIS_TYPE = this->getType();
 
     if (other.getType() == THIS_TYPE) {
-      const Uint64Variable& uint64Other =
-          static_cast<const Uint64Variable&>(other);
+      const Float32Variable& float32Other =
+          static_cast<const Float32Variable&>(other);
 
-      return builder.store(uint64Other.load(builder), this->storage);
+      return builder.store(float32Other.load(builder), this->storage);
     } else {
       throw std::runtime_error("No addition method is defined between type " +
                                std::to_string(THIS_TYPE) + " and " +
@@ -51,11 +52,12 @@ public:
     const unsigned int THIS_TYPE = this->getType();
 
     if (other.getType() == THIS_TYPE) {
-      const Uint64Variable& uint64Other =
-          static_cast<const Uint64Variable&>(other);
+      const Float32Variable& float32Other =
+          static_cast<const Float32Variable&>(other);
 
-      llvm::Value* addOut = builder.add(
-          this->load(builder), uint64Other.load(builder), "uint64_add_uint64");
+      llvm::Value* addOut =
+          builder.addf(this->load(builder), float32Other.load(builder),
+                       "float32_add_float32");
 
       builder.store(addOut, this->storage);
     } else {
@@ -66,14 +68,14 @@ public:
   };
 
   void add(Builder& builder, const std::string& other) const override {
-    if (!StringConverter::isInt(other)) {
-      throw std::runtime_error("Cannot add uint64 and non-uint64");
+    if (!StringConverter::isDouble(other)) {
+      throw std::runtime_error("Cannot add float and non-float");
     }
 
-    uint64_t value = StringConverter::toUnsignedLongLong(other);
+    float value = static_cast<float>(StringConverter::toDouble(other));
+    llvm::Value* addOut = builder.addf(
+        this->load(builder), builder.createFloat32(value), "float32_add_val");
 
-    llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst64(value), "uint64_add_val");
     builder.store(addOut, this->storage);
   };
 
@@ -81,11 +83,12 @@ public:
     const unsigned int THIS_TYPE = this->getType();
 
     if (other.getType() == THIS_TYPE) {
-      const Uint64Variable& uint64Other =
-          static_cast<const Uint64Variable&>(other);
+      const Float32Variable& float32Other =
+          static_cast<const Float32Variable&>(other);
 
-      llvm::Value* subOut = builder.subtract(
-          this->load(builder), uint64Other.load(builder), "uint64_sub_uint64");
+      llvm::Value* subOut =
+          builder.subtractf(this->load(builder), float32Other.load(builder),
+                            "float32_sub_float32");
 
       builder.store(subOut, this->storage);
     } else {
@@ -97,14 +100,14 @@ public:
   };
 
   void subtract(Builder& builder, const std::string& other) const override {
-    if (!StringConverter::isInt(other)) {
-      throw std::runtime_error("Cannot subtract uint64 and non-uint64");
+    if (!StringConverter::isDouble(other)) {
+      throw std::runtime_error("Cannot subtract float and non-float");
     }
 
-    uint64_t value = StringConverter::toUnsignedLongLong(other);
+    float value = static_cast<float>(StringConverter::toDouble(other));
+    llvm::Value* subOut = builder.subtractf(
+        this->load(builder), builder.createFloat32(value), "float32_sub_val");
 
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst64(value), "uint64_sub_val");
     builder.store(subOut, this->storage);
   };
 };

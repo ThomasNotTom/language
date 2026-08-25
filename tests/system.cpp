@@ -1,14 +1,13 @@
 #include <catch2/catch_test_macros.hpp>
-
-#include "generation/generator.hpp"
-#include "io/file_reader.hpp"
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/internal/catch_test_failure_exception.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <csignal>
 #include <cstdlib>
 #include <filesystem>
+
+#include "generation/generator.hpp"
+#include "io/file_reader.hpp"
 
 class CompilerBuildListener : public Catch::EventListenerBase {
 public:
@@ -24,7 +23,7 @@ public:
 
 CATCH_REGISTER_LISTENER(CompilerBuildListener)
 
-std::string exec(std::string cmd) {
+std::string exec(const std::string& cmd) {
   std::array<char, 128> buffer;
   std::string result;
 
@@ -37,7 +36,7 @@ std::string exec(std::string cmd) {
   return result;
 }
 
-void checkOutput(std::string filePath, std::string expectedOut) {}
+void checkOutput(const std::string& filePath, const std::string& expectedOut) {}
 
 TEST_CASE("Run \"./examples/addition.lang\"", "[system]") {
   std::system("./bin/main ./examples/addition.lang");

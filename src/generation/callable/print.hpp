@@ -43,15 +43,11 @@ public:
     const Parameter& parameter = *parameters[0];
     std::vector<llvm::Value*> Args;
 
-    std::cout << "Type: " << (uint16_t)parameter.getType() << "\n";
     if (parameter.getType() == ParamaterType::VALUE) {
       const ParameterValue& parameterValue =
           static_cast<const ParameterValue&>(parameter);
-      std::cout << "Parsing: \"" << parameterValue.getValue() << "\"\n";
 
       if (StringConverter::isInt(parameterValue.getValue())) {
-        std::cout << "adding int\n";
-
         llvm::Value* FormatStr = builder.createGlobalStringPtr("%llu\n");
         uint64_t value =
             StringConverter::toUnsignedLongLong(parameterValue.getValue());
@@ -60,7 +56,6 @@ public:
       }
 
       else if (StringConverter::isDouble(parameterValue.getValue())) {
-        std::cout << "adding float\n";
         llvm::Value* FormatStr = builder.createGlobalStringPtr("%f\n");
 
         double value = StringConverter::toDouble(parameterValue.getValue());

@@ -4,7 +4,7 @@
 
 ## Summary
 
-The goal of this langauge is to allow for the build up highly nested types, and to enforce relationships between. This is particularly useful for serialising data, handling complicated `HTTP` response data, and highly interconnected data.
+The language allows for the construction of highly interconnected relationships between types.
 
 ## Constraints
 

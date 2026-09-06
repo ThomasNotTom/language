@@ -10,7 +10,6 @@
 #include "generation/generator.hpp"
 #include "io/file_reader.hpp"
 #include "lexer/token_container/token_container.hpp"
-#include "lexer/tokens/operators/operator.hpp"
 #include "lexer/tokens/token_type.hpp"
 
 // ""
@@ -57,10 +56,7 @@ TEST_CASE("Variable initialisation and assignment", "[lexer]") {
   REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "a");
 
-  REQUIRE(tokenContainer.view(2).tokenType == TokenType::OPERATOR);
-  REQUIRE(
-      static_cast<const OperatorToken&>(tokenContainer.view(2)).operatorType ==
-      OperatorType::ASSIGNMENT);
+  REQUIRE(tokenContainer.view(2).tokenType == TokenType::EQUALS);
 
   REQUIRE(tokenContainer.view(3).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(3)).name == "0");
@@ -77,10 +73,7 @@ TEST_CASE("Variable assignment", "[lexer]") {
   REQUIRE(tokenContainer.view(0).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name == "a");
 
-  REQUIRE(tokenContainer.view(1).tokenType == TokenType::OPERATOR);
-  REQUIRE(
-      static_cast<const OperatorToken&>(tokenContainer.view(1)).operatorType ==
-      OperatorType::ASSIGNMENT);
+  REQUIRE(tokenContainer.view(1).tokenType == TokenType::EQUALS);
 
   REQUIRE(tokenContainer.view(2).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(2)).name == "0");
@@ -101,18 +94,12 @@ TEST_CASE("Variable initialisation and assignment with arithmetic", "[lexer]") {
   REQUIRE(tokenContainer.view(1).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(1)).name == "a");
 
-  REQUIRE(tokenContainer.view(2).tokenType == TokenType::OPERATOR);
-  REQUIRE(
-      static_cast<const OperatorToken&>(tokenContainer.view(2)).operatorType ==
-      OperatorType::ASSIGNMENT);
+  REQUIRE(tokenContainer.view(2).tokenType == TokenType::EQUALS);
 
   REQUIRE(tokenContainer.view(3).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(3)).name == "0");
 
-  REQUIRE(tokenContainer.view(4).tokenType == TokenType::OPERATOR);
-  REQUIRE(
-      static_cast<const OperatorToken&>(tokenContainer.view(4)).operatorType ==
-      OperatorType::ADDITION);
+  REQUIRE(tokenContainer.view(4).tokenType == TokenType::PLUS);
 
   REQUIRE(tokenContainer.view(5).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(5)).name == "1");
@@ -129,18 +116,12 @@ TEST_CASE("Variable assignment with arithmetic", "[lexer]") {
   REQUIRE(tokenContainer.view(0).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name == "a");
 
-  REQUIRE(tokenContainer.view(1).tokenType == TokenType::OPERATOR);
-  REQUIRE(
-      static_cast<const OperatorToken&>(tokenContainer.view(1)).operatorType ==
-      OperatorType::ASSIGNMENT);
+  REQUIRE(tokenContainer.view(1).tokenType == TokenType::EQUALS);
 
   REQUIRE(tokenContainer.view(2).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(2)).name == "0");
 
-  REQUIRE(tokenContainer.view(3).tokenType == TokenType::OPERATOR);
-  REQUIRE(
-      static_cast<const OperatorToken&>(tokenContainer.view(3)).operatorType ==
-      OperatorType::ADDITION);
+  REQUIRE(tokenContainer.view(3).tokenType == TokenType::PLUS);
 
   REQUIRE(tokenContainer.view(4).tokenType == TokenType::OTHER);
   REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(4)).name == "1");

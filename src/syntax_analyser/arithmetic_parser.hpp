@@ -97,7 +97,6 @@ public:
         const Token& o1 = token;
         //         while (
         while (true) {
-          std::cout << "a\n";
           //             there is an operator o2 at the top of the operator
           //             stack
           if (operatorStack.empty()) {

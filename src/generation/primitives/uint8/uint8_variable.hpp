@@ -111,4 +111,35 @@ public:
         this->load(builder), builder.createConst8(value), "uint8_sub_val");
     builder.store(subout, this->storage);
   };
+
+  void subtractFrom(Builder& builder, const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Uint8Variable& uint8Other =
+          static_cast<const Uint8Variable&>(other);
+
+      llvm::Value* subOut = builder.subtract(
+          uint8Other.load(builder), this->load(builder), "uint8_sub_uint8");
+
+      builder.store(subOut, this->storage);
+    } else {
+      throw std::runtime_error(
+          "No subtraction method is defined between type " +
+          std::to_string(THIS_TYPE) + " and " +
+          std::to_string(other.getType()));
+    };
+  };
+
+  void subtractFrom(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot subtract non-uint8 and uint8");
+    }
+
+    uint64_t value = StringConverter::toUnsignedLongLong(other);
+
+    llvm::Value* subOut = builder.subtract(
+        builder.createConst8(value), this->load(builder), "val_sub_uint8");
+    builder.store(subOut, this->storage);
+  };
 };

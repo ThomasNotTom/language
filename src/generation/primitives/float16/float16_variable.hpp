@@ -110,4 +110,36 @@ public:
 
     builder.store(subOut, this->storage);
   };
+
+  void subtractFrom(Builder& builder, const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Float16Variable& Float16Other =
+          static_cast<const Float16Variable&>(other);
+
+      llvm::Value* subOut =
+          builder.subtractf(Float16Other.load(builder), this->load(builder),
+                            "float16_sub_float16");
+
+      builder.store(subOut, this->storage);
+    } else {
+      throw std::runtime_error(
+          "No subtraction method is defined between type " +
+          std::to_string(THIS_TYPE) + " and " +
+          std::to_string(other.getType()));
+    };
+  };
+
+  void subtractFrom(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isDouble(other)) {
+      throw std::runtime_error("Cannot subtract non-half and half");
+    }
+
+    float value = static_cast<float>(StringConverter::toDouble(other));
+    llvm::Value* subOut = builder.subtractf(
+        builder.createFloat16(value), this->load(builder), "val_sub_float16");
+
+    builder.store(subOut, this->storage);
+  };
 };

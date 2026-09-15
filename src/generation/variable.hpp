@@ -39,6 +39,10 @@ public:
   virtual void subtract(Builder& builder, const Variable& other) const = 0;
   virtual void subtract(Builder& builder, const std::string& other) const = 0;
 
+  virtual void subtractFrom(Builder& builder, const Variable& other) const = 0;
+  virtual void subtractFrom(Builder& builder,
+                            const std::string& other) const = 0;
+
   const InitialisationStatement& getInit() const {
     return this->initialisationStatement;
   };

@@ -109,4 +109,35 @@ public:
         this->load(builder), builder.createConst32(value), "uint32_sub_val");
     builder.store(subOut, this->storage);
   };
+
+  void subtractFrom(Builder& builder, const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Uint32Variable& uint32Other =
+          static_cast<const Uint32Variable&>(other);
+
+      llvm::Value* subOut = builder.subtract(
+          uint32Other.load(builder), this->load(builder), "uint32_sub_uint32");
+
+      builder.store(subOut, this->storage);
+    } else {
+      throw std::runtime_error(
+          "No subtraction method is defined between type " +
+          std::to_string(THIS_TYPE) + " and " +
+          std::to_string(other.getType()));
+    };
+  };
+
+  void subtractFrom(Builder& builder, const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot subtract non-uint32 and uint32");
+    }
+
+    uint64_t value = StringConverter::toUnsignedLongLong(other);
+
+    llvm::Value* subOut = builder.subtract(
+        builder.createConst32(value), this->load(builder), "val_sub_uint32");
+    builder.store(subOut, this->storage);
+  };
 };

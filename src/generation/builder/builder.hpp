@@ -109,6 +109,16 @@ public:
     return this->irBuilder.CreateFSub(lhs, rhs, name);
   };
 
+  llvm::Value* multiply(llvm::Value* lhs, llvm::Value* rhs,
+                        const std::string& name) {
+    return this->irBuilder.CreateMul(lhs, rhs, name);
+  };
+
+  llvm::Value* multiplyf(llvm::Value* lhs, llvm::Value* rhs,
+                         const std::string& name) {
+    return this->irBuilder.CreateFMul(lhs, rhs, name);
+  };
+
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {
     return this->irBuilder.CreateZExt(in, outType);
   };

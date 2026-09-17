@@ -76,6 +76,10 @@ public:
     std::cout << out << ");\n";
   }
 
+  void printContextBeginStatement() const { std::cout << "CONTEXT_BEGIN;\n"; }
+
+  void printContextEndStatement() const { std::cout << "CONTEXT_END;\n"; }
+
   void print() const {
     std::cout << "-- Program --\n";
     std::cout << "count: " << this->statements.size() << "\n";
@@ -124,6 +128,16 @@ public:
           const FunctionCallStatement& functionCallStatement =
               static_cast<const FunctionCallStatement&>(statement);
           this->printFunctionCallStatement(functionCallStatement);
+          break;
+        }
+
+        case StatementType::CONTEXT_BEGIN: {
+          this->printContextBeginStatement();
+          break;
+        }
+
+        case StatementType::CONTEXT_END: {
+          this->printContextEndStatement();
           break;
         }
       }

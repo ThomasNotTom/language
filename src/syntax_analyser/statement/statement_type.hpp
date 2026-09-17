@@ -5,5 +5,7 @@ enum class StatementType : uint8_t {
   ASSIGNMENT = 2,
   ADDITION = 4,
   SUBTRACTION = 5,
-  FUNCTION_CALL = 6
+  FUNCTION_CALL = 6,
+  CONTEXT_BEGIN = 7,
+  CONTEXT_END = 8
 };

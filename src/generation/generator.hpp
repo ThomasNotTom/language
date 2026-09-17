@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <cstdint>
 #include <iostream>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/BasicBlock.h>
@@ -25,6 +24,7 @@
 #include "generation/callable/callable.hpp"
 #include "generation/callable/print.hpp"
 #include "generation/callable/return.hpp"
+#include "generation/context_container.hpp"
 #include "generation/primitives/float16/float16.hpp"
 #include "generation/primitives/float32/float32.hpp"
 #include "generation/primitives/float64/float64.hpp"
@@ -35,6 +35,7 @@
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "io/program_text.hpp"
+#include "lexer/tokens/other.hpp"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Instruction.h"
@@ -80,45 +81,51 @@ public:
         llvm::BasicBlock::Create(context, "entry", mainFunc);
     builder.setInsertPoint(mainEntry);
 
-    std::map<std::string, std::unique_ptr<BuilderType>> types =
-        std::map<std::string, std::unique_ptr<BuilderType>>();
+    ContextContainer contextContainer = ContextContainer();
+    contextContainer.makeEmptyContext();
 
-    // Create primitive types
-    types.emplace("uint8", std::make_unique<Uint8Builder>());
-    types.emplace("uint16", std::make_unique<Uint16Builder>());
-    types.emplace("uint32", std::make_unique<Uint32Builder>());
-    types.emplace("uint64", std::make_unique<Uint64Builder>());
+    contextContainer.addType("uint8", std::make_unique<Uint8Builder>());
+    contextContainer.addType("uint16", std::make_unique<Uint16Builder>());
+    contextContainer.addType("uint32", std::make_unique<Uint32Builder>());
+    contextContainer.addType("uint64", std::make_unique<Uint64Builder>());
 
-    types.emplace("float16", std::make_unique<Float16Builder>());
-    types.emplace("float32", std::make_unique<Float32Builder>());
-    types.emplace("float64", std::make_unique<Float64Builder>());
+    contextContainer.addType("float16", std::make_unique<Float16Builder>());
+    contextContainer.addType("float32", std::make_unique<Float32Builder>());
+    contextContainer.addType("float64", std::make_unique<Float64Builder>());
 
-    std::map<std::string, std::unique_ptr<Variable>> symbols =
-        std::map<std::string, std::unique_ptr<Variable>>();
+    contextContainer.addCallable(
+        "print", std::make_unique<PrintCallableBuilder>(*module, builder));
 
-    std::map<std::string, std::unique_ptr<Callable>> callables =
-        std::map<std::string, std::unique_ptr<Callable>>();
-
-    callables.emplace("print",
-                      std::make_unique<PrintCallableBuilder>(*module, builder));
-
-    callables.emplace("return", std::make_unique<ReturnCallableBuilder>());
+    contextContainer.addCallable("return",
+                                 std::make_unique<ReturnCallableBuilder>());
+    std::cout << "c\n";
 
     bool hasMainReturn = false;
 
     for (size_t i = 0; i < this->program.size(); i++) {
       const Statement& statement = program.view(i);
+
+      std::map<std::string, BuilderType*> currentTypes =
+          contextContainer.getTypes();
+
+      std::map<std::string, Variable*> currentSymbols =
+          contextContainer.getSymbols();
+
+      std::map<std::string, Callable*> currentCallables =
+          contextContainer.getCallables();
+
       switch (statement.statementType) {
         case StatementType::INITIALISATION: {
           const InitialisationStatement& initialisationStatement =
               static_cast<const InitialisationStatement&>(statement);
 
           const BuilderType& builderType =
-              *types[initialisationStatement.type.name];
+              *currentTypes.at(initialisationStatement.type.name);
 
-          if (symbols.contains(initialisationStatement.identifier.name)) {
+          if (currentSymbols.contains(
+                  initialisationStatement.identifier.name)) {
             Variable& previousDeclaration =
-                (*symbols[initialisationStatement.identifier.name]);
+                (*currentSymbols.at(initialisationStatement.identifier.name));
 
             const InitialisationStatement& previousInitialisationStatement =
                 previousDeclaration.getInit();
@@ -152,7 +159,7 @@ public:
             throw std::runtime_error(out);
           }
 
-          symbols.emplace(
+          contextContainer.addSymbol(
               initialisationStatement.identifier.name,
               builderType.makeVariable(builder, initialisationStatement));
 
@@ -163,7 +170,7 @@ public:
           const AssignmentStatement& assignmentStatement =
               static_cast<const AssignmentStatement&>(statement);
 
-          if (!symbols.contains(assignmentStatement.identifier.name)) {
+          if (!currentSymbols.contains(assignmentStatement.identifier.name)) {
             const std::string& assignmentStatementLineNumber = std::to_string(
                 assignmentStatement.identifier.metadata.line + 1);
 
@@ -182,14 +189,15 @@ public:
             throw std::runtime_error(out);
           }
           const Variable& identifier =
-              *symbols[assignmentStatement.identifier.name];
+              *currentSymbols.at(assignmentStatement.identifier.name);
 
-          if (!symbols.contains(assignmentStatement.value.name)) {
+          if (!currentSymbols.at(assignmentStatement.value.name)) {
             identifier.store(builder, assignmentStatement.value.name);
             break;
           }
 
-          const Variable& value = *symbols[assignmentStatement.value.name];
+          const Variable& value =
+              *currentSymbols.at(assignmentStatement.value.name);
           identifier.store(builder, value);
 
           break;
@@ -199,14 +207,14 @@ public:
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
 
-          const Variable& lhs = *symbols[additionStatement.lhs.name];
+          const Variable& lhs = *currentSymbols.at(additionStatement.lhs.name);
 
           // TODO: Fix addition of floats and primitive + variable
-          if (!symbols.contains(additionStatement.rhs.name)) {
+          if (!currentSymbols.contains(additionStatement.rhs.name)) {
             lhs.add(builder, additionStatement.rhs.name);
             break;
           }
-          const Variable& rhs = *symbols[additionStatement.rhs.name];
+          const Variable& rhs = *currentSymbols.at(additionStatement.rhs.name);
 
           lhs.add(builder, rhs);
           break;
@@ -216,14 +224,16 @@ public:
           const SubtractionStatement& subtractionStatement =
               static_cast<const SubtractionStatement&>(statement);
 
-          const Variable& lhs = *symbols[subtractionStatement.lhs.name];
+          const Variable& lhs =
+              *currentSymbols.at(subtractionStatement.lhs.name);
 
           // TODO: Fix addition of floats and primitive + variable
-          if (!symbols.contains(subtractionStatement.rhs.name)) {
+          if (!currentSymbols.contains(subtractionStatement.rhs.name)) {
             lhs.subtract(builder, subtractionStatement.rhs.name);
             break;
           }
-          const Variable& rhs = *symbols[subtractionStatement.rhs.name];
+          const Variable& rhs =
+              *currentSymbols.at(subtractionStatement.rhs.name);
           lhs.subtract(builder, rhs);
           break;
         };
@@ -238,7 +248,7 @@ public:
               functionCallStatement.identifier.metadata.line + 1);
           const std::string& functionName =
               functionCallStatement.identifier.name;
-          if (!callables.contains(functionName)) {
+          if (!currentCallables.contains(functionName)) {
             std::string out = "\n";
             out += functionCallLineNumber;
             out += ": ";
@@ -254,22 +264,31 @@ public:
 
           for (size_t i = 0; i < functionCallStatement.parameters.size(); i++) {
             const std::string& name = functionCallStatement.parameters[i].name;
-            if (!symbols.contains(name)) {
+            if (!currentSymbols.contains(name)) {
               parameters.push_back(std::make_unique<ParameterValue>(name));
               continue;
             }
 
-            const Variable& variable = *symbols[name];
+            const Variable& variable = *currentSymbols.at(name);
             parameters.push_back(std::make_unique<ParameterVariable>(variable));
           }
 
-          (*callables[functionCallStatement.identifier.name])
+          (*currentCallables.at(functionCallStatement.identifier.name))
               .call(builder, parameters);
 
           if (functionName == "return") {
             hasMainReturn = true;
           }
           continue;
+        }
+        case StatementType::CONTEXT_BEGIN: {
+          contextContainer.makeEmptyContext();
+          break;
+        }
+
+        case StatementType::CONTEXT_END: {
+          contextContainer.removeTopContext();
+          break;
         }
       }
     }

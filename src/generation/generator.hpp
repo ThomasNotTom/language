@@ -191,7 +191,7 @@ public:
           const Variable& identifier =
               *currentSymbols.at(assignmentStatement.identifier.name);
 
-          if (!currentSymbols.at(assignmentStatement.value.name)) {
+          if (!currentSymbols.contains(assignmentStatement.value.name)) {
             identifier.store(builder, assignmentStatement.value.name);
             break;
           }

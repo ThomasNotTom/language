@@ -5,7 +5,6 @@
 #include <string>
 
 #include "generation/callable/callable.hpp"
-#include "generation/context_attribute.hpp"
 #include "generation/variable.hpp"
 
 class Context {

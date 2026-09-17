@@ -9,16 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "lexer/tokens/operators/addition/addition.hpp"
+#include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
 #include "lexer/tokens/token.hpp"
 #include "lexer/tokens/token_type.hpp"
+#include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/statement.hpp"
-
-enum class TokenPriority : uint8_t {
-  BRACKET = 1,
-  ADDITION = 2,
-  SUBTRACTION = 3
-};
+#include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
 class TokenSegment {
 private:
@@ -67,6 +65,7 @@ public:
   static std::vector<std::unique_ptr<Statement>>
   parse(const std::vector<std::reference_wrapper<const Token>>& tokens,
         const OtherToken& outToken) {
+    std::cout << "Passing\n";
     // 3 + 4 - 1 + 2; 8 -> 4
     // 3
     // 3 + 4
@@ -132,21 +131,41 @@ public:
       //              pop the operator from the operator stack into the output
       //              queue
       //     - a left parenthesis (i.e. "("):
-      //         push it onto the operator stack
+      else if (token.tokenType == TokenType::BRACKET_OPEN) {
+        std::cout << "Pushing open bracket\n";
+
+        //         push it onto the operator stack
+        operatorStack.push(token);
+      }
       //     - a right parenthesis (i.e. ")"):
-      //         while the operator at the top of the operator stack is not a
-      //         left parenthesis:
-      //             {assert the operator stack is not empty}
-      //             /* If the stack runs out without finding a left
-      //             parenthesis, then there are mismatched parentheses. */
-      //             pop the operator from the operator stack into the output
-      //             queue
-      //         {assert there is a left parenthesis at the top of the
-      //         operator stack} pop the left parenthesis from the operator
-      //         stack and discard it if there is a function token at the top
-      //         of the operator stack, then:
-      //             pop the function from the operator stack into the output
-      //             queue
+      else if (token.tokenType == TokenType::BRACKET_CLOSE) {
+        //         while the operator at the top of the operator stack is not a
+        //         left parenthesis:
+        std::cout << "A\n";
+
+        std::reference_wrapper<const Token>& topOperatorToken =
+            operatorStack.top();
+
+        std::cout << "B\n";
+
+        while (topOperatorToken.get().tokenType != TokenType::BRACKET_OPEN) {
+          //             {assert the operator stack is not empty}
+          //             /* If the stack runs out without finding a left
+          //             parenthesis, then there are mismatched parentheses. */
+          //             pop the operator from the operator stack into the
+          //             output queue
+          outputQueue.push(topOperatorToken);
+          operatorStack.pop();
+
+          topOperatorToken = operatorStack.top();
+        }
+        //         {assert there is a left parenthesis at the top of the
+        //         operator stack} pop the left parenthesis from the operator
+        //         stack and discard it if there is a function token at the top
+        //         of the operator stack, then:
+        //             pop the function from the operator stack into the output
+        //             queue
+      }
     }
     // /* After the while loop, pop the remaining items from the operator
     // stack into the output queue.
@@ -162,7 +181,81 @@ public:
     //     top of the stack is not a (left) parenthesis} pop the operator from
     //     the operator stack onto the output queue
 
+    // LOGGING
+    std::queue<std::reference_wrapper<const Token>> outputQueueCopy =
+        outputQueue;
+    while (!outputQueueCopy.empty()) {
+      const Token& next = outputQueueCopy.front();
+      outputQueueCopy.pop();
+      switch (next.tokenType) {
+        case TokenType::OTHER: {
+          const OtherToken& otherToken = static_cast<const OtherToken&>(next);
+          std::cout << otherToken.name << " ";
+          break;
+        }
+        case TokenType::PLUS: {
+          std::cout << "+ ";
+          break;
+        }
+
+        case TokenType::MINUS: {
+          std::cout << "- ";
+          break;
+        }
+
+        default:
+          continue;
+      }
+    }
+    std::cout << "\n";
+    // END LOGGING
+
+    std::stack<std::reference_wrapper<const Token>> tokenStack;
     std::vector<std::unique_ptr<Statement>> out;
+
+    while (!outputQueue.empty()) {
+      std::reference_wrapper<const Token>& next = outputQueue.front();
+      outputQueue.pop();
+
+      if (next.get().tokenType == TokenType::OTHER) {
+        tokenStack.push(next);
+        continue;
+      }
+
+      if (ArithmeticParser::isOperator(next)) {
+        const OtherToken& tokenaB =
+            static_cast<const OtherToken&>(tokenStack.top().get());
+        tokenStack.pop();
+
+        const OtherToken& tokenaA =
+            static_cast<const OtherToken&>(tokenStack.top().get());
+        tokenStack.pop();
+
+        switch (next.get().tokenType) {
+          case TokenType::PLUS: {
+            const AdditionToken& additionToken =
+                static_cast<const AdditionToken&>(next.get());
+            out.push_back(std::make_unique<AdditionStatement>(
+                outToken, tokenaA, additionToken, tokenaB));
+            break;
+          }
+
+          case TokenType::MINUS: {
+            const SubtractionToken& subtractionToken =
+                static_cast<const SubtractionToken&>(next.get());
+
+            out.push_back(std::make_unique<SubtractionStatement>(
+                outToken, tokenaA, subtractionToken, tokenaB));
+            break;
+          }
+
+          default:
+            break;
+        }
+
+        tokenStack.push(outToken);
+      }
+    }
 
     return out;
   }

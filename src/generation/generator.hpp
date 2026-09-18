@@ -218,9 +218,9 @@ public:
 
           if (!lhsExists && !rhsExists) {
             llvm::Value* temp = builder.add(
-                builder.createConst64(StringConverter::toUnsignedLongLong(
+                builder.createConst8(StringConverter::toUnsignedLongLong(
                     additionStatement.lhs.name)),
-                builder.createConst64(StringConverter::toUnsignedLongLong(
+                builder.createConst8(StringConverter::toUnsignedLongLong(
                     additionStatement.rhs.name)),
                 "temp");
 
@@ -275,9 +275,9 @@ public:
 
           if (!lhsExists && !rhsExists) {
             llvm::Value* temp = builder.subtract(
-                builder.createConst64(StringConverter::toUnsignedLongLong(
+                builder.createConst8(StringConverter::toUnsignedLongLong(
                     subtractionStatement.lhs.name)),
-                builder.createConst64(StringConverter::toUnsignedLongLong(
+                builder.createConst8(StringConverter::toUnsignedLongLong(
                     subtractionStatement.rhs.name)),
                 "temp");
 

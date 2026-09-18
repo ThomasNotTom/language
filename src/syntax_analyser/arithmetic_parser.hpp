@@ -78,33 +78,23 @@ public:
     std::stack<std::reference_wrapper<const Token>> operatorStack =
         std::stack<std::reference_wrapper<const Token>>();
 
-    // while there are tokens to be read:
+    // Following the algorithm specified
+    // (here)[https://en.wikipedia.org/wiki/Shunting_yard_algorithm]
     for (size_t i = 0; i < tokens.size(); i++) {
       const Token& token = tokens[i];
-      //     read a token
-
-      //     if the token is:
-      //     - a number:
       if (token.tokenType == TokenType::OTHER) {
         outputQueue.push(token);
-        //         put it into the output queue
       }
       //     - a function:
       else if (false) {
-        //         push it onto the operator stack
-      }
-      //     - an operator o1:
-      else if (ArithmeticParser::isOperator(token)) {
+      } else if (ArithmeticParser::isOperator(token)) {
         const Token& o1 = token;
-        //         while (
         while (true) {
-          //             there is an operator o2 at the top of the operator
-          //             stack
+
           if (operatorStack.empty()) {
             break;
           }
           const Token& o2 = operatorStack.top();
-          //             which is not a left parenthesis,
           if (o2.tokenType == TokenType::BRACKET_OPEN) {
             break;
           }
@@ -112,72 +102,36 @@ public:
           uint8_t o1Precedence = ArithmeticParser::getTokenPriority(o1);
           uint8_t o2Precedence = ArithmeticParser::getTokenPriority(o2);
 
-          //             and (o2 has greater
-          //             precedence than o1 or (o1 and o2 have the same
-          //             precedence and o1 is left-associative))
-          //         ):
           if (!(o2Precedence >= o1Precedence)) {
             break;
           }
 
-          //             pop o2 from the operator stack into the output queue
           operatorStack.pop();
           outputQueue.push(o2);
         }
-        //         push o1 onto the operator stack
         operatorStack.push(o1);
-      }
-      //     - a ",":
-      //         while the operator at the top of the operator stack is not a
-      //         left parenthesis:
-      //              pop the operator from the operator stack into the output
-      //              queue
-      //     - a left parenthesis (i.e. "("):
-      else if (token.tokenType == TokenType::BRACKET_OPEN) {
-
-        //         push it onto the operator stack
+      } else if (token.tokenType == TokenType::BRACKET_OPEN) {
         operatorStack.push(token);
-      }
-      //     - a right parenthesis (i.e. ")"):
-      else if (token.tokenType == TokenType::BRACKET_CLOSE) {
-        //         while the operator at the top of the operator stack is not a
-        //         left parenthesis:
+      } else if (token.tokenType == TokenType::BRACKET_CLOSE) {
 
         std::reference_wrapper<const Token>& topOperatorToken =
             operatorStack.top();
 
         while (topOperatorToken.get().tokenType != TokenType::BRACKET_OPEN) {
-          //             {assert the operator stack is not empty}
-          //             /* If the stack runs out without finding a left
-          //             parenthesis, then there are mismatched parentheses. */
-          //             pop the operator from the operator stack into the
-          //             output queue
           outputQueue.push(topOperatorToken);
           operatorStack.pop();
 
           topOperatorToken = operatorStack.top();
         }
-        //         {assert there is a left parenthesis at the top of the
-        //         operator stack} pop the left parenthesis from the operator
-        //         stack and discard it if there is a function token at the top
-        //         of the operator stack, then:
-        //             pop the function from the operator stack into the output
-        //             queue
       }
     }
-    // /* After the while loop, pop the remaining items from the operator
-    // stack into the output queue.
+
     while (!operatorStack.empty()) {
       const Token& operatorToken = operatorStack.top();
       operatorStack.pop();
 
       outputQueue.push(operatorToken);
     }
-    // */ while there are tokens on the operator stack:
-    //     /* If the operator token on the top of the stack is a parenthesis,
-    //     then there are mismatched parentheses. */ {assert the operator on
-    //     top of the stack is not a (left) parenthesis} pop the operator from
-    //     the operator stack onto the output queue
 
     std::stack<OtherToken> tokenStack;
     std::vector<std::unique_ptr<Statement>> out;

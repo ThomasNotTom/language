@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <functional>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <queue>
 #include <stack>
@@ -15,6 +14,10 @@
 #include "lexer/tokens/token.hpp"
 #include "lexer/tokens/token_type.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/context/begin_context.hpp"
+#include "syntax_analyser/statement/context/end_context.hpp"
+#include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
@@ -64,8 +67,7 @@ private:
 public:
   static std::vector<std::unique_ptr<Statement>>
   parse(const std::vector<std::reference_wrapper<const Token>>& tokens,
-        const OtherToken& outToken) {
-    std::cout << "Passing\n";
+        const OtherToken& outToken, const OtherToken& outType) {
     // 3 + 4 - 1 + 2; 8 -> 4
     // 3
     // 3 + 4
@@ -132,7 +134,6 @@ public:
       //              queue
       //     - a left parenthesis (i.e. "("):
       else if (token.tokenType == TokenType::BRACKET_OPEN) {
-        std::cout << "Pushing open bracket\n";
 
         //         push it onto the operator stack
         operatorStack.push(token);
@@ -141,12 +142,9 @@ public:
       else if (token.tokenType == TokenType::BRACKET_CLOSE) {
         //         while the operator at the top of the operator stack is not a
         //         left parenthesis:
-        std::cout << "A\n";
 
         std::reference_wrapper<const Token>& topOperatorToken =
             operatorStack.top();
-
-        std::cout << "B\n";
 
         while (topOperatorToken.get().tokenType != TokenType::BRACKET_OPEN) {
           //             {assert the operator stack is not empty}
@@ -210,53 +208,83 @@ public:
     std::cout << "\n";
     // END LOGGING
 
-    std::stack<std::reference_wrapper<const Token>> tokenStack;
+    std::stack<OtherToken> tokenStack;
     std::vector<std::unique_ptr<Statement>> out;
 
+    out.push_back(std::make_unique<BeginContextStatement>());
+
+    size_t tempVariableCount = 1;
+
     while (!outputQueue.empty()) {
-      std::reference_wrapper<const Token>& next = outputQueue.front();
+      const Token& next = outputQueue.front().get();
       outputQueue.pop();
 
-      if (next.get().tokenType == TokenType::OTHER) {
-        tokenStack.push(next);
+      if (next.tokenType == TokenType::OTHER) {
+        tokenStack.push(static_cast<const OtherToken&>(next));
         continue;
       }
 
       if (ArithmeticParser::isOperator(next)) {
-        const OtherToken& tokenaB =
-            static_cast<const OtherToken&>(tokenStack.top().get());
+        const OtherToken& tokenaB = tokenStack.top();
         tokenStack.pop();
 
-        const OtherToken& tokenaA =
-            static_cast<const OtherToken&>(tokenStack.top().get());
+        const OtherToken& tokenaA = tokenStack.top();
         tokenStack.pop();
 
-        switch (next.get().tokenType) {
+        switch (next.tokenType) {
           case TokenType::PLUS: {
             const AdditionToken& additionToken =
-                static_cast<const AdditionToken&>(next.get());
+                static_cast<const AdditionToken&>(next);
+
+            std::string tempName = "temp_" + std::to_string(tempVariableCount);
+            const OtherToken tempToken =
+                OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+            tempVariableCount += 1;
+
+            out.push_back(
+                std::make_unique<InitialisationStatement>(outType, tempToken));
+
             out.push_back(std::make_unique<AdditionStatement>(
-                outToken, tokenaA, additionToken, tokenaB));
+                tempToken, tokenaA, additionToken, tokenaB));
+
+            tokenStack.push(tempToken);
             break;
           }
 
           case TokenType::MINUS: {
             const SubtractionToken& subtractionToken =
-                static_cast<const SubtractionToken&>(next.get());
+                static_cast<const SubtractionToken&>(next);
+
+            std::string tempName = "temp_" + std::to_string(tempVariableCount);
+            const OtherToken tempToken =
+                OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+            tempVariableCount += 1;
+
+            out.push_back(
+                std::make_unique<InitialisationStatement>(outType, tempToken));
 
             out.push_back(std::make_unique<SubtractionStatement>(
-                outToken, tokenaA, subtractionToken, tokenaB));
+                tempToken, tokenaA, subtractionToken, tokenaB));
+
+            tokenStack.push(tempToken);
+
             break;
           }
 
           default:
             break;
         }
-
-        tokenStack.push(outToken);
       }
     }
 
+    const OtherToken& finalResult =
+        static_cast<const OtherToken&>(tokenStack.top());
+    tokenStack.pop();
+    out.push_back(std::make_unique<AssignmentStatement>(outToken, finalResult));
+
+    out.push_back(std::make_unique<EndContextStatement>());
     return out;
   }
 };

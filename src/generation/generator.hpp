@@ -98,7 +98,6 @@ public:
 
     contextContainer.addCallable("return",
                                  std::make_unique<ReturnCallableBuilder>());
-    std::cout << "c\n";
 
     bool hasMainReturn = false;
 
@@ -207,34 +206,114 @@ public:
           const AdditionStatement& additionStatement =
               static_cast<const AdditionStatement&>(statement);
 
-          const Variable& lhs = *currentSymbols.at(additionStatement.lhs.name);
+          const Variable& identifier =
+              *currentSymbols.at(additionStatement.identifier.name);
 
-          // TODO: Fix addition of floats and primitive + variable
-          if (!currentSymbols.contains(additionStatement.rhs.name)) {
-            lhs.add(builder, additionStatement.rhs.name);
+          const bool lhsExists =
+              currentSymbols.contains(additionStatement.lhs.name);
+          const bool rhsExists =
+              currentSymbols.contains(additionStatement.rhs.name);
+
+          // TODO: Fix dubtraction of primitive - primitive
+
+          if (!lhsExists && !rhsExists) {
+            llvm::Value* temp = builder.add(
+                builder.createConst64(StringConverter::toUnsignedLongLong(
+                    additionStatement.lhs.name)),
+                builder.createConst64(StringConverter::toUnsignedLongLong(
+                    additionStatement.rhs.name)),
+                "temp");
+
+            builder.store(temp, identifier.getStorage());
             break;
           }
-          const Variable& rhs = *currentSymbols.at(additionStatement.rhs.name);
+          // TODO: Fix addition of floats and primitive + variable
 
-          lhs.add(builder, rhs);
+          if (lhsExists && rhsExists) {
+            const Variable& lhs =
+                *currentSymbols.at(additionStatement.lhs.name);
+            const Variable& rhs =
+                *currentSymbols.at(additionStatement.rhs.name);
+
+            builder.store(lhs.add(builder, rhs), identifier.getStorage());
+            break;
+          }
+
+          if (lhsExists) {
+            const Variable& lhs =
+                *currentSymbols.at(additionStatement.lhs.name);
+
+            builder.store(lhs.add(builder, additionStatement.rhs.name),
+                          identifier.getStorage());
+
+            break;
+          }
+
+          if (rhsExists) {
+            const Variable& rhs =
+                *currentSymbols.at(additionStatement.rhs.name);
+            builder.store(rhs.add(builder, additionStatement.lhs.name),
+                          identifier.getStorage());
+            break;
+          }
+
           break;
         }
 
         case StatementType::SUBTRACTION: {
           const SubtractionStatement& subtractionStatement =
               static_cast<const SubtractionStatement&>(statement);
+          const Variable& identifier =
+              *currentSymbols.at(subtractionStatement.identifier.name);
 
-          const Variable& lhs =
-              *currentSymbols.at(subtractionStatement.lhs.name);
+          const bool lhsExists =
+              currentSymbols.contains(subtractionStatement.lhs.name);
+          const bool rhsExists =
+              currentSymbols.contains(subtractionStatement.rhs.name);
 
-          // TODO: Fix addition of floats and primitive + variable
-          if (!currentSymbols.contains(subtractionStatement.rhs.name)) {
-            lhs.subtract(builder, subtractionStatement.rhs.name);
+          // TODO: Fix dubtraction of primitive - primitive
+
+          if (!lhsExists && !rhsExists) {
+            llvm::Value* temp = builder.subtract(
+                builder.createConst64(StringConverter::toUnsignedLongLong(
+                    subtractionStatement.lhs.name)),
+                builder.createConst64(StringConverter::toUnsignedLongLong(
+                    subtractionStatement.rhs.name)),
+                "temp");
+
+            builder.store(temp, identifier.getStorage());
             break;
           }
-          const Variable& rhs =
-              *currentSymbols.at(subtractionStatement.rhs.name);
-          lhs.subtract(builder, rhs);
+          // TODO: Fix addition of floats and primitive + variable
+
+          if (lhsExists && rhsExists) {
+            const Variable& lhs =
+                *currentSymbols.at(subtractionStatement.lhs.name);
+            const Variable& rhs =
+                *currentSymbols.at(subtractionStatement.rhs.name);
+
+            builder.store(lhs.subtract(builder, rhs), identifier.getStorage());
+            break;
+          }
+
+          if (lhsExists) {
+            const Variable& lhs =
+                *currentSymbols.at(subtractionStatement.lhs.name);
+
+            builder.store(lhs.subtract(builder, subtractionStatement.rhs.name),
+                          identifier.getStorage());
+
+            break;
+          }
+
+          if (rhsExists) {
+            const Variable& rhs =
+                *currentSymbols.at(subtractionStatement.rhs.name);
+            builder.store(
+                rhs.subtractFrom(builder, subtractionStatement.lhs.name),
+                identifier.getStorage());
+            break;
+          }
           break;
         };
 

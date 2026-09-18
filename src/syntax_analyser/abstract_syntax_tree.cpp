@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -12,11 +13,13 @@
 #include "io/program_text.hpp"
 #include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/bracket/bracket_open.hpp"
-#include "lexer/tokens/operators/operator.hpp"
-#include "lexer/tokens/operators/operator_type.hpp"
+#include "lexer/tokens/operators/addition/addition.hpp"
+#include "lexer/tokens/operators/assignment/assignment.hpp"
+#include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
 #include "lexer/tokens/token.hpp"
 #include "lexer/tokens/token_type.hpp"
+#include "syntax_analyser/arithmetic_parser.hpp"
 #include "syntax_analyser/program/program.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
@@ -56,7 +59,7 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
   std::vector<std::unique_ptr<Statement>> outStatements;
   for (int i = 1; i < tokens.size(); i += 2) {
     const Token& nextToken = tokens[i].get();
-    if (nextToken.tokenType != TokenType::OPERATOR) {
+    if (!TokenChecker::isOperator(nextToken.tokenType)) {
       std::string out = "\n";
       out += std::to_string(nextToken.metadata.line + 1);
       out += ": ";
@@ -65,14 +68,11 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
       out += "Token adjacent to other (";
       out += std::to_string(nextToken.tokenType);
       out += ") must be an operator (";
-      out += std::to_string(TokenType::OPERATOR);
+      out += TokenChecker::getOperatorTypes();
       out += ")";
 
       throw std::runtime_error(out);
     }
-
-    const OperatorToken& operatorToken =
-        static_cast<const OperatorToken&>(nextToken);
 
     const Token& nextNextToken = tokens[i + 1].get();
 
@@ -84,7 +84,7 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
       out += "\n";
       out += "Token adjacent to operator (";
       // TODO: Display token character
-      out += std::to_string(operatorToken.tokenType);
+      out += std::to_string(nextToken.tokenType);
       out += ") must be an other (";
       out += std::to_string(TokenType::OTHER);
       out += ")";
@@ -95,35 +95,39 @@ std::vector<std::unique_ptr<Statement>> AbstractSyntaxTree::leftToRightParse(
     const OtherToken& otherToken =
         static_cast<const OtherToken&>(nextNextToken);
 
-    switch (operatorToken.operatorType) {
-      case ADDITION: {
+    switch (nextToken.tokenType) {
+      case PLUS: {
+        const AdditionToken& additionToken =
+            static_cast<const AdditionToken&>(nextToken);
         outStatements.push_back(std::make_unique<AdditionStatement>(
-            outToken, outToken, operatorToken, otherToken));
+            outToken, outToken, additionToken, otherToken));
         break;
-
-        case SUBTRACTION: {
-          outStatements.push_back(std::make_unique<SubtractionStatement>(
-              outToken, outToken, operatorToken, otherToken));
-          break;
-        }
-
-        default:
-
-          std::string out = "\n";
-          out += std::to_string(otherToken.metadata.line + 1);
-          out += ": ";
-          out += this->programText.getLine(otherToken.metadata.line);
-          out += "\n";
-          out += "Operator on right-hand-side of assignment (";
-          out += std::to_string(operatorToken.operatorType);
-          out += ") must be addition (";
-          out += std::to_string(OperatorType::ADDITION);
-          out += ") or subtraction (";
-          out += std::to_string(OperatorType::SUBTRACTION);
-          out += ")";
-
-          throw std::runtime_error(out);
       }
+
+      case MINUS: {
+        const SubtractionToken& subtractionToken =
+            static_cast<const SubtractionToken&>(nextToken);
+        outStatements.push_back(std::make_unique<SubtractionStatement>(
+            outToken, outToken, subtractionToken, otherToken));
+        break;
+      }
+
+      default:
+
+        std::string out = "\n";
+        out += std::to_string(otherToken.metadata.line + 1);
+        out += ": ";
+        out += this->programText.getLine(otherToken.metadata.line);
+        out += "\n";
+        out += "Operator on right-hand-side of assignment (";
+        out += std::to_string(nextToken.tokenType);
+        out += ") must be addition (";
+        out += std::to_string(TokenType::PLUS);
+        out += ") or subtraction (";
+        out += std::to_string(TokenType::MINUS);
+        out += ")";
+
+        throw std::runtime_error(out);
     }
   }
   // a = b + c + d
@@ -141,6 +145,10 @@ Program AbstractSyntaxTree::parse() {
   std::vector<std::vector<std::reference_wrapper<const Token>>> lines =
       this->splitToLines(this->tokenContainer);
 
+  // TODO: Assumes all types within the arithmetic parsing is of the type of the
+  // output variable
+  std::map<std::string, const OtherToken&> symbolToType;
+
   for (size_t i = 0; i < lines.size(); i++) {
 
     std::vector<std::reference_wrapper<const Token>> row = lines[i];
@@ -157,6 +165,8 @@ Program AbstractSyntaxTree::parse() {
 
       program.addStatement(
           std::make_unique<InitialisationStatement>(type, identifier));
+
+      symbolToType.emplace(identifier.name, type);
       continue;
     }
 
@@ -166,16 +176,17 @@ Program AbstractSyntaxTree::parse() {
     // eg: uint8 a = b + c;
     if (row.size() >= 3 && row[0].get().tokenType == TokenType::OTHER &&
         row[1].get().tokenType == TokenType::OTHER &&
-        row[2].get().tokenType == TokenType::OPERATOR) {
+        row[2].get().tokenType == TokenType::EQUALS) {
 
       const OtherToken& type = static_cast<const OtherToken&>(row[0].get());
       const OtherToken& identifier =
           static_cast<const OtherToken&>(row[1].get());
-      const OperatorToken& oper =
-          static_cast<const OperatorToken&>(row[2].get());
+      const AssignmentToken& oper =
+          static_cast<const AssignmentToken&>(row[2].get());
 
       program.addStatement(
           std::make_unique<InitialisationStatement>(type, identifier));
+      symbolToType.emplace(identifier.name, type);
 
       const OtherToken& value = static_cast<const OtherToken&>(row[3].get());
 
@@ -189,7 +200,7 @@ Program AbstractSyntaxTree::parse() {
           std::vector(row.begin() + 3, row.end());
 
       std::vector<std::unique_ptr<Statement>> statements =
-          this->leftToRightParse(remaining, identifier);
+          ArithmeticParser::parse(remaining, identifier, type);
 
       for (int i = 0; i < statements.size(); i++) {
         program.addStatement(std::move(statements[i]));
@@ -202,12 +213,12 @@ Program AbstractSyntaxTree::parse() {
     //
     // eg: a = b + c;
     if (row.size() >= 2 && row[0].get().tokenType == TokenType::OTHER &&
-        row[1].get().tokenType == TokenType::OPERATOR) {
+        row[1].get().tokenType == TokenType::EQUALS) {
       const OtherToken& identifier =
           dynamic_cast<const OtherToken&>(row[0].get());
 
-      const OperatorToken& oper =
-          dynamic_cast<const OperatorToken&>(row[1].get());
+      const AssignmentToken& oper =
+          dynamic_cast<const AssignmentToken&>(row[1].get());
 
       const OtherToken& value = dynamic_cast<const OtherToken&>(row[2].get());
       program.addStatement(
@@ -219,8 +230,15 @@ Program AbstractSyntaxTree::parse() {
 
       std::vector<std::reference_wrapper<const Token>> remaining =
           std::vector(row.begin() + 2, row.end());
+
+      if (!symbolToType.contains(identifier.name)) {
+        throw std::runtime_error("Identifier " + identifier.name +
+                                 " hasn't been initialised");
+      }
+
       std::vector<std::unique_ptr<Statement>> statements =
-          this->leftToRightParse(remaining, identifier);
+          ArithmeticParser::parse(remaining, identifier,
+                                  symbolToType.at(identifier.name));
 
       for (int i = 0; i < statements.size(); i++) {
         program.addStatement(std::move(statements[i]));

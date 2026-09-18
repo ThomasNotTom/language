@@ -68,6 +68,7 @@ public:
   static std::vector<std::unique_ptr<Statement>>
   parse(const std::vector<std::reference_wrapper<const Token>>& tokens,
         const OtherToken& outToken, const OtherToken& outType) {
+    std::cout << "Begin passing\n";
     // 3 + 4 - 1 + 2; 8 -> 4
     // 3
     // 3 + 4
@@ -210,6 +211,9 @@ public:
     out.push_back(std::make_unique<AssignmentStatement>(outToken, finalResult));
 
     out.push_back(std::make_unique<EndContextStatement>());
+
+    std::cout << "End passing\n";
+
     return out;
   }
 };

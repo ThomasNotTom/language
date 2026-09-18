@@ -179,35 +179,6 @@ public:
     //     top of the stack is not a (left) parenthesis} pop the operator from
     //     the operator stack onto the output queue
 
-    // LOGGING
-    std::queue<std::reference_wrapper<const Token>> outputQueueCopy =
-        outputQueue;
-    while (!outputQueueCopy.empty()) {
-      const Token& next = outputQueueCopy.front();
-      outputQueueCopy.pop();
-      switch (next.tokenType) {
-        case TokenType::OTHER: {
-          const OtherToken& otherToken = static_cast<const OtherToken&>(next);
-          std::cout << otherToken.name << " ";
-          break;
-        }
-        case TokenType::PLUS: {
-          std::cout << "+ ";
-          break;
-        }
-
-        case TokenType::MINUS: {
-          std::cout << "- ";
-          break;
-        }
-
-        default:
-          continue;
-      }
-    }
-    std::cout << "\n";
-    // END LOGGING
-
     std::stack<OtherToken> tokenStack;
     std::vector<std::unique_ptr<Statement>> out;
 

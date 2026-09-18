@@ -73,6 +73,24 @@ public:
     // 3
     // 3 + 4
     // (3 + 4) - 1
+    for (size_t i = 0; i < tokens.size(); i++) {
+      const Token& token = tokens[i];
+      // std::cout << (uint16_t)token.tokenType << "\n";
+      switch (token.tokenType) {
+        case TokenType::OTHER: {
+          const OtherToken& otherToken = static_cast<const OtherToken&>(token);
+          std::cout << otherToken.name << "\n";
+          break;
+        }
+
+        case TokenType::PLUS: {
+          const AdditionToken& addToken =
+              static_cast<const AdditionToken&>(token);
+          std::cout << "+\n";
+          break;
+        }
+      }
+    }
 
     std::queue<std::reference_wrapper<const Token>> outputQueue =
         std::queue<std::reference_wrapper<const Token>>();

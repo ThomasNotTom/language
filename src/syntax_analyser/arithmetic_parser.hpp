@@ -89,6 +89,9 @@ public:
           std::cout << "+\n";
           break;
         }
+
+        default:
+          break;
       }
     }
 

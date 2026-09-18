@@ -78,21 +78,31 @@ public:
       switch (parameterVariable.getVariable().getType()) {
         case (uint8_t)BuilderTypeID::UINT8: {
           FormatStr = builder.createGlobalStringPtr("%hhu\n");
+          Args = {FormatStr,
+                  builder.zext(parameterVariable.getVariable().load(builder),
+                               builder.getUint32())};
           break;
         }
 
         case (uint8_t)BuilderTypeID::UINT16: {
           FormatStr = builder.createGlobalStringPtr("%hu\n");
+          Args = {FormatStr,
+                  builder.zext(parameterVariable.getVariable().load(builder),
+                               builder.getUint32())};
           break;
         }
 
         case (uint8_t)BuilderTypeID::UINT32: {
           FormatStr = builder.createGlobalStringPtr("%u\n");
+          Args = {FormatStr, parameterVariable.getVariable().load(builder)};
+
           break;
         }
 
         case (uint8_t)BuilderTypeID::UINT64: {
           FormatStr = builder.createGlobalStringPtr("%lu\n");
+          Args = {FormatStr, parameterVariable.getVariable().load(builder)};
+
           break;
         }
 
@@ -100,14 +110,14 @@ public:
         case (uint8_t)BuilderTypeID::FLOAT32:
         case (uint8_t)BuilderTypeID::FLOAT64: {
           FormatStr = builder.createGlobalStringPtr("%f\n");
+          Args = {FormatStr, parameterVariable.getVariable().load(builder)};
+
           break;
         }
 
         default:
           throw std::runtime_error("No implementation defined for printing");
       }
-
-      Args = {FormatStr, parameterVariable.getVariable().load(builder)};
     }
     builder.createCall(this->printFunc, Args);
   }

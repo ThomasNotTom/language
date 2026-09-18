@@ -89,7 +89,6 @@ public:
       return builder.subtract(this->load(builder), uint64Other.load(builder),
                               "uint64_sub_uint64");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -108,7 +107,6 @@ public:
 
     return builder.subtract(this->load(builder), builder.createConst64(value),
                             "uint64_sub_val");
-    // builder.store(subOut, this->storage);
   };
 
   llvm::Value* subtractFrom(Builder& builder,
@@ -122,7 +120,6 @@ public:
       return builder.subtract(uint64Other.load(builder), this->load(builder),
                               "uint64_sub_uint64");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -141,6 +138,5 @@ public:
 
     return builder.subtract(builder.createConst64(value), this->load(builder),
                             "val_sub_uint64");
-    // builder.store(subOut, this->storage);
   };
 };

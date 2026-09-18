@@ -89,7 +89,6 @@ public:
       return builder.subtract(this->load(builder), uint16Other.load(builder),
                               "uint16_sub_uint16");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -109,7 +108,6 @@ public:
 
     return builder.subtract(this->load(builder), builder.createConst16(value),
                             "uint16_sub_val");
-    // builder.store(subOut, this->storage);
   };
 
   llvm::Value* subtractFrom(Builder& builder,
@@ -123,7 +121,6 @@ public:
       return builder.subtract(uint16Other.load(builder), this->load(builder),
                               "uint16_sub_uint16");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -142,6 +139,5 @@ public:
 
     return builder.subtract(builder.createConst16(value), this->load(builder),
                             "val_sub_uint16");
-    // builder.store(subOut, this->storage);
   };
 };

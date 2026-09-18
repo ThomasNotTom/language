@@ -91,7 +91,6 @@ public:
       return builder.subtract(this->load(builder), uint8Other.load(builder),
                               "uint8_sub_uint8");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -125,7 +124,6 @@ public:
       return builder.subtract(uint8Other.load(builder), this->load(builder),
                               "uint8_sub_uint8");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -144,6 +142,5 @@ public:
 
     return builder.subtract(builder.createConst8(value), this->load(builder),
                             "val_sub_uint8");
-    // builder.store(subOut, this->storage);
   };
 };

@@ -74,8 +74,6 @@ public:
     float value = static_cast<float>(StringConverter::toDouble(other));
     return builder.addf(this->load(builder), builder.createFloat16(value),
                         "float16_add_val");
-
-    // builder.store(subOut, this->storage);
   };
 
   llvm::Value* subtract(Builder& builder,
@@ -89,7 +87,6 @@ public:
       return builder.subtractf(this->load(builder), Float16Other.load(builder),
                                "float16_sub_float16");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -107,8 +104,6 @@ public:
     float value = static_cast<float>(StringConverter::toDouble(other));
     return builder.subtractf(this->load(builder), builder.createFloat16(value),
                              "float16_sub_val");
-
-    // builder.store(subOut, this->storage);
   };
 
   llvm::Value* subtractFrom(Builder& builder,
@@ -122,7 +117,6 @@ public:
       return builder.subtractf(Float16Other.load(builder), this->load(builder),
                                "float16_sub_float16");
 
-      // builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -140,7 +134,5 @@ public:
     float value = static_cast<float>(StringConverter::toDouble(other));
     return builder.subtractf(builder.createFloat16(value), this->load(builder),
                              "val_sub_float16");
-
-    // builder.store(subOut, this->storage);
   };
 };

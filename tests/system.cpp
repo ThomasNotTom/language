@@ -39,7 +39,7 @@ std::string exec(const std::string& cmd) {
 void checkOutput(const std::string& filePath, const std::string& expectedOut) {}
 
 TEST_CASE("Run \"./examples/addition.lang\"", "[system]") {
-  std::system("./bin/main ./examples/addition.lang");
+  std::system("./bin/main ./examples/addition.lang -v");
   int out = std::system("./main.out");
   REQUIRE(out != -1);
   REQUIRE(WIFEXITED(out));
@@ -62,7 +62,7 @@ TEST_CASE("Run \"./examples/print.lang\"", "[system]") {
 };
 
 TEST_CASE("Run \"./examples/subtraction.lang\"", "[system]") {
-  std::system("./bin/main ./examples/subtraction.lang");
+  std::system("./bin/main ./examples/subtraction.lang -v");
   int out = std::system("./main.out");
 
   REQUIRE(out != -1);

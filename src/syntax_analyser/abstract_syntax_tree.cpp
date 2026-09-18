@@ -190,10 +190,9 @@ Program AbstractSyntaxTree::parse() {
 
       const OtherToken& value = static_cast<const OtherToken&>(row[3].get());
 
-      program.addStatement(
-          std::make_unique<AssignmentStatement>(identifier, value));
-
       if (row.size() == 4) {
+        program.addStatement(
+            std::make_unique<AssignmentStatement>(identifier, value));
         continue;
       }
       std::vector<std::reference_wrapper<const Token>> remaining =

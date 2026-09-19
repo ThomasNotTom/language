@@ -17,6 +17,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "../syntax_analyser/program/program.hpp"
@@ -103,6 +104,8 @@ public:
 
     for (size_t i = 0; i < this->program.size(); i++) {
       const Statement& statement = program.view(i);
+
+      std::cout << "Reading " << (uint16_t)statement.statementType << "\n";
 
       std::map<std::string, BuilderType*> currentTypes =
           contextContainer.getTypes();
@@ -217,12 +220,21 @@ public:
           // TODO: Fix dubtraction of primitive - primitive
 
           if (!lhsExists && !rhsExists) {
-            llvm::Value* temp = builder.add(
-                builder.createConst8(StringConverter::toUnsignedLongLong(
-                    additionStatement.lhs.name)),
-                builder.createConst8(StringConverter::toUnsignedLongLong(
-                    additionStatement.rhs.name)),
-                "temp");
+            llvm::Value* lhsValue = identifier.stringToLLVMValue(
+                builder, additionStatement.lhs.name);
+            if (lhsValue == nullptr) {
+              throw std::runtime_error(
+                  "No conversion between \"" + additionStatement.lhs.name +
+                  "\" to type " + std::to_string(identifier.getType()));
+            }
+            llvm::Value* rhsValue = identifier.stringToLLVMValue(
+                builder, additionStatement.rhs.name);
+            if (rhsValue == nullptr) {
+              throw std::runtime_error(
+                  "No conversion between \"" + additionStatement.rhs.name +
+                  "\" to type " + std::to_string(identifier.getType()));
+            }
+            llvm::Value* temp = builder.add(lhsValue, rhsValue, "temp");
 
             builder.store(temp, identifier.getStorage());
             break;
@@ -274,12 +286,21 @@ public:
           // TODO: Fix dubtraction of primitive - primitive
 
           if (!lhsExists && !rhsExists) {
-            llvm::Value* temp = builder.subtract(
-                builder.createConst8(StringConverter::toUnsignedLongLong(
-                    subtractionStatement.lhs.name)),
-                builder.createConst8(StringConverter::toUnsignedLongLong(
-                    subtractionStatement.rhs.name)),
-                "temp");
+            llvm::Value* lhsValue = identifier.stringToLLVMValue(
+                builder, subtractionStatement.lhs.name);
+            if (lhsValue == nullptr) {
+              throw std::runtime_error(
+                  "No conversion between \"" + subtractionStatement.lhs.name +
+                  "\" to type " + std::to_string(identifier.getType()));
+            }
+            llvm::Value* rhsValue = identifier.stringToLLVMValue(
+                builder, subtractionStatement.rhs.name);
+            if (rhsValue == nullptr) {
+              throw std::runtime_error(
+                  "No conversion between \"" + subtractionStatement.rhs.name +
+                  "\" to type " + std::to_string(identifier.getType()));
+            }
+            llvm::Value* temp = builder.subtract(lhsValue, rhsValue, "temp");
 
             builder.store(temp, identifier.getStorage());
             break;

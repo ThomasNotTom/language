@@ -3,6 +3,7 @@
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "lexer/string_converter.hpp"
+#include "llvm/IR/Value.h"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Uint16Variable : public Variable {
@@ -26,9 +27,9 @@ public:
       throw std::runtime_error("Cannot convert non-int to int");
     }
 
-    uint8_t value = StringConverter::toUnsignedLongLong(other);
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.store(builder.createConst16(value), this->storage);
+    return builder.store(value, this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -47,17 +48,17 @@ public:
     };
   };
 
-  void add(Builder& builder, const Variable& other) const override {
+  llvm::Value* add(Builder& builder, const Variable& other) const override {
     const unsigned int THIS_TYPE = this->getType();
 
     if (other.getType() == THIS_TYPE) {
       const Uint16Variable& uint16Other =
           static_cast<const Uint16Variable&>(other);
 
-      llvm::Value* addOut = builder.add(
-          this->load(builder), uint16Other.load(builder), "uint16_add_uint16");
+      return builder.add(this->load(builder), uint16Other.load(builder),
+                         "uint16_add_uint16");
 
-      builder.store(addOut, this->storage);
+      // builder.store(addOut, this->storage);
     } else {
       throw std::runtime_error("No addition method is defined between type " +
                                std::to_string(THIS_TYPE) + " and " +
@@ -65,30 +66,28 @@ public:
     }
   };
 
-  void add(Builder& builder, const std::string& other) const override {
+  llvm::Value* add(Builder& builder, const std::string& other) const override {
     if (!StringConverter::isInt(other)) {
       throw std::runtime_error("Cannot add uint16 and non-uint16");
     }
 
-    uint16_t value =
-        static_cast<uint16_t>(StringConverter::toUnsignedLongLong(other));
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    llvm::Value* addOut = builder.add(
-        this->load(builder), builder.createConst16(value), "uint16_add_val");
-    builder.store(addOut, this->storage);
+    return builder.add(this->load(builder), value, "uint16_add_val");
+    // builder.store(addOut, this->storage);
   };
 
-  void subtract(Builder& builder, const Variable& other) const override {
+  llvm::Value* subtract(Builder& builder,
+                        const Variable& other) const override {
     const unsigned int THIS_TYPE = this->getType();
 
     if (other.getType() == THIS_TYPE) {
       const Uint16Variable& uint16Other =
           static_cast<const Uint16Variable&>(other);
 
-      llvm::Value* subOut = builder.subtract(
-          this->load(builder), uint16Other.load(builder), "uint16_sub_uint16");
+      return builder.subtract(this->load(builder), uint16Other.load(builder),
+                              "uint16_sub_uint16");
 
-      builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -97,16 +96,49 @@ public:
     };
   };
 
-  void subtract(Builder& builder, const std::string& other) const override {
+  llvm::Value* subtract(Builder& builder,
+                        const std::string& other) const override {
     if (!StringConverter::isInt(other)) {
       throw std::runtime_error("Cannot add uint16 and non-uint16");
     }
 
-    uint16_t value =
-        static_cast<uint16_t>(StringConverter::toUnsignedLongLong(other));
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    llvm::Value* subOut = builder.subtract(
-        this->load(builder), builder.createConst16(value), "uint16_sub_val");
-    builder.store(subOut, this->storage);
+    return builder.subtract(this->load(builder), value, "uint16_sub_val");
+  };
+
+  llvm::Value* subtractFrom(Builder& builder,
+                            const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Uint16Variable& uint16Other =
+          static_cast<const Uint16Variable&>(other);
+
+      return builder.subtract(uint16Other.load(builder), this->load(builder),
+                              "uint16_sub_uint16");
+
+    } else {
+      throw std::runtime_error(
+          "No subtraction method is defined between type " +
+          std::to_string(THIS_TYPE) + " and " +
+          std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* subtractFrom(Builder& builder,
+                            const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot subtract non-uint16 and uint16");
+    }
+
+    llvm::Value* value = stringToLLVMValue(builder, other);
+
+    return builder.subtract(value, this->load(builder), "val_sub_uint16");
+  };
+
+  llvm::Value* stringToLLVMValue(const Builder& builder,
+                                 const std::string& value) const override {
+    return builder.createConst16(StringConverter::toUint16(value));
   };
 };

@@ -28,20 +28,36 @@ public:
 
   virtual llvm::LoadInst* load(Builder& builder) const = 0;
 
+  llvm::Value* getStorage() const { return this->storage; };
+  const BuilderType& getBuilderType() const { return this->builderType; };
+
   virtual llvm::StoreInst* store(Builder& builder,
                                  const Variable& other) const = 0;
 
   virtual llvm::StoreInst* store(Builder& builder, std::string value) const = 0;
 
-  virtual void add(Builder& builder, const Variable& other) const = 0;
-  virtual void add(Builder& builder, const std::string& other) const = 0;
+  virtual llvm::Value* add(Builder& builder, const Variable& other) const = 0;
+  virtual llvm::Value* add(Builder& builder,
+                           const std::string& other) const = 0;
 
-  virtual void subtract(Builder& builder, const Variable& other) const = 0;
-  virtual void subtract(Builder& builder, const std::string& other) const = 0;
+  virtual llvm::Value* subtract(Builder& builder,
+                                const Variable& other) const = 0;
+  virtual llvm::Value* subtract(Builder& builder,
+                                const std::string& other) const = 0;
+
+  virtual llvm::Value* subtractFrom(Builder& builder,
+                                    const Variable& other) const = 0;
+  virtual llvm::Value* subtractFrom(Builder& builder,
+                                    const std::string& other) const = 0;
 
   const InitialisationStatement& getInit() const {
     return this->initialisationStatement;
   };
+
+  virtual llvm::Value* stringToLLVMValue(const Builder& builder,
+                                         const std::string& value) const {
+    return nullptr;
+  }
 
   virtual ~Variable() = default;
 };

@@ -39,19 +39,15 @@ int main(const int argc, char* argv[]) {
   if (verbose) {
     tokens.print();
   }
-  std::cout << "a\n";
   AbstractSyntaxTree ast(tokens, programText);
-  std::cout << "b\n";
 
   Program program = ast.parse();
   if (verbose) {
     program.print();
   }
-  std::cout << "c\n";
 
   Generator generator(program, programText);
   generator.init();
-  std::cout << "d\n";
 
   llvm::LLVMContext context;
   std::unique_ptr<llvm::Module> module = generator.buildModule(context);
@@ -59,8 +55,6 @@ int main(const int argc, char* argv[]) {
   if (verbose) {
     generator.print_module(*module);
   }
-  std::cout << "e\n";
 
   generator.compile(context, std::move(module));
-  std::cout << "f\n";
 }

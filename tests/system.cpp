@@ -41,7 +41,6 @@ void checkOutput(const std::string& filePath, const std::string& expectedOut) {}
 TEST_CASE("Run \"./examples/addition.lang\"", "[system]") {
   std::system("./bin/main ./examples/addition.lang");
   int out = std::system("./main.out");
-  std::cout << "Compiled, running!\n";
 
   REQUIRE(out != -1);
   REQUIRE(WIFEXITED(out));
@@ -51,6 +50,7 @@ TEST_CASE("Run \"./examples/addition.lang\"", "[system]") {
 TEST_CASE("Run \"./examples/integer_primitives.lang\"", "[system]") {
   std::system("./bin/main ./examples/integer_primitives.lang");
   int out = std::system("./main.out");
+
   REQUIRE(out != -1);
   REQUIRE(WIFEXITED(out));
   REQUIRE(WEXITSTATUS(out) == 0);
@@ -66,7 +66,7 @@ TEST_CASE("Run \"./examples/print.lang\"", "[system]") {
 TEST_CASE("Run \"./examples/subtraction.lang\"", "[system]") {
   std::system("./bin/main ./examples/subtraction.lang");
   int out = std::system("./main.out");
-  std::cout << "Compiled, running!\n";
+
   REQUIRE(out != -1);
   REQUIRE(WIFEXITED(out));
   REQUIRE(WEXITSTATUS(out) == 1);

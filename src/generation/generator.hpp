@@ -105,8 +105,6 @@ public:
     for (size_t i = 0; i < this->program.size(); i++) {
       const Statement& statement = program.view(i);
 
-      std::cout << "Reading " << (uint16_t)statement.statementType << "\n";
-
       std::map<std::string, BuilderType*> currentTypes =
           contextContainer.getTypes();
 

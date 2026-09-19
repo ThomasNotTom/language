@@ -27,9 +27,9 @@ public:
       throw std::runtime_error("Cannot convert non-int to int");
     }
 
-    uint8_t value = StringConverter::toUnsignedLongLong(other);
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.store(builder.createConst64(value), this->storage);
+    return builder.store(value, this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -71,10 +71,9 @@ public:
       throw std::runtime_error("Cannot add uint64 and non-uint64");
     }
 
-    uint64_t value = StringConverter::toUnsignedLongLong(other);
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.add(this->load(builder), builder.createConst64(value),
-                       "uint64_add_val");
+    return builder.add(this->load(builder), value, "uint64_add_val");
     // builder.store(addOut, this->storage);
   };
 
@@ -103,10 +102,9 @@ public:
       throw std::runtime_error("Cannot subtract uint64 and non-uint64");
     }
 
-    uint64_t value = StringConverter::toUnsignedLongLong(other);
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.subtract(this->load(builder), builder.createConst64(value),
-                            "uint64_sub_val");
+    return builder.subtract(this->load(builder), value, "uint64_sub_val");
   };
 
   llvm::Value* subtractFrom(Builder& builder,
@@ -134,9 +132,13 @@ public:
       throw std::runtime_error("Cannot subtract non-uint64 and uint64");
     }
 
-    uint64_t value = StringConverter::toUnsignedLongLong(other);
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.subtract(builder.createConst64(value), this->load(builder),
-                            "val_sub_uint64");
+    return builder.subtract(value, this->load(builder), "val_sub_uint64");
+  };
+
+  llvm::Value* stringToLLVMValue(const Builder& builder,
+                                 const std::string& value) const override {
+    return builder.createConst32(StringConverter::toUint16(value));
   };
 };

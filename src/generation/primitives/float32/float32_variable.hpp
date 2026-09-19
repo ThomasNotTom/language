@@ -5,6 +5,7 @@
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "lexer/string_converter.hpp"
+#include "llvm/IR/Value.h"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Float32Variable : public Variable {
@@ -28,8 +29,8 @@ public:
       // TODO: Improve error message
       throw std::runtime_error("Cannot store non-float to float");
     }
-    float value = static_cast<float>(StringConverter::toDouble(other));
-    return builder.store(builder.createFloat32(value), this->storage);
+    llvm::Value* value = stringToLLVMValue(builder, other);
+    return builder.store(value, this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -71,9 +72,9 @@ public:
       throw std::runtime_error("Cannot add float and non-float");
     }
 
-    float value = static_cast<float>(StringConverter::toDouble(other));
-    return builder.addf(this->load(builder), builder.createFloat32(value),
-                        "float32_add_val");
+    llvm::Value* value = stringToLLVMValue(builder, other);
+
+    return builder.addf(this->load(builder), value, "float32_add_val");
 
     // builder.store(addOut, this->storage);
   };
@@ -103,9 +104,9 @@ public:
       throw std::runtime_error("Cannot subtract float and non-float");
     }
 
-    float value = static_cast<float>(StringConverter::toDouble(other));
-    return builder.subtractf(this->load(builder), builder.createFloat32(value),
-                             "float32_sub_val");
+    llvm::Value* value = stringToLLVMValue(builder, other);
+
+    return builder.subtractf(this->load(builder), value, "float32_sub_val");
   };
 
   llvm::Value* subtractFrom(Builder& builder,
@@ -133,8 +134,13 @@ public:
       throw std::runtime_error("Cannot subtract non-half and half");
     }
 
-    float value = static_cast<float>(StringConverter::toDouble(other));
-    return builder.subtractf(builder.createFloat32(value), this->load(builder),
-                             "val_sub_float32");
+    llvm::Value* value = stringToLLVMValue(builder, other);
+
+    return builder.subtractf(value, this->load(builder), "val_sub_float32");
+  };
+
+  llvm::Value* stringToLLVMValue(const Builder& builder,
+                                 const std::string& value) const override {
+    return builder.createFloat32(StringConverter::toFloat32(value));
   };
 };

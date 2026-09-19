@@ -2,9 +2,11 @@
 
 #include <stdexcept>
 
+#include "generation/builder/builder.hpp"
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "lexer/string_converter.hpp"
+#include "llvm/IR/Value.h"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Uint8Variable : public Variable {
@@ -28,9 +30,9 @@ public:
       throw std::runtime_error("Cannot convert non-int to int");
     }
 
-    uint8_t value = StringConverter::toUnsignedLongLong(other);
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.store(builder.createConst8(value), this->storage);
+    return builder.store(value, this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -72,11 +74,9 @@ public:
       throw std::runtime_error("Cannot add uint8 and non-uint8");
     }
 
-    uint8_t value =
-        static_cast<uint8_t>(StringConverter::toUnsignedLongLong(other));
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.add(this->load(builder), builder.createConst8(value),
-                       "uint8_add_val");
+    return builder.add(this->load(builder), value, "uint8_add_val");
     // builder.store(addOut, this->storage);
   };
 
@@ -105,11 +105,9 @@ public:
       throw std::runtime_error("Cannot subtract uint8 and non-uint8");
     }
 
-    uint8_t value =
-        static_cast<uint8_t>(StringConverter::toUnsignedLongLong(other));
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.subtract(this->load(builder), builder.createConst8(value),
-                            "uint8_sub_val");
+    return builder.subtract(this->load(builder), value, "uint8_sub_val");
     // builder.store(subout, this->storage);
   };
 
@@ -138,9 +136,13 @@ public:
       throw std::runtime_error("Cannot subtract non-uint8 and uint8");
     }
 
-    uint64_t value = StringConverter::toUnsignedLongLong(other);
+    llvm::Value* value = stringToLLVMValue(builder, other);
 
-    return builder.subtract(builder.createConst8(value), this->load(builder),
-                            "val_sub_uint8");
+    return builder.subtract(value, this->load(builder), "val_sub_uint8");
+  };
+
+  llvm::Value* stringToLLVMValue(const Builder& builder,
+                                 const std::string& value) const override {
+    return builder.createConst8(StringConverter::toUint8(value));
   };
 };

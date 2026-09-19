@@ -31,7 +31,7 @@ public:
     return llvm::PointerType::get(this->context, 0);
   }
 
-  llvm::ConstantInt* createConst8(uint8_t value) {
+  llvm::ConstantInt* createConst8(uint8_t value) const {
     return llvm::ConstantInt::get(this->getUint8(), value);
   };
 
@@ -39,7 +39,7 @@ public:
     return llvm::Type::getInt16Ty(context);
   }
 
-  llvm::ConstantInt* createConst16(uint16_t value) {
+  llvm::ConstantInt* createConst16(uint16_t value) const {
     return llvm::ConstantInt::get(this->getUint16(), value);
   };
 
@@ -47,7 +47,7 @@ public:
     return llvm::Type::getInt32Ty(context);
   }
 
-  llvm::ConstantInt* createConst32(uint32_t value) {
+  llvm::ConstantInt* createConst32(uint32_t value) const {
     return llvm::ConstantInt::get(this->getUint32(), value);
   };
 
@@ -55,7 +55,7 @@ public:
     return llvm::Type::getInt64Ty(context);
   }
 
-  llvm::ConstantInt* createConst64(uint64_t value) {
+  llvm::ConstantInt* createConst64(uint64_t value) const {
     return llvm::ConstantInt::get(this->getUint64(), value);
   };
 

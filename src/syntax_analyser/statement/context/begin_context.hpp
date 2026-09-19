@@ -1,6 +1,6 @@
 #include "syntax_analyser/statement/statement.hpp"
 
-class BeginContexttatement : public Statement {
+class BeginContextStatement : public Statement {
 public:
-  BeginContexttatement() : Statement(StatementType::CONTEXT_BEGIN) {};
+  BeginContextStatement() : Statement(StatementType::CONTEXT_BEGIN) {};
 };

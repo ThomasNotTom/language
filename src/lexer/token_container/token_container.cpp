@@ -4,11 +4,9 @@
 #include <iostream>
 #include <string>
 
-#include "../tokens/operators/operator.hpp"
 #include "../tokens/other.hpp"
 #include "../tokens/token.hpp"
 #include "../tokens/token_type.hpp"
-#include "lexer/tokens/operators/operator_type.hpp"
 
 TokenContainer::TokenContainer() {};
 
@@ -44,29 +42,18 @@ void TokenContainer::print() const {
         break;
       }
 
-      case OPERATOR: {
-        const OperatorToken& op = static_cast<const OperatorToken&>(token);
-        std::string out = "OPERATOR(";
+      case EQUALS: {
+        std::cout << "EQUALS";
+        break;
+      }
 
-        switch (op.operatorType) {
-          case ASSIGNMENT: {
-            out += "=";
-            break;
-          }
+      case PLUS: {
+        std::cout << "PLUS";
+        break;
+      }
 
-          case ADDITION: {
-            out += "+";
-            break;
-          }
-
-          case SUBTRACTION: {
-            out += "-";
-            break;
-          }
-        }
-        out += ")";
-
-        std::cout << out;
+      case MINUS: {
+        std::cout << "MINUS";
         break;
       }
 

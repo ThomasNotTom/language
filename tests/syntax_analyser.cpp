@@ -142,59 +142,33 @@ TEST_CASE("Variable initialisation and assignment with arithmetic",
 
   Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
 
-  REQUIRE(program.size() == 3);
+  REQUIRE(program.size() == 6);
 
   REQUIRE(program.view(0).statementType == StatementType::INITIALISATION);
   const InitialisationStatement& initStatement =
       static_cast<const InitialisationStatement&>(program.view(0));
 
-  REQUIRE(program.view(1).statementType == StatementType::ASSIGNMENT);
-  const AssignmentStatement& assignStatement =
-      static_cast<const AssignmentStatement&>(program.view(1));
+  REQUIRE(program.view(1).statementType == StatementType::CONTEXT_BEGIN);
 
-  REQUIRE(assignStatement.identifier.name == "a");
-  REQUIRE(assignStatement.value.name == "0");
+  REQUIRE(program.view(2).statementType == StatementType::INITIALISATION);
+  const InitialisationStatement& tempInitStatement =
+      static_cast<const InitialisationStatement&>(program.view(2));
+  REQUIRE(tempInitStatement.identifier.name == "temp_1");
 
-  REQUIRE(program.view(2).statementType == StatementType::ADDITION);
-  const AdditionStatement& additionStatement =
-      static_cast<const AdditionStatement&>(program.view(2));
+  REQUIRE(program.view(3).statementType == StatementType::ADDITION);
+  const AdditionStatement& tempAdditionStatement =
+      static_cast<const AdditionStatement&>(program.view(3));
+  REQUIRE(tempAdditionStatement.identifier.name == "temp_1");
+  REQUIRE(tempAdditionStatement.lhs.name == "0");
+  REQUIRE(tempAdditionStatement.rhs.name == "1");
 
-  REQUIRE(additionStatement.identifier.name == "a");
-  REQUIRE(additionStatement.lhs.name == "a");
-  REQUIRE(additionStatement.rhs.name == "1");
-};
+  REQUIRE(program.view(4).statementType == StatementType::ASSIGNMENT);
+  const AssignmentStatement& tempAsignStatement =
+      static_cast<const AssignmentStatement&>(program.view(4));
+  REQUIRE(tempAsignStatement.identifier.name == "a");
+  REQUIRE(tempAsignStatement.value.name == "temp_1");
 
-// "a = 0 + 1;"
-TEST_CASE("Variable assignment with arithmetic", "[syntax analyser]") {
-  ProgramText pt = ProgramText();
-  pt.addLine("a = 0 + 1;");
-
-  TokenContainer tokenContainer = TokenContainer();
-  tokenContainer.addOther(OtherToken("a", TokenMetadata(0)));
-  tokenContainer.addAssignment(AssignmentToken(TokenMetadata(0)));
-  tokenContainer.addOther(OtherToken("0", TokenMetadata(0)));
-  tokenContainer.addAddition(AdditionToken(TokenMetadata(0)));
-  tokenContainer.addOther(OtherToken("1", TokenMetadata(0)));
-  tokenContainer.addEndOfLine(EndOfLineToken(TokenMetadata(0)));
-
-  Program program = AbstractSyntaxTree(tokenContainer, pt).parse();
-
-  REQUIRE(program.size() == 2);
-
-  REQUIRE(program.view(0).statementType == StatementType::ASSIGNMENT);
-  const AssignmentStatement& assignStatement =
-      static_cast<const AssignmentStatement&>(program.view(0));
-
-  REQUIRE(assignStatement.identifier.name == "a");
-  REQUIRE(assignStatement.value.name == "0");
-
-  REQUIRE(program.view(1).statementType == StatementType::ADDITION);
-  const AdditionStatement& additionStatement =
-      static_cast<const AdditionStatement&>(program.view(1));
-
-  REQUIRE(additionStatement.identifier.name == "a");
-  REQUIRE(additionStatement.lhs.name == "a");
-  REQUIRE(additionStatement.rhs.name == "1");
+  REQUIRE(program.view(5).statementType == StatementType::CONTEXT_END);
 };
 
 // "func(a);"

@@ -14,4 +14,9 @@ public:
     return std::make_unique<Uint8Variable>(builder, *this,
                                            initialisationStatement);
   };
+
+  llvm::Value* makeValue(const Builder& builder,
+                         const std::string& value) const override {
+    return builder.createConst8(StringConverter::toUint8(value));
+  };
 };

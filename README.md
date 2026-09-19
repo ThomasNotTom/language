@@ -51,6 +51,8 @@ uint8 c = a + b + 1;
 
 uint8 d = c - b;
 uint8 e = d - 1;
+
+uint8 f = 4 - (d - e);
 ```
 
 ## Printing
@@ -107,6 +109,8 @@ Combines tokens into statements.
 | Addition       | `ADDITION`          | Adds two values and assigns them to an identifier      |
 | Subtraction    | `SUBTRACTION`       | Subtracts two values and assigns them to an identifier |
 | Function Call  | `FUNCTION_CALL`     | Calls a function with any number of parameters         |
+| Context Begin  | `CONTEXT_BEGIN`     | Begins a new symbol, type and callable context         |
+| Context End    | `CONTEXT_END`       | Ends the most recent context                           |
 
 ## `LLVM` Intermediate Representation
 

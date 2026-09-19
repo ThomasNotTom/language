@@ -5,6 +5,7 @@
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "lexer/string_converter.hpp"
+#include "llvm/IR/Value.h"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 
 class Float16Variable : public Variable {
@@ -28,8 +29,9 @@ public:
       // TODO: Improve error message
       throw std::runtime_error("Cannot store non-float to float");
     }
-    float value = static_cast<float>(StringConverter::toDouble(other));
-    return builder.store(builder.createFloat16(value), this->storage);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.store(value, this->storage);
   }
 
   llvm::StoreInst* store(Builder& builder,
@@ -48,18 +50,17 @@ public:
     };
   };
 
-  void add(Builder& builder, const Variable& other) const override {
+  llvm::Value* add(Builder& builder, const Variable& other) const override {
     const unsigned int THIS_TYPE = this->getType();
 
     if (other.getType() == THIS_TYPE) {
       const Float16Variable& float16Other =
           static_cast<const Float16Variable&>(other);
 
-      llvm::Value* addOut =
-          builder.addf(this->load(builder), float16Other.load(builder),
-                       "float16_add_float16");
+      return builder.addf(this->load(builder), float16Other.load(builder),
+                          "float16_add_float16");
 
-      builder.store(addOut, this->storage);
+      // builder.store(addOut, this->storage);
     } else {
       throw std::runtime_error("No addition method is defined between type " +
                                std::to_string(THIS_TYPE) + " and " +
@@ -67,30 +68,27 @@ public:
     }
   };
 
-  void add(Builder& builder, const std::string& other) const override {
+  llvm::Value* add(Builder& builder, const std::string& other) const override {
     if (!StringConverter::isDouble(other)) {
       throw std::runtime_error("Cannot add half and non-half");
     }
 
-    float value = static_cast<float>(StringConverter::toDouble(other));
-    llvm::Value* subOut = builder.addf(
-        this->load(builder), builder.createFloat16(value), "float16_add_val");
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
-    builder.store(subOut, this->storage);
+    return builder.addf(this->load(builder), value, "float16_add_val");
   };
 
-  void subtract(Builder& builder, const Variable& other) const override {
+  llvm::Value* subtract(Builder& builder,
+                        const Variable& other) const override {
     const unsigned int THIS_TYPE = this->getType();
 
     if (other.getType() == THIS_TYPE) {
       const Float16Variable& Float16Other =
           static_cast<const Float16Variable&>(other);
 
-      llvm::Value* subOut =
-          builder.subtractf(this->load(builder), Float16Other.load(builder),
-                            "float16_sub_float16");
+      return builder.subtractf(this->load(builder), Float16Other.load(builder),
+                               "float16_sub_float16");
 
-      builder.store(subOut, this->storage);
     } else {
       throw std::runtime_error(
           "No subtraction method is defined between type " +
@@ -99,15 +97,44 @@ public:
     };
   };
 
-  void subtract(Builder& builder, const std::string& other) const override {
+  llvm::Value* subtract(Builder& builder,
+                        const std::string& other) const override {
     if (!StringConverter::isDouble(other)) {
       throw std::runtime_error("Cannot subtract half and non-half");
     }
 
-    float value = static_cast<float>(StringConverter::toDouble(other));
-    llvm::Value* subOut = builder.subtractf(
-        this->load(builder), builder.createFloat16(value), "float16_sub_val");
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
-    builder.store(subOut, this->storage);
+    return builder.subtractf(this->load(builder), value, "float16_sub_val");
+  };
+
+  llvm::Value* subtractFrom(Builder& builder,
+                            const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Float16Variable& Float16Other =
+          static_cast<const Float16Variable&>(other);
+
+      return builder.subtractf(Float16Other.load(builder), this->load(builder),
+                               "float16_sub_float16");
+
+    } else {
+      throw std::runtime_error(
+          "No subtraction method is defined between type " +
+          std::to_string(THIS_TYPE) + " and " +
+          std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* subtractFrom(Builder& builder,
+                            const std::string& other) const override {
+    if (!StringConverter::isDouble(other)) {
+      throw std::runtime_error("Cannot subtract non-half and half");
+    }
+
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.subtractf(value, this->load(builder), "val_sub_float16");
   };
 };

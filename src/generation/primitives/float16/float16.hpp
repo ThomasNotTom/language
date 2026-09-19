@@ -14,4 +14,9 @@ public:
     return std::make_unique<Float16Variable>(builder, *this,
                                              initialisationStatement);
   };
+
+  llvm::Value* makeValue(const Builder& builder,
+                         const std::string& value) const override {
+    return builder.createFloat16(StringConverter::toFloat16(value));
+  };
 };

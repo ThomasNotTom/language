@@ -1,6 +1,6 @@
 #include "syntax_analyser/statement/statement.hpp"
 
-class EndContexttatement : public Statement {
+class EndContextStatement : public Statement {
 public:
-  EndContexttatement() : Statement(StatementType::CONTEXT_END) {};
+  EndContextStatement() : Statement(StatementType::CONTEXT_END) {};
 };

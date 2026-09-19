@@ -33,8 +33,7 @@ public:
       if (!StringConverter::isInt(parameterValue.getValue())) {
         throw std::runtime_error("Cannot return non-int");
       }
-      uint32_t value =
-          StringConverter::toUnsignedLongLong(parameterValue.getValue());
+      uint32_t value = StringConverter::toUint64(parameterValue.getValue());
 
       llvm::Value* extended =
           builder.zext(builder.createConst32(value), builder.getUint32());

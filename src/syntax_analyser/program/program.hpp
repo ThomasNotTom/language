@@ -56,7 +56,7 @@ public:
     std::string lhs = subtractionStatement.lhs.name;
     std::string rhs = subtractionStatement.rhs.name;
 
-    std::cout << subtractionStatement.identifier.name << " = " << lhs << " + "
+    std::cout << subtractionStatement.identifier.name << " = " << lhs << " - "
               << rhs << ";\n";
   }
 

@@ -49,8 +49,7 @@ public:
 
       if (StringConverter::isInt(parameterValue.getValue())) {
         llvm::Value* FormatStr = builder.createGlobalStringPtr("%llu\n");
-        uint64_t value =
-            StringConverter::toUnsignedLongLong(parameterValue.getValue());
+        uint64_t value = StringConverter::toUint64(parameterValue.getValue());
 
         Args = {FormatStr, builder.createConst64(value)};
       }
@@ -58,7 +57,7 @@ public:
       else if (StringConverter::isDouble(parameterValue.getValue())) {
         llvm::Value* FormatStr = builder.createGlobalStringPtr("%f\n");
 
-        double value = StringConverter::toDouble(parameterValue.getValue());
+        double value = StringConverter::toFloat64(parameterValue.getValue());
 
         Args = {FormatStr, builder.createFloat64(value)};
       }

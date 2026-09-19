@@ -30,7 +30,7 @@ public:
       throw std::runtime_error("Cannot store non-float to float");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.store(value, this->storage);
   }
@@ -74,7 +74,7 @@ public:
       throw std::runtime_error("Cannot add double and non-double");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.addf(this->load(builder), value, "float64_add_val");
 
@@ -106,7 +106,7 @@ public:
       throw std::runtime_error("Cannot subtract double and non-double");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.subtractf(this->load(builder), value, "float64_sub_val");
   };
@@ -136,13 +136,8 @@ public:
       throw std::runtime_error("Cannot subtract non-half and half");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.subtractf(value, this->load(builder), "val_sub_float64");
-  };
-
-  llvm::Value* stringToLLVMValue(const Builder& builder,
-                                 const std::string& value) const override {
-    return builder.createFloat64(StringConverter::toFloat64(value));
   };
 };

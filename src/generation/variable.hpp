@@ -54,10 +54,5 @@ public:
     return this->initialisationStatement;
   };
 
-  virtual llvm::Value* stringToLLVMValue(const Builder& builder,
-                                         const std::string& value) const {
-    return nullptr;
-  }
-
   virtual ~Variable() = default;
 };

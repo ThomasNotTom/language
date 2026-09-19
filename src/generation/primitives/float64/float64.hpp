@@ -16,4 +16,9 @@ public:
     return std::make_unique<Float64Variable>(builder, *this,
                                              initialisationStatement);
   };
+
+  llvm::Value* makeValue(const Builder& builder,
+                         const std::string& value) const override {
+    return builder.createFloat64(StringConverter::toFloat64(value));
+  };
 };

@@ -29,7 +29,7 @@ public:
       // TODO: Improve error message
       throw std::runtime_error("Cannot store non-float to float");
     }
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.store(value, this->storage);
   }
@@ -73,7 +73,7 @@ public:
       throw std::runtime_error("Cannot add half and non-half");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.addf(this->load(builder), value, "float16_add_val");
   };
@@ -103,7 +103,7 @@ public:
       throw std::runtime_error("Cannot subtract half and non-half");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.subtractf(this->load(builder), value, "float16_sub_val");
   };
@@ -133,13 +133,8 @@ public:
       throw std::runtime_error("Cannot subtract non-half and half");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.subtractf(value, this->load(builder), "val_sub_float16");
-  };
-
-  llvm::Value* stringToLLVMValue(const Builder& builder,
-                                 const std::string& value) const override {
-    return builder.createFloat16(StringConverter::toFloat16(value));
   };
 };

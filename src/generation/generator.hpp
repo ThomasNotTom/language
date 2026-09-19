@@ -218,14 +218,14 @@ public:
           // TODO: Fix dubtraction of primitive - primitive
 
           if (!lhsExists && !rhsExists) {
-            llvm::Value* lhsValue = identifier.stringToLLVMValue(
+            llvm::Value* lhsValue = identifier.getBuilderType().makeValue(
                 builder, additionStatement.lhs.name);
             if (lhsValue == nullptr) {
               throw std::runtime_error(
                   "No conversion between \"" + additionStatement.lhs.name +
                   "\" to type " + std::to_string(identifier.getType()));
             }
-            llvm::Value* rhsValue = identifier.stringToLLVMValue(
+            llvm::Value* rhsValue = identifier.getBuilderType().makeValue(
                 builder, additionStatement.rhs.name);
             if (rhsValue == nullptr) {
               throw std::runtime_error(
@@ -284,14 +284,14 @@ public:
           // TODO: Fix dubtraction of primitive - primitive
 
           if (!lhsExists && !rhsExists) {
-            llvm::Value* lhsValue = identifier.stringToLLVMValue(
+            llvm::Value* lhsValue = identifier.getBuilderType().makeValue(
                 builder, subtractionStatement.lhs.name);
             if (lhsValue == nullptr) {
               throw std::runtime_error(
                   "No conversion between \"" + subtractionStatement.lhs.name +
                   "\" to type " + std::to_string(identifier.getType()));
             }
-            llvm::Value* rhsValue = identifier.stringToLLVMValue(
+            llvm::Value* rhsValue = identifier.getBuilderType().makeValue(
                 builder, subtractionStatement.rhs.name);
             if (rhsValue == nullptr) {
               throw std::runtime_error(

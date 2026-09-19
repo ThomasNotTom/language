@@ -15,4 +15,9 @@ public:
     return std::make_unique<Uint64Variable>(builder, *this,
                                             initialisationStatement);
   };
+
+  llvm::Value* makeValue(const Builder& builder,
+                         const std::string& value) const override {
+    return builder.createConst32(StringConverter::toUint16(value));
+  };
 };

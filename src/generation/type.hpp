@@ -19,5 +19,10 @@ public:
       Builder& builder,
       const InitialisationStatement& initialisationStatement) const = 0;
 
+  virtual llvm::Value* makeValue(const Builder& builder,
+                                 const std::string& value) const {
+    return nullptr;
+  }
+
   virtual ~BuilderType() = default;
 };

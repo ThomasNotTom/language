@@ -30,7 +30,7 @@ public:
       throw std::runtime_error("Cannot convert non-int to int");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.store(value, this->storage);
   }
@@ -74,7 +74,7 @@ public:
       throw std::runtime_error("Cannot add uint8 and non-uint8");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.add(this->load(builder), value, "uint8_add_val");
     // builder.store(addOut, this->storage);
@@ -105,7 +105,7 @@ public:
       throw std::runtime_error("Cannot subtract uint8 and non-uint8");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.subtract(this->load(builder), value, "uint8_sub_val");
     // builder.store(subout, this->storage);
@@ -136,13 +136,8 @@ public:
       throw std::runtime_error("Cannot subtract non-uint8 and uint8");
     }
 
-    llvm::Value* value = stringToLLVMValue(builder, other);
+    llvm::Value* value = this->builderType.makeValue(builder, other);
 
     return builder.subtract(value, this->load(builder), "val_sub_uint8");
-  };
-
-  llvm::Value* stringToLLVMValue(const Builder& builder,
-                                 const std::string& value) const override {
-    return builder.createConst8(StringConverter::toUint8(value));
   };
 };

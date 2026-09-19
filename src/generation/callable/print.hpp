@@ -49,8 +49,7 @@ public:
 
       if (StringConverter::isInt(parameterValue.getValue())) {
         llvm::Value* FormatStr = builder.createGlobalStringPtr("%llu\n");
-        uint64_t value =
-            StringConverter::toUnsignedLongLong(parameterValue.getValue());
+        uint64_t value = StringConverter::toUint64(parameterValue.getValue());
 
         Args = {FormatStr, builder.createConst64(value)};
       }
@@ -58,7 +57,7 @@ public:
       else if (StringConverter::isDouble(parameterValue.getValue())) {
         llvm::Value* FormatStr = builder.createGlobalStringPtr("%f\n");
 
-        double value = StringConverter::toDouble(parameterValue.getValue());
+        double value = StringConverter::toFloat64(parameterValue.getValue());
 
         Args = {FormatStr, builder.createFloat64(value)};
       }
@@ -78,31 +77,21 @@ public:
       switch (parameterVariable.getVariable().getType()) {
         case (uint8_t)BuilderTypeID::UINT8: {
           FormatStr = builder.createGlobalStringPtr("%hhu\n");
-          Args = {FormatStr,
-                  builder.zext(parameterVariable.getVariable().load(builder),
-                               builder.getUint32())};
           break;
         }
 
         case (uint8_t)BuilderTypeID::UINT16: {
           FormatStr = builder.createGlobalStringPtr("%hu\n");
-          Args = {FormatStr,
-                  builder.zext(parameterVariable.getVariable().load(builder),
-                               builder.getUint32())};
           break;
         }
 
         case (uint8_t)BuilderTypeID::UINT32: {
           FormatStr = builder.createGlobalStringPtr("%u\n");
-          Args = {FormatStr, parameterVariable.getVariable().load(builder)};
-
           break;
         }
 
         case (uint8_t)BuilderTypeID::UINT64: {
           FormatStr = builder.createGlobalStringPtr("%lu\n");
-          Args = {FormatStr, parameterVariable.getVariable().load(builder)};
-
           break;
         }
 
@@ -110,14 +99,14 @@ public:
         case (uint8_t)BuilderTypeID::FLOAT32:
         case (uint8_t)BuilderTypeID::FLOAT64: {
           FormatStr = builder.createGlobalStringPtr("%f\n");
-          Args = {FormatStr, parameterVariable.getVariable().load(builder)};
-
           break;
         }
 
         default:
           throw std::runtime_error("No implementation defined for printing");
       }
+
+      Args = {FormatStr, parameterVariable.getVariable().load(builder)};
     }
     builder.createCall(this->printFunc, Args);
   }

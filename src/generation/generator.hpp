@@ -29,6 +29,7 @@
 #include "generation/primitives/float16/float16.hpp"
 #include "generation/primitives/float32/float32.hpp"
 #include "generation/primitives/float64/float64.hpp"
+#include "generation/primitives/uint1/uint1.hpp"
 #include "generation/primitives/uint16/uint16.hpp"
 #include "generation/primitives/uint32/uint32.hpp"
 #include "generation/primitives/uint64/uint64.hpp"
@@ -85,6 +86,7 @@ public:
     ContextContainer contextContainer = ContextContainer();
     contextContainer.makeEmptyContext();
 
+    contextContainer.addType("uint1", std::make_unique<Uint1Builder>());
     contextContainer.addType("uint8", std::make_unique<Uint8Builder>());
     contextContainer.addType("uint16", std::make_unique<Uint16Builder>());
     contextContainer.addType("uint32", std::make_unique<Uint32Builder>());

@@ -75,6 +75,7 @@ public:
       llvm::Value* FormatStr;
 
       switch (parameterVariable.getVariable().getType()) {
+        case (uint8_t)BuilderTypeID::UINT1:
         case (uint8_t)BuilderTypeID::UINT8: {
           FormatStr = builder.createGlobalStringPtr("%hhu\n");
           break;

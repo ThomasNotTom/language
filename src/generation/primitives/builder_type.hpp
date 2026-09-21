@@ -3,12 +3,13 @@
 #include <cstdint>
 
 enum class BuilderTypeID : uint8_t {
-  UINT8 = 1,
-  UINT16 = 2,
-  UINT32 = 3,
-  UINT64 = 4,
+  UINT1 = 1,
+  UINT8 = 2,
+  UINT16 = 3,
+  UINT32 = 4,
+  UINT64 = 5,
 
-  FLOAT16 = 5,
-  FLOAT32 = 6,
-  FLOAT64 = 7
+  FLOAT16 = 6,
+  FLOAT32 = 7,
+  FLOAT64 = 8
 };

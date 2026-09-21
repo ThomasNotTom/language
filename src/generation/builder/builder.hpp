@@ -26,6 +26,12 @@ public:
     this->irBuilder.SetInsertPoint(i);
   }
 
+  llvm::IntegerType* getUint1() const { return llvm::Type::getInt1Ty(context); }
+
+  llvm::ConstantInt* createConst1(bool value) const {
+    return llvm::ConstantInt::get(this->getUint1(), value);
+  };
+
   llvm::IntegerType* getUint8() const { return llvm::Type::getInt8Ty(context); }
   llvm::PointerType* getUint8Ptr() const {
     return llvm::PointerType::get(this->context, 0);

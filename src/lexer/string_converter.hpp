@@ -13,6 +13,10 @@ public:
     return std::regex_match(string, std::regex("-?[0-9]+\\.[0-9]+"));
   }
 
+  static bool toUint1(const std::string& string) {
+    return std::stoull(string) % 2;
+  };
+
   static uint8_t toUint8(const std::string& string) {
     return std::stoull(string);
   }

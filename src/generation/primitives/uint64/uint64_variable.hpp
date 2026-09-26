@@ -136,4 +136,33 @@ public:
 
     return builder.subtract(value, this->load(builder), "val_sub_uint64");
   };
+
+  llvm::Value* andOperator(Builder& builder,
+                           const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Uint64Variable& uint64Other =
+          static_cast<const Uint64Variable&>(other);
+
+      return builder.andOperator(uint64Other.load(builder), this->load(builder),
+                                 "uint64_and_uint64");
+
+    } else {
+      throw std::runtime_error("No and method is defined between type " +
+                               std::to_string(THIS_TYPE) + " and " +
+                               std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* andOperator(Builder& builder,
+                           const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot perform and on non-int");
+    }
+
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.andOperator(this->load(builder), value, "uint64_and_val");
+  };
 };

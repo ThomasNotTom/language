@@ -37,6 +37,7 @@
 #include "generation/type.hpp"
 #include "generation/variable.hpp"
 #include "io/program_text.hpp"
+#include "lexer/string_converter.hpp"
 #include "lexer/tokens/other.hpp"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/IR/Constants.h"
@@ -45,6 +46,7 @@
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/Program.h"
 #include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/and/and.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
@@ -389,6 +391,57 @@ public:
         case StatementType::CONTEXT_END: {
           contextContainer.removeTopContext();
           break;
+        }
+
+        case StatementType::AND: {
+          const AndStatement& andStatement =
+              static_cast<const AndStatement&>(statement);
+
+          const Variable& out =
+              *currentSymbols.at(andStatement.identifier.name);
+
+          const OtherToken& lhs = andStatement.lhs;
+          bool hasLhs = currentSymbols.contains(andStatement.lhs.name);
+
+          const OtherToken& rhs = andStatement.rhs;
+          bool hasRhs = currentSymbols.contains(andStatement.rhs.name);
+
+          if (hasLhs) {
+            Variable* lhsVariable = currentSymbols.at(lhs.name);
+            if (hasRhs) {
+              Variable* rhsVariable = currentSymbols.at(rhs.name);
+
+              builder.store(lhsVariable->andOperator(builder, *rhsVariable),
+                            out.getStorage());
+              continue;
+            }
+
+            builder.store(lhsVariable->andOperator(builder, rhs.name),
+                          out.getStorage());
+
+            continue;
+          }
+
+          if (!hasLhs && hasRhs) {
+            Variable* rhsVariable = currentSymbols.at(rhs.name);
+
+            builder.store(rhsVariable->andOperator(builder, lhs.name),
+                          out.getStorage());
+            continue;
+          }
+
+          if (!hasLhs && !hasRhs) {
+            llvm::Value* lhsValue =
+                builder.createConst1(StringConverter::toUint1(lhs.name));
+
+            llvm::Value* rhsValue =
+                builder.createConst1(StringConverter::toUint1(rhs.name));
+
+            builder.store(builder.andOperator(lhsValue, rhsValue,
+                                              lhs.name + "_and_" + rhs.name),
+                          out.getStorage());
+            continue;
+          }
         }
       }
     }

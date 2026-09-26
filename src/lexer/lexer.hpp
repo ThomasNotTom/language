@@ -8,6 +8,7 @@
 #include "./tokens/operators/assignment/assignment.hpp"
 #include "./tokens/other.hpp"
 #include "lexer/token_container/token_container.hpp"
+#include "lexer/tokens/operators/boolean/and/and.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/token.hpp"
 
@@ -56,6 +57,9 @@ public:
       } else if (buffer == "-") {
         tokens.addSubtraction(SubtractionToken(
             TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
+      } else if (buffer == "&&") {
+        tokens.addAnd(
+            OrToken(TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
       } else if (buffer.size() != 0) {
         tokens.addOther(OtherToken(
             buffer, TokenMetadata(lineNumber, bufferStartColumn, endColumn)));

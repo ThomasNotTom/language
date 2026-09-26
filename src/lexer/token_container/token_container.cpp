@@ -73,6 +73,11 @@ void TokenContainer::print() const {
         std::cout << "BRACKET_CLOSE";
         break;
       }
+
+      case AND: {
+        std::cout << "AND";
+        break;
+      }
     }
 
     std::cout << "  # " << TokenContainer::tokenMetadataToString(token.metadata)

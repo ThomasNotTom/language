@@ -6,6 +6,7 @@
 
 #include "lexer/tokens/other.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/and/and.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
@@ -80,6 +81,14 @@ public:
 
   void printContextEndStatement() const { std::cout << "CONTEXT_END;\n"; }
 
+  void printAndStatement(const AndStatement& andStatement) const {
+    std::string identifierName = andStatement.identifier.name;
+    std::string lhs = andStatement.lhs.name;
+    std::string rhs = andStatement.rhs.name;
+
+    std::cout << identifierName << " = " << lhs << " && " << rhs << ";\n";
+  };
+
   void print() const {
     std::cout << "-- Program --\n";
     std::cout << "count: " << this->statements.size() << "\n";
@@ -139,6 +148,14 @@ public:
         case StatementType::CONTEXT_END: {
           this->printContextEndStatement();
           break;
+        }
+
+        case StatementType::AND: {
+          const AndStatement& andStatement =
+              static_cast<const AndStatement&>(statement);
+
+        printAndStatement(andStatement);
+        break;
         }
       }
     }

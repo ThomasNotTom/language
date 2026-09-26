@@ -1,6 +1,5 @@
 #include <cstdint>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <queue>
 #include <stack>
@@ -9,11 +8,13 @@
 #include <vector>
 
 #include "lexer/tokens/operators/addition/addition.hpp"
+#include "lexer/tokens/operators/boolean/and/and.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
 #include "lexer/tokens/token.hpp"
 #include "lexer/tokens/token_type.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/and/and.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/context/begin_context.hpp"
 #include "syntax_analyser/statement/context/end_context.hpp"
@@ -42,6 +43,7 @@ class ArithmeticParser {
 private:
   static uint8_t getTokenPriority(std::reference_wrapper<const Token> token) {
     switch (token.get().tokenType) {
+      case TokenType::AND:
       case TokenType::PLUS:
       case TokenType::MINUS: {
         return 2;
@@ -58,6 +60,7 @@ private:
     switch (token.tokenType) {
       case TokenType::PLUS:
       case TokenType::MINUS:
+      case TokenType::AND:
         return true;
       default:
         return false;
@@ -192,6 +195,26 @@ public:
 
             out.push_back(std::make_unique<SubtractionStatement>(
                 tempToken, tokenaA, subtractionToken, tokenaB));
+
+            tokenStack.push(tempToken);
+
+            break;
+          }
+
+          case TokenType::AND: {
+            const OrToken& andToken = static_cast<const OrToken&>(next);
+
+            std::string tempName = "temp_" + std::to_string(tempVariableCount);
+            const OtherToken tempToken =
+                OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+            tempVariableCount += 1;
+
+            out.push_back(
+                std::make_unique<InitialisationStatement>(outType, tempToken));
+
+            out.push_back(std::make_unique<AndStatement>(tempToken, tokenaA,
+                                                         andToken, tokenaB));
 
             tokenStack.push(tempToken);
 

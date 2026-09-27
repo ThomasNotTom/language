@@ -138,4 +138,97 @@ public:
 
     return builder.subtractf(value, this->load(builder), "val_sub_float32");
   };
+
+  llvm::Value* andOperator(Builder& builder,
+                           const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Float32Variable& Float32Other =
+          static_cast<const Float32Variable&>(other);
+
+      return builder.andOperator(Float32Other.load(builder),
+                                 this->load(builder), "float32_and_float32");
+
+    } else {
+      throw std::runtime_error("No and method is defined between type " +
+                               std::to_string(THIS_TYPE) + " and " +
+                               std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* andOperator(Builder& builder,
+                           const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot perform and on non-int");
+    }
+
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.andOperator(this->load(builder), value, "float32_and_val");
+  };
+
+  llvm::Value* orOperator(Builder& builder,
+                          const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Float32Variable& Float32Other =
+          static_cast<const Float32Variable&>(other);
+
+      return builder.orOperator(Float32Other.load(builder), this->load(builder),
+                                "float32_or_float32");
+
+    } else {
+      throw std::runtime_error("No or method is defined between type " +
+                               std::to_string(THIS_TYPE) + " and " +
+                               std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* orOperator(Builder& builder,
+                          const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot perform or on non-int");
+    }
+
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.orOperator(this->load(builder), value, "float32_or_val");
+  };
+
+  llvm::Value* equalityOperator(Builder& builder,
+                                const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Float32Variable& Float32Other =
+          static_cast<const Float32Variable&>(other);
+
+      return builder.floatEqualityOperator(Float32Other.load(builder),
+                                           this->load(builder),
+                                           "float32_equality_float32");
+
+    } else {
+      throw std::runtime_error("No or method is defined between type " +
+                               std::to_string(THIS_TYPE) + " and " +
+                               std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* equalityOperator(Builder& builder,
+                                const std::string& other) const override {
+    if (!StringConverter::isDouble(other)) {
+      throw std::runtime_error("Cannot perform equality on non-float");
+    }
+
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.floatEqualityOperator(this->load(builder), value,
+                                         "float32_equality_val");
+  };
+
+  llvm::Value* notOperator(Builder& builder) const override {
+    return builder.notOperator(this->load(builder), "float32_not");
+  };
 };

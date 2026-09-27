@@ -10,17 +10,24 @@ enum TokenType : uint8_t {
   EQUALS = 4,
   BRACKET_OPEN = 5,
   BRACKET_CLOSE = 6,
-  OTHER = 7,
+  AND = 7,
+  OR = 8,
+  NOT = 9,
+  EQUALITY = 10,
+  OTHER = 11,
 };
 
 class TokenChecker {
 public:
   static bool isOperator(const TokenType& tokenType) {
-    return tokenType == TokenType::PLUS || tokenType == TokenType::MINUS;
+    return tokenType == TokenType::PLUS || tokenType == TokenType::MINUS ||
+           TokenType::AND || TokenType::OR;
   }
 
   static std::string getOperatorTypes() {
     return std::to_string(TokenType::PLUS) + ", " +
-           std::to_string(TokenType::MINUS);
+           std::to_string(TokenType::MINUS) + ", " +
+           std::to_string(TokenType::AND) + ", " +
+           std::to_string(TokenType::OR);
   }
 };

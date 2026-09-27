@@ -180,3 +180,40 @@ TEST_CASE("Order of operations", "[lexer]") {
 
   REQUIRE(tokenContainer.view(9).tokenType == TokenType::END_OF_LINE);
 };
+
+// "a = !((1 || 0) && 1);"
+TEST_CASE("Boolean algebra", "[lexer]") {
+  Lexer lexer = Lexer("a = !((1 || 0) && 1);");
+  TokenContainer tokenContainer = lexer.makeTokenList();
+  REQUIRE(13);
+
+  REQUIRE(tokenContainer.view(0).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(0)).name == "a");
+
+  REQUIRE(tokenContainer.view(1).tokenType == TokenType::EQUALS);
+
+  REQUIRE(tokenContainer.view(2).tokenType == TokenType::NOT);
+
+  REQUIRE(tokenContainer.view(3).tokenType == TokenType::BRACKET_OPEN);
+
+  REQUIRE(tokenContainer.view(4).tokenType == TokenType::BRACKET_OPEN);
+
+  REQUIRE(tokenContainer.view(5).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(5)).name == "1");
+
+  REQUIRE(tokenContainer.view(6).tokenType == TokenType::OR);
+
+  REQUIRE(tokenContainer.view(7).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(7)).name == "0");
+
+  REQUIRE(tokenContainer.view(8).tokenType == TokenType::BRACKET_CLOSE);
+
+  REQUIRE(tokenContainer.view(9).tokenType == TokenType::AND);
+
+  REQUIRE(tokenContainer.view(10).tokenType == TokenType::OTHER);
+  REQUIRE(static_cast<const OtherToken&>(tokenContainer.view(10)).name == "1");
+
+  REQUIRE(tokenContainer.view(11).tokenType == TokenType::BRACKET_CLOSE);
+
+  REQUIRE(tokenContainer.view(12).tokenType == TokenType::END_OF_LINE);
+};

@@ -4,13 +4,11 @@
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <csignal>
 #include <cstdlib>
-#include <memory>
 #include <stdexcept>
 
 #include "generation/generator.hpp"
 #include "io/file_reader.hpp"
 #include "io/program_text.hpp"
-#include "lexer/lexer.hpp"
 #include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/bracket/bracket_close.hpp"
 #include "lexer/tokens/bracket/bracket_open.hpp"

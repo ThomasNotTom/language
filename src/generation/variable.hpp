@@ -50,6 +50,23 @@ public:
   virtual llvm::Value* subtractFrom(Builder& builder,
                                     const std::string& other) const = 0;
 
+  virtual llvm::Value* andOperator(Builder& builder,
+                                   const Variable& other) const = 0;
+  virtual llvm::Value* andOperator(Builder& builder,
+                                   const std::string& other) const = 0;
+
+  virtual llvm::Value* orOperator(Builder& builder,
+                                  const Variable& other) const = 0;
+  virtual llvm::Value* orOperator(Builder& builder,
+                                  const std::string& other) const = 0;
+
+  virtual llvm::Value* equalityOperator(Builder& builder,
+                                        const Variable& other) const = 0;
+  virtual llvm::Value* equalityOperator(Builder& builder,
+                                        const std::string& other) const = 0;
+
+  virtual llvm::Value* notOperator(Builder& builder) const = 0;
+
   const InitialisationStatement& getInit() const {
     return this->initialisationStatement;
   };

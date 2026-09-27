@@ -6,9 +6,13 @@
 
 #include "lexer/tokens/other.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/and/and.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/equality/equality.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/not/not.hpp"
+#include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 class Program {
@@ -80,6 +84,37 @@ public:
 
   void printContextEndStatement() const { std::cout << "CONTEXT_END;\n"; }
 
+  void printAndStatement(const AndStatement& andStatement) const {
+    std::string identifierName = andStatement.identifier.name;
+    std::string lhs = andStatement.lhs.name;
+    std::string rhs = andStatement.rhs.name;
+
+    std::cout << identifierName << " = " << lhs << " && " << rhs << ";\n";
+  };
+
+  void printOrStatement(const OrStatement& andStatement) const {
+    std::string identifierName = andStatement.identifier.name;
+    std::string lhs = andStatement.lhs.name;
+    std::string rhs = andStatement.rhs.name;
+
+    std::cout << identifierName << " = " << lhs << " || " << rhs << ";\n";
+  };
+
+  void printNotStatement(const NotStatement& notStatement) const {
+    std::string identifierName = notStatement.identifier.name;
+    std::string value = notStatement.value.name;
+
+    std::cout << identifierName << " = !" << value << ";\n";
+  };
+
+  void printEqualityStatement(const EqualityStatement& notStatement) const {
+    std::string identifierName = notStatement.identifier.name;
+    std::string lhs = notStatement.lhs.name;
+    std::string rhs = notStatement.rhs.name;
+
+    std::cout << identifierName << " = " << lhs << " == " << rhs << ";\n";
+  };
+
   void print() const {
     std::cout << "-- Program --\n";
     std::cout << "count: " << this->statements.size() << "\n";
@@ -138,6 +173,38 @@ public:
 
         case StatementType::CONTEXT_END: {
           this->printContextEndStatement();
+          break;
+        }
+
+        case StatementType::AND: {
+          const AndStatement& andStatement =
+              static_cast<const AndStatement&>(statement);
+
+          printAndStatement(andStatement);
+          break;
+        }
+
+        case StatementType::OR: {
+          const OrStatement& orStatement =
+              static_cast<const OrStatement&>(statement);
+
+          printOrStatement(orStatement);
+          break;
+        }
+
+        case StatementType::NOT: {
+          const NotStatement& notStatement =
+              static_cast<const NotStatement&>(statement);
+
+          printNotStatement(notStatement);
+          break;
+        }
+
+        case StatementType::EQUALITY: {
+          const EqualityStatement& equalityStatement =
+              static_cast<const EqualityStatement&>(statement);
+
+          printEqualityStatement(equalityStatement);
           break;
         }
       }

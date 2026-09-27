@@ -1,6 +1,5 @@
 #include <cstdint>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <queue>
 #include <stack>
@@ -9,15 +8,23 @@
 #include <vector>
 
 #include "lexer/tokens/operators/addition/addition.hpp"
+#include "lexer/tokens/operators/boolean/and/and.hpp"
+#include "lexer/tokens/operators/boolean/equality/equality.hpp"
+#include "lexer/tokens/operators/boolean/not/not.hpp"
+#include "lexer/tokens/operators/boolean/or/or.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
 #include "lexer/tokens/token.hpp"
 #include "lexer/tokens/token_type.hpp"
 #include "syntax_analyser/statement/addition/addition.hpp"
+#include "syntax_analyser/statement/and/and.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/context/begin_context.hpp"
 #include "syntax_analyser/statement/context/end_context.hpp"
+#include "syntax_analyser/statement/equality/equality.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/not/not.hpp"
+#include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
@@ -42,8 +49,12 @@ class ArithmeticParser {
 private:
   static uint8_t getTokenPriority(std::reference_wrapper<const Token> token) {
     switch (token.get().tokenType) {
+      case TokenType::AND:
+      case TokenType::OR:
+      case TokenType::EQUALITY:
       case TokenType::PLUS:
-      case TokenType::MINUS: {
+      case TokenType::MINUS:
+      case TokenType::NOT: {
         return 2;
       }
 
@@ -58,6 +69,10 @@ private:
     switch (token.tokenType) {
       case TokenType::PLUS:
       case TokenType::MINUS:
+      case TokenType::AND:
+      case TokenType::OR:
+      case TokenType::NOT:
+      case TokenType::EQUALITY:
         return true;
       default:
         return false;
@@ -123,6 +138,8 @@ public:
 
           topOperatorToken = operatorStack.top();
         }
+
+        operatorStack.pop();
       }
     }
 
@@ -152,6 +169,26 @@ public:
       if (ArithmeticParser::isOperator(next)) {
         const OtherToken& tokenaB = tokenStack.top();
         tokenStack.pop();
+
+        if (next.tokenType == TokenType::NOT) {
+          const NotToken& notToken = static_cast<const NotToken&>(next);
+
+          std::string tempName = "temp_" + std::to_string(tempVariableCount);
+          const OtherToken tempToken =
+              OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+          tempVariableCount += 1;
+
+          out.push_back(
+              std::make_unique<InitialisationStatement>(outType, tempToken));
+
+          out.push_back(
+              std::make_unique<NotStatement>(tempToken, notToken, tokenaB));
+
+          tokenStack.push(tempToken);
+
+          continue;
+        }
 
         const OtherToken& tokenaA = tokenStack.top();
         tokenStack.pop();
@@ -192,6 +229,67 @@ public:
 
             out.push_back(std::make_unique<SubtractionStatement>(
                 tempToken, tokenaA, subtractionToken, tokenaB));
+
+            tokenStack.push(tempToken);
+
+            break;
+          }
+
+          case TokenType::AND: {
+            const AndToken& andToken = static_cast<const AndToken&>(next);
+
+            std::string tempName = "temp_" + std::to_string(tempVariableCount);
+            const OtherToken tempToken =
+                OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+            tempVariableCount += 1;
+
+            out.push_back(
+                std::make_unique<InitialisationStatement>(outType, tempToken));
+
+            out.push_back(std::make_unique<AndStatement>(tempToken, tokenaA,
+                                                         andToken, tokenaB));
+
+            tokenStack.push(tempToken);
+
+            break;
+          }
+
+          case TokenType::OR: {
+            const OrToken& orToken = static_cast<const OrToken&>(next);
+
+            std::string tempName = "temp_" + std::to_string(tempVariableCount);
+            const OtherToken tempToken =
+                OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+            tempVariableCount += 1;
+
+            out.push_back(
+                std::make_unique<InitialisationStatement>(outType, tempToken));
+
+            out.push_back(std::make_unique<OrStatement>(tempToken, tokenaA,
+                                                        orToken, tokenaB));
+
+            tokenStack.push(tempToken);
+
+            break;
+          }
+
+          case TokenType::EQUALITY: {
+            const EqualityToken& equalityToken =
+                static_cast<const EqualityToken&>(next);
+
+            std::string tempName = "temp_" + std::to_string(tempVariableCount);
+            const OtherToken tempToken =
+                OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+            tempVariableCount += 1;
+
+            out.push_back(
+                std::make_unique<InitialisationStatement>(outType, tempToken));
+
+            out.push_back(std::make_unique<EqualityStatement>(
+                tempToken, tokenaA, equalityToken, tokenaB));
 
             tokenStack.push(tempToken);
 

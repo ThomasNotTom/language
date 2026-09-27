@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Constant.h"
@@ -123,6 +124,30 @@ public:
   llvm::Value* multiplyf(llvm::Value* lhs, llvm::Value* rhs,
                          const std::string& name) {
     return this->irBuilder.CreateFMul(lhs, rhs, name);
+  };
+
+  llvm::Value* andOperator(llvm::Value* lhs, llvm::Value* rhs,
+                           const std::string& name) {
+    return this->irBuilder.CreateAnd(lhs, rhs, name);
+  };
+
+  llvm::Value* orOperator(llvm::Value* lhs, llvm::Value* rhs,
+                          const std::string& name) {
+    return this->irBuilder.CreateOr(lhs, rhs, name);
+  };
+
+  llvm::Value* intEqualityOperator(llvm::Value* lhs, llvm::Value* rhs,
+                                   const std::string& name) {
+    return this->irBuilder.CreateICmpEQ(lhs, rhs, name);
+  };
+
+  llvm::Value* floatEqualityOperator(llvm::Value* lhs, llvm::Value* rhs,
+                                     const std::string& name) {
+    return this->irBuilder.CreateFCmpOEQ(lhs, rhs, name);
+  };
+
+  llvm::Value* notOperator(llvm::Value* value, const std::string& name) {
+    return this->irBuilder.CreateNot(value, name);
   };
 
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {

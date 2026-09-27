@@ -8,6 +8,10 @@
 #include "lexer/tokens/end_of_line/end_of_line.hpp"
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/assignment/assignment.hpp"
+#include "lexer/tokens/operators/boolean/and/and.hpp"
+#include "lexer/tokens/operators/boolean/equality/equality.hpp"
+#include "lexer/tokens/operators/boolean/not/not.hpp"
+#include "lexer/tokens/operators/boolean/or/or.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
 #include "lexer/tokens/token.hpp"
@@ -45,6 +49,22 @@ public:
 
   void addAssignment(const AssignmentToken& token) {
     tokens.push_back(std::make_unique<AssignmentToken>(token));
+  }
+
+  void addAnd(const AndToken& token) {
+    tokens.push_back(std::make_unique<AndToken>(token));
+  }
+
+  void addOr(const OrToken& token) {
+    tokens.push_back(std::make_unique<OrToken>(token));
+  }
+
+  void addNot(const NotToken& token) {
+    tokens.push_back(std::make_unique<NotToken>(token));
+  }
+
+  void addEquality(const EqualityToken& token) {
+    tokens.push_back(std::make_unique<EqualityToken>(token));
   }
 
   static std::string tokenMetadataToString(const TokenMetadata& metadata);

@@ -1,0 +1,8 @@
+uint1 a = 1;
+uint1 b = 0;
+
+uint1 c = (a || b) == 0;
+
+uint1 d = !c && 1;
+
+return(d);

@@ -89,3 +89,12 @@ TEST_CASE("Run \"./examples/variable_declaration.lang\"", "[system]") {
   REQUIRE(WIFEXITED(out));
   REQUIRE(WEXITSTATUS(out) == 1);
 };
+
+TEST_CASE("Run \"./examples/boolean_algebra.lang\"", "[system]") {
+  std::system("./bin/main ./examples/boolean_algebra.lang");
+  int out = std::system("./main.out");
+
+  REQUIRE(out != -1);
+  REQUIRE(WIFEXITED(out));
+  REQUIRE(WEXITSTATUS(out) == 1);
+};

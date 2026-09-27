@@ -11,4 +11,5 @@ enum class StatementType : uint8_t {
   AND = 9,
   OR = 10,
   NOT = 11,
+  EQUALITY = 12,
 };

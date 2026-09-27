@@ -88,6 +88,11 @@ void TokenContainer::print() const {
         std::cout << "NOT";
         break;
       }
+
+      case EQUALITY: {
+        std::cout << "EQUALITY";
+        break;
+      }
     }
 
     std::cout << "  # " << TokenContainer::tokenMetadataToString(token.metadata)

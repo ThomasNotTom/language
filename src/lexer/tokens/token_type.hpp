@@ -13,7 +13,8 @@ enum TokenType : uint8_t {
   AND = 7,
   OR = 8,
   NOT = 9,
-  OTHER = 10,
+  EQUALITY = 10,
+  OTHER = 11,
 };
 
 class TokenChecker {

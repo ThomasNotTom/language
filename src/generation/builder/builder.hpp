@@ -136,6 +136,16 @@ public:
     return this->irBuilder.CreateOr(lhs, rhs, name);
   };
 
+  llvm::Value* intEqualityOperator(llvm::Value* lhs, llvm::Value* rhs,
+                                   const std::string& name) {
+    return this->irBuilder.CreateICmpEQ(lhs, rhs, name);
+  };
+
+  llvm::Value* floatEqualityOperator(llvm::Value* lhs, llvm::Value* rhs,
+                                     const std::string& name) {
+    return this->irBuilder.CreateFCmpOEQ(lhs, rhs, name);
+  };
+
   llvm::Value* notOperator(llvm::Value* value, const std::string& name) {
     return this->irBuilder.CreateNot(value, name);
   };

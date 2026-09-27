@@ -48,6 +48,7 @@
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/and/and.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/equality/equality.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/not/not.hpp"
@@ -441,6 +442,58 @@ public:
 
             builder.store(builder.andOperator(lhsValue, rhsValue,
                                               lhs.name + "_and_" + rhs.name),
+                          out.getStorage());
+            continue;
+          }
+        }
+
+        case StatementType::EQUALITY: {
+          const EqualityStatement& equalityStatement =
+              static_cast<const EqualityStatement&>(statement);
+
+          const Variable& out =
+              *currentSymbols.at(equalityStatement.identifier.name);
+
+          const OtherToken& lhs = equalityStatement.lhs;
+          bool hasLhs = currentSymbols.contains(lhs.name);
+
+          const OtherToken& rhs = equalityStatement.rhs;
+          bool hasRhs = currentSymbols.contains(rhs.name);
+
+          if (hasLhs) {
+            Variable* lhsVariable = currentSymbols.at(lhs.name);
+            if (hasRhs) {
+              Variable* rhsVariable = currentSymbols.at(rhs.name);
+
+              builder.store(
+                  lhsVariable->equalityOperator(builder, *rhsVariable),
+                  out.getStorage());
+              continue;
+            }
+
+            builder.store(lhsVariable->equalityOperator(builder, rhs.name),
+                          out.getStorage());
+
+            continue;
+          }
+
+          if (!hasLhs && hasRhs) {
+            Variable* rhsVariable = currentSymbols.at(rhs.name);
+
+            builder.store(rhsVariable->equalityOperator(builder, lhs.name),
+                          out.getStorage());
+            continue;
+          }
+
+          if (!hasLhs && !hasRhs) {
+            llvm::Value* lhsValue =
+                builder.createConst64(StringConverter::toUint1(lhs.name));
+
+            llvm::Value* rhsValue =
+                builder.createConst64(StringConverter::toUint1(rhs.name));
+
+            builder.store(builder.intEqualityOperator(
+                              lhsValue, rhsValue, lhs.name + "_or_" + rhs.name),
                           out.getStorage());
             continue;
           }

@@ -196,6 +196,37 @@ public:
     return builder.orOperator(this->load(builder), value, "uint1_or_val");
   };
 
+  llvm::Value* equalityOperator(Builder& builder,
+                                const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Uint1Variable& uint1Other =
+          static_cast<const Uint1Variable&>(other);
+
+      return builder.floatEqualityOperator(uint1Other.load(builder),
+                                           this->load(builder),
+                                           "uint1_equality_uint1");
+
+    } else {
+      throw std::runtime_error("No or method is defined between type " +
+                               std::to_string(THIS_TYPE) + " and " +
+                               std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* equalityOperator(Builder& builder,
+                                const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot perform equality on non-int");
+    }
+
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.intEqualityOperator(this->load(builder), value,
+                                       "uint1_equality_val");
+  };
+
   llvm::Value* notOperator(Builder& builder) const override {
     return builder.notOperator(this->load(builder), "uint1_not");
   };

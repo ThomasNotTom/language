@@ -8,6 +8,7 @@
 #include "./tokens/other.hpp"
 #include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/operators/boolean/and/and.hpp"
+#include "lexer/tokens/operators/boolean/equality/equality.hpp"
 #include "lexer/tokens/operators/boolean/not/not.hpp"
 #include "lexer/tokens/operators/boolean/or/or.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
@@ -72,6 +73,9 @@ public:
       } else if (buffer == "||") {
         tokens.addOr(
             OrToken(TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
+      } else if (buffer == "==") {
+        tokens.addEquality(
+            EqualityToken(TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
       } else if (buffer == "!") {
         tokens.addNot(
             NotToken(TokenMetadata(lineNumber, bufferStartColumn, endColumn)));

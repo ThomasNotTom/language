@@ -8,6 +8,7 @@
 #include "syntax_analyser/statement/addition/addition.hpp"
 #include "syntax_analyser/statement/and/and.hpp"
 #include "syntax_analyser/statement/assignment/assignment.hpp"
+#include "syntax_analyser/statement/equality/equality.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
 #include "syntax_analyser/statement/not/not.hpp"
@@ -96,7 +97,7 @@ public:
     std::string lhs = andStatement.lhs.name;
     std::string rhs = andStatement.rhs.name;
 
-    std::cout << identifierName << " = " << lhs << " && " << rhs << ";\n";
+    std::cout << identifierName << " = " << lhs << " || " << rhs << ";\n";
   };
 
   void printNotStatement(const NotStatement& notStatement) const {
@@ -104,6 +105,14 @@ public:
     std::string value = notStatement.value.name;
 
     std::cout << identifierName << " = !" << value << ";\n";
+  };
+
+  void printEqualityStatement(const EqualityStatement& notStatement) const {
+    std::string identifierName = notStatement.identifier.name;
+    std::string lhs = notStatement.lhs.name;
+    std::string rhs = notStatement.rhs.name;
+
+    std::cout << identifierName << " = " << lhs << " == " << rhs << ";\n";
   };
 
   void print() const {
@@ -188,6 +197,14 @@ public:
               static_cast<const NotStatement&>(statement);
 
           printNotStatement(notStatement);
+          break;
+        }
+
+        case StatementType::EQUALITY: {
+          const EqualityStatement& equalityStatement =
+              static_cast<const EqualityStatement&>(statement);
+
+          printEqualityStatement(equalityStatement);
           break;
         }
       }

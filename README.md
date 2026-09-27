@@ -56,6 +56,19 @@ uint8 e = d - 1;
 uint8 f = 4 - (d - e);
 ```
 
+## Boolean Algebra
+
+Boolean operators can be used to perform boolean algebra on values:
+
+```
+uint1 a = 1;
+uint1 b = 0;
+
+uint1 c = (a || b) == 0;
+
+uint1 d = !c && 1;
+```
+
 ## Printing
 
 Values can be printed to standard out using the print function, proceeded by the value wanted to print.
@@ -93,10 +106,14 @@ String segments are converted to a list of tokens. Representing the smallest seg
 
 | Token Name    | Token Type Enum | Description                          |
 | ------------- | --------------- | ------------------------------------ |
-| End of line   | `END_OF_LINE`   | Eend of a statement                  |
+| End of line   | `END_OF_LINE`   | End of a statement                   |
 | Operator      | `OPERATOR`      | Parent class of an operator type     |
 | Open Bracket  | `BRACKET_CLOSE` | A `(` bracket                        |
 | Close Bracket | `BRACKET_OPEN`  | A `)` bracket                        |
+| And           | `AND`           | An `and` operator (AKA `&&`)         |
+| Or            | `OR`            | An `or` operator (AKA `\|\|`)        |
+| Not           | `NOT`           | A `not` operator (AKA `!`)           |
+| Equality      | `EQUALITY`      | An `equality` operator (AKA `==`)    |
 | Other         | `OTHER`         | Stores a string for any unknown type |
 
 ## Syntax Analyser
@@ -112,6 +129,10 @@ Combines tokens into statements.
 | Function Call  | `FUNCTION_CALL`     | Calls a function with any number of parameters         |
 | Context Begin  | `CONTEXT_BEGIN`     | Begins a new symbol, type and callable context         |
 | Context End    | `CONTEXT_END`       | Ends the most recent context                           |
+| And            | `AND`               | Performs a boolean `and` on two values                 |
+| Or             | `OR`                | Performs a boolean `or` on two values                  |
+| Not            | `NOT`               | Performs a boolean `not` on two values                 |
+| Equality       | `EQUALITY`          | Performs a boolean `equals` on two values              |
 
 ## `LLVM` Intermediate Representation
 

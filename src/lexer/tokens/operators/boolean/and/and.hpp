@@ -2,7 +2,7 @@
 
 #include "lexer/tokens/token.hpp"
 
-class OrToken : public Token {
+class AndToken : public Token {
 public:
-  OrToken(const TokenMetadata& metadata);
+  AndToken(const TokenMetadata& metadata);
 };

@@ -9,11 +9,11 @@ class AndStatement : public Statement {
 public:
   const OtherToken identifier;
   const OtherToken lhs;
-  const OrToken andToken;
+  const AndToken andToken;
   const OtherToken rhs;
 
   AndStatement(const OtherToken& identifier, const OtherToken& lhs,
-               const OrToken& andToken, const OtherToken& rhs)
+               const AndToken& andToken, const OtherToken& rhs)
       : Statement(StatementType::AND), identifier(identifier), lhs(lhs),
         andToken(andToken), rhs(rhs) {};
 };

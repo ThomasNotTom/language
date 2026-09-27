@@ -9,6 +9,7 @@
 
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/boolean/and/and.hpp"
+#include "lexer/tokens/operators/boolean/or/or.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
 #include "lexer/tokens/token.hpp"
@@ -19,6 +20,7 @@
 #include "syntax_analyser/statement/context/begin_context.hpp"
 #include "syntax_analyser/statement/context/end_context.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
@@ -44,6 +46,7 @@ private:
   static uint8_t getTokenPriority(std::reference_wrapper<const Token> token) {
     switch (token.get().tokenType) {
       case TokenType::AND:
+      case TokenType::OR:
       case TokenType::PLUS:
       case TokenType::MINUS: {
         return 2;
@@ -61,6 +64,7 @@ private:
       case TokenType::PLUS:
       case TokenType::MINUS:
       case TokenType::AND:
+      case TokenType::OR:
         return true;
       default:
         return false;
@@ -202,7 +206,7 @@ public:
           }
 
           case TokenType::AND: {
-            const OrToken& andToken = static_cast<const OrToken&>(next);
+            const AndToken& andToken = static_cast<const AndToken&>(next);
 
             std::string tempName = "temp_" + std::to_string(tempVariableCount);
             const OtherToken tempToken =
@@ -215,6 +219,26 @@ public:
 
             out.push_back(std::make_unique<AndStatement>(tempToken, tokenaA,
                                                          andToken, tokenaB));
+
+            tokenStack.push(tempToken);
+
+            break;
+          }
+
+          case TokenType::OR: {
+            const OrToken& orToken = static_cast<const OrToken&>(next);
+              
+            std::string tempName = "temp_" + std::to_string(tempVariableCount);
+            const OtherToken tempToken =
+                OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+            tempVariableCount += 1;
+
+            out.push_back(
+                std::make_unique<InitialisationStatement>(outType, tempToken));
+
+            out.push_back(std::make_unique<OrStatement>(tempToken, tokenaA,
+                                                        orToken, tokenaB));
 
             tokenStack.push(tempToken);
 

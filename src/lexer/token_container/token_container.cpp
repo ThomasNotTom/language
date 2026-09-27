@@ -78,6 +78,11 @@ void TokenContainer::print() const {
         std::cout << "AND";
         break;
       }
+
+      case OR: {
+        std::cout << "OR";
+        break;
+      }
     }
 
     std::cout << "  # " << TokenContainer::tokenMetadataToString(token.metadata)

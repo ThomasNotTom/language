@@ -169,4 +169,33 @@ public:
 
     return builder.andOperator(this->load(builder), value, "float64_and_val");
   };
+
+  llvm::Value* orOperator(Builder& builder,
+                          const Variable& other) const override {
+    const unsigned int THIS_TYPE = this->getType();
+
+    if (other.getType() == THIS_TYPE) {
+      const Float64Variable& Float64Other =
+          static_cast<const Float64Variable&>(other);
+
+      return builder.orOperator(Float64Other.load(builder), this->load(builder),
+                                "float64_or_float64");
+
+    } else {
+      throw std::runtime_error("No or method is defined between type " +
+                               std::to_string(THIS_TYPE) + " and " +
+                               std::to_string(other.getType()));
+    };
+  };
+
+  llvm::Value* orOperator(Builder& builder,
+                          const std::string& other) const override {
+    if (!StringConverter::isInt(other)) {
+      throw std::runtime_error("Cannot perform or on non-int");
+    }
+
+    llvm::Value* value = this->builderType.makeValue(builder, other);
+
+    return builder.orOperator(this->load(builder), value, "float64_or_val");
+  };
 };

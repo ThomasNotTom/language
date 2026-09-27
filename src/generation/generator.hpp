@@ -50,6 +50,7 @@
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 
@@ -439,6 +440,56 @@ public:
 
             builder.store(builder.andOperator(lhsValue, rhsValue,
                                               lhs.name + "_and_" + rhs.name),
+                          out.getStorage());
+            continue;
+          }
+        }
+
+        case StatementType::OR: {
+          const OrStatement& orStatement =
+              static_cast<const OrStatement&>(statement);
+
+          const Variable& out = *currentSymbols.at(orStatement.identifier.name);
+
+          const OtherToken& lhs = orStatement.lhs;
+          bool hasLhs = currentSymbols.contains(orStatement.lhs.name);
+
+          const OtherToken& rhs = orStatement.rhs;
+          bool hasRhs = currentSymbols.contains(orStatement.rhs.name);
+
+          if (hasLhs) {
+            Variable* lhsVariable = currentSymbols.at(lhs.name);
+            if (hasRhs) {
+              Variable* rhsVariable = currentSymbols.at(rhs.name);
+
+              builder.store(lhsVariable->orOperator(builder, *rhsVariable),
+                            out.getStorage());
+              continue;
+            }
+
+            builder.store(lhsVariable->orOperator(builder, rhs.name),
+                          out.getStorage());
+
+            continue;
+          }
+
+          if (!hasLhs && hasRhs) {
+            Variable* rhsVariable = currentSymbols.at(rhs.name);
+
+            builder.store(rhsVariable->orOperator(builder, lhs.name),
+                          out.getStorage());
+            continue;
+          }
+
+          if (!hasLhs && !hasRhs) {
+            llvm::Value* lhsValue =
+                builder.createConst1(StringConverter::toUint1(lhs.name));
+
+            llvm::Value* rhsValue =
+                builder.createConst1(StringConverter::toUint1(rhs.name));
+
+            builder.store(builder.orOperator(lhsValue, rhsValue,
+                                             lhs.name + "_or_" + rhs.name),
                           out.getStorage());
             continue;
           }

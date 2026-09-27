@@ -10,6 +10,7 @@
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
 class Program {
@@ -89,6 +90,14 @@ public:
     std::cout << identifierName << " = " << lhs << " && " << rhs << ";\n";
   };
 
+  void printOrStatement(const OrStatement& andStatement) const {
+    std::string identifierName = andStatement.identifier.name;
+    std::string lhs = andStatement.lhs.name;
+    std::string rhs = andStatement.rhs.name;
+
+    std::cout << identifierName << " = " << lhs << " && " << rhs << ";\n";
+  };
+
   void print() const {
     std::cout << "-- Program --\n";
     std::cout << "count: " << this->statements.size() << "\n";
@@ -154,8 +163,16 @@ public:
           const AndStatement& andStatement =
               static_cast<const AndStatement&>(statement);
 
-        printAndStatement(andStatement);
-        break;
+          printAndStatement(andStatement);
+          break;
+        }
+
+        case StatementType::OR: {
+          const OrStatement& orStatement =
+              static_cast<const OrStatement&>(statement);
+
+          printOrStatement(orStatement);
+          break;
         }
       }
     }

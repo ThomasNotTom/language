@@ -131,6 +131,11 @@ public:
     return this->irBuilder.CreateAnd(lhs, rhs, name);
   };
 
+  llvm::Value* orOperator(llvm::Value* lhs, llvm::Value* rhs,
+                          const std::string& name) {
+    return this->irBuilder.CreateOr(lhs, rhs, name);
+  };
+
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {
     return this->irBuilder.CreateZExt(in, outType);
   };

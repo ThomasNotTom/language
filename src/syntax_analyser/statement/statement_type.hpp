@@ -8,5 +8,6 @@ enum class StatementType : uint8_t {
   FUNCTION_CALL = 6,
   CONTEXT_BEGIN = 7,
   CONTEXT_END = 8,
-  AND = 9
+  AND = 9,
+  OR = 10,
 };

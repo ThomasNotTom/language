@@ -136,6 +136,10 @@ public:
     return this->irBuilder.CreateOr(lhs, rhs, name);
   };
 
+  llvm::Value* notOperator(llvm::Value* value, const std::string& name) {
+    return this->irBuilder.CreateNot(value, name);
+  };
+
   llvm::Value* zext(llvm::Value* in, llvm::Type* outType) {
     return this->irBuilder.CreateZExt(in, outType);
   };

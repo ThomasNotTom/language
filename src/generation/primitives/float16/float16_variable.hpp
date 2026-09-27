@@ -195,4 +195,9 @@ public:
 
     return builder.orOperator(this->load(builder), value, "float16_or_val");
   };
+
+  llvm::Value* notOperator(Builder& builder) const override {
+
+    return builder.notOperator(this->load(builder), "float16_not");
+  };
 };

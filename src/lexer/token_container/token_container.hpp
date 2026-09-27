@@ -9,6 +9,7 @@
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/assignment/assignment.hpp"
 #include "lexer/tokens/operators/boolean/and/and.hpp"
+#include "lexer/tokens/operators/boolean/not/not.hpp"
 #include "lexer/tokens/operators/boolean/or/or.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
@@ -55,6 +56,10 @@ public:
 
   void addOr(const OrToken& token) {
     tokens.push_back(std::make_unique<OrToken>(token));
+  }
+
+  void addNot(const NotToken& token) {
+    tokens.push_back(std::make_unique<NotToken>(token));
   }
 
   static std::string tokenMetadataToString(const TokenMetadata& metadata);

@@ -10,6 +10,7 @@
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/not/not.hpp"
 #include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
@@ -98,6 +99,13 @@ public:
     std::cout << identifierName << " = " << lhs << " && " << rhs << ";\n";
   };
 
+  void printNotStatement(const NotStatement& notStatement) const {
+    std::string identifierName = notStatement.identifier.name;
+    std::string value = notStatement.value.name;
+
+    std::cout << identifierName << " = !" << value << ";\n";
+  };
+
   void print() const {
     std::cout << "-- Program --\n";
     std::cout << "count: " << this->statements.size() << "\n";
@@ -172,6 +180,14 @@ public:
               static_cast<const OrStatement&>(statement);
 
           printOrStatement(orStatement);
+          break;
+        }
+
+        case StatementType::NOT: {
+          const NotStatement& notStatement =
+              static_cast<const NotStatement&>(statement);
+
+          printNotStatement(notStatement);
           break;
         }
       }

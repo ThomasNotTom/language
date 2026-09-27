@@ -10,4 +10,5 @@ enum class StatementType : uint8_t {
   CONTEXT_END = 8,
   AND = 9,
   OR = 10,
+  NOT = 11,
 };

@@ -194,4 +194,8 @@ public:
 
     return builder.orOperator(this->load(builder), value, "uint64_or_val");
   };
+
+  llvm::Value* notOperator(Builder& builder) const override {
+    return builder.notOperator(this->load(builder), "uint64_not");
+  };
 };

@@ -9,6 +9,7 @@
 
 #include "lexer/tokens/operators/addition/addition.hpp"
 #include "lexer/tokens/operators/boolean/and/and.hpp"
+#include "lexer/tokens/operators/boolean/not/not.hpp"
 #include "lexer/tokens/operators/boolean/or/or.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/other.hpp"
@@ -20,6 +21,7 @@
 #include "syntax_analyser/statement/context/begin_context.hpp"
 #include "syntax_analyser/statement/context/end_context.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/not/not.hpp"
 #include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
@@ -48,6 +50,7 @@ private:
       case TokenType::AND:
       case TokenType::OR:
       case TokenType::PLUS:
+      case TokenType::NOT:
       case TokenType::MINUS: {
         return 2;
       }
@@ -65,6 +68,7 @@ private:
       case TokenType::MINUS:
       case TokenType::AND:
       case TokenType::OR:
+      case TokenType::NOT:
         return true;
       default:
         return false;
@@ -160,6 +164,26 @@ public:
         const OtherToken& tokenaB = tokenStack.top();
         tokenStack.pop();
 
+        if (next.tokenType == TokenType::NOT) {
+          const NotToken& notToken = static_cast<const NotToken&>(next);
+
+          std::string tempName = "temp_" + std::to_string(tempVariableCount);
+          const OtherToken tempToken =
+              OtherToken(tempName, TokenMetadata(0, 0, 0));
+
+          tempVariableCount += 1;
+
+          out.push_back(
+              std::make_unique<InitialisationStatement>(outType, tempToken));
+
+          out.push_back(
+              std::make_unique<NotStatement>(tempToken, notToken, tokenaB));
+
+          tokenStack.push(tempToken);
+
+          continue;
+        }
+
         const OtherToken& tokenaA = tokenStack.top();
         tokenStack.pop();
 
@@ -227,7 +251,7 @@ public:
 
           case TokenType::OR: {
             const OrToken& orToken = static_cast<const OrToken&>(next);
-              
+
             std::string tempName = "temp_" + std::to_string(tempVariableCount);
             const OtherToken tempToken =
                 OtherToken(tempName, TokenMetadata(0, 0, 0));

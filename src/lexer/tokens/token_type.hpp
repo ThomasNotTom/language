@@ -12,7 +12,8 @@ enum TokenType : uint8_t {
   BRACKET_CLOSE = 6,
   AND = 7,
   OR = 8,
-  OTHER = 9,
+  NOT = 9,
+  OTHER = 10,
 };
 
 class TokenChecker {

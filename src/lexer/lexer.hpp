@@ -8,6 +8,7 @@
 #include "./tokens/other.hpp"
 #include "lexer/token_container/token_container.hpp"
 #include "lexer/tokens/operators/boolean/and/and.hpp"
+#include "lexer/tokens/operators/boolean/not/not.hpp"
 #include "lexer/tokens/operators/boolean/or/or.hpp"
 #include "lexer/tokens/operators/subtraction/subtraction.hpp"
 #include "lexer/tokens/token.hpp"
@@ -37,6 +38,14 @@ public:
         continue;
       }
 
+      if (c == '!' && buffer.empty()) {
+        tokens.addNot(NotToken(TokenMetadata(lineNumber, bufferStartColumn,
+                                             bufferStartColumn + 1)));
+
+        buffer = "";
+        continue;
+      }
+
       if (c != ' ' && c != ';' && c != '(' && c != ')') {
         if (!bufferBegan) {
           bufferStartColumn = index;
@@ -63,6 +72,9 @@ public:
       } else if (buffer == "||") {
         tokens.addOr(
             OrToken(TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
+      } else if (buffer == "!") {
+        tokens.addNot(
+            NotToken(TokenMetadata(lineNumber, bufferStartColumn, endColumn)));
       } else if (buffer.size() != 0) {
         tokens.addOther(OtherToken(
             buffer, TokenMetadata(lineNumber, bufferStartColumn, endColumn)));

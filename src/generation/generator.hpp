@@ -50,6 +50,7 @@
 #include "syntax_analyser/statement/assignment/assignment.hpp"
 #include "syntax_analyser/statement/function_call/function_call.hpp"
 #include "syntax_analyser/statement/initialisation/initialisation.hpp"
+#include "syntax_analyser/statement/not/not.hpp"
 #include "syntax_analyser/statement/or/or.hpp"
 #include "syntax_analyser/statement/statement.hpp"
 #include "syntax_analyser/statement/subtraction/subtraction.hpp"
@@ -493,6 +494,33 @@ public:
                           out.getStorage());
             continue;
           }
+        }
+
+        case StatementType::NOT: {
+          const NotStatement& notStatement =
+              static_cast<const NotStatement&>(statement);
+
+          const Variable& out =
+              *currentSymbols.at(notStatement.identifier.name);
+
+          const OtherToken& value = notStatement.value;
+          bool hasValue = currentSymbols.contains(value.name);
+
+          if (hasValue) {
+            Variable* valueVariable = currentSymbols.at(value.name);
+
+            builder.store(valueVariable->notOperator(builder),
+                          out.getStorage());
+
+            continue;
+          }
+
+          builder.store(
+              builder.notOperator(
+                  builder.createConst1(StringConverter::toUint1(value.name)),
+                  "val_not"),
+              out.getStorage());
+          continue;
         }
       }
     }
